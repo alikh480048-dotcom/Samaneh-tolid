@@ -1,398 +1,567 @@
 import sqlite3
-from flask import Flask, render_template_string, request, redirect, url_for
+from flask import Flask, flash, redirect, render_template_string, request, url_for
 
 app = Flask(__name__)
+app.secret_key = "samaneh-tolid-secure-key"
 
-# ایجاد دیتابیس و جدول کامل‌تر واحدهای تولیدی
+# اطلاعات ۳۱ استان ایران و شهرهای مهم آن‌ها برای انتخاب پویا
+PROVINCES_CITIES = {
+    "تهران": ["تهران", "ري", "تجریش", "اسلامشهر", "شهریار", "دماوند"],
+    "اصفهان": ["اصفهان", "کاشان", "نجف‌آباد", "شاهین‌شهر", "فلاورجان"],
+    "خراسان رضوی": ["مشهد", "نیشابور", "سبزوار", "تربت حیدریه", "قوچان"],
+    "فارس": ["شیراز", "مرودشت", "جهرم", "فسا", "کازرون"],
+    "آذربایجان شرقی": ["تبریز", "مراغه", "مرند", "میانه", "اهر"],
+    "مازندران": [
+        "ساری",
+        "بابل",
+        "آمل",
+        "قائم‌شهر",
+        "تنکابن",
+        "بابلسر",
+        "بهشهر",
+        "نوشهر",
+    ],
+    "گیلان": [
+        "رشت",
+        "انزلی",
+        "لاهیجان",
+        "لنگرود",
+        "آستانه اشرفیه",
+        "رودسر",
+        "طالش",
+    ],
+    "گلستان": [
+        "گرگان",
+        "گنبد کاووس",
+        "علی‌آباد کتول",
+        "بندر ترکمن",
+        "کردکوی",
+        "آق‌قلا",
+    ],
+    "البرز": ["کرج", "فردیس", "هشتگرد", "نظرآباد", "طالقان"],
+    "خوزستان": ["اهواز", "دزفول", "آبادان", "خرمشهر", "ماهشهر"],
+    "سمنان": ["سمنان", "شاهرود", "دامغان", "گرمسار"],
+    "یزد": ["یزد", "میبد", "اردکان", "بافق"],
+    "قم": ["قم"],
+    "قزوین": ["قزوین", "تاکستان", "بوئین‌زهرا"],
+    "کرمان": ["کرمان", "سیرجان", "رفسنجان", "جیرفت", "بم"],
+    "هرمزگان": ["بندرعباس", "قشم", "میناب", "بندرلنگه"],
+    "سیستان و بلوچستان": ["زاهدان", "زابل", "ایرانشهر", "چابهار"],
+    "کرمانشاه": ["کرمانشاه", "اسلام‌آباد غرب", "سنقر", "پاوه"],
+    "لرستان": ["خرم‌آباد", "بروجرد", "دورود", "الیگودرز"],
+    "کردستان": ["سنندج", "سقز", "مریوان", "بانە"],
+    "همدان": ["همدان", "ملایر", "نهاوند", "تویسرکان"],
+    "مرکزی": ["اراک", "ساوه", "خمین", "محلات"],
+    "اردبیل": ["اردبیل", "پارس‌آباد", "مشگین‌شهر", "خلخال"],
+    "بوشهر": ["بوشهر", "برازجان", "بندر گناوه", "کنگان"],
+    "چهارمحال و بختیاری": ["شهرکرد", "بروجن", "لردگان", "فارسان"],
+    "کهگیلویه و بویر احمد": ["یاسوج", "دوگنبدان", "دهدشت"],
+    "خراسان شمالی": ["بجنورد", "شیروان", "اسفراین"],
+    "خراسان جنوبی": ["بیرجند", "قائن", "طبس", "فردوس"],
+    "زنجان": ["زنجان", "ابهر", "خدابنده"],
+    "ایلام": ["ایلام", "دهلران", "ایوان", "آبدانان"],
+    "بوشهر": ["بوشهر", "برازجان", "بندر گناوه"],
+}
+
+CRAFTS_CATEGORIES = [
+    "فرش و گلیم و دستبافته‌ها",
+    "سفال و سرامیک",
+    "معرق و منبت و مصنوعات چوبی",
+    "رودوزی‌های سنتی و پوشاک محلی",
+    "زيورآلات سنتی و سنگ‌های قیمتی",
+    "صنایع دستی حصیری و چوبی",
+    "محصولات خوراکی و بومی (روستا)",
+    "سایر رسته‌های صنایع دستی",
+]
+
+
 def init_db():
-    conn = sqlite3.connect('database.db')
-    cursor = conn.cursor()
-    cursor.execute('''
+  conn = sqlite3.connect("database.db")
+  cursor = conn.cursor()
+  # جدول کارگاه‌ها / واحدهای تولیدی
+  cursor.execute("""
         CREATE TABLE IF NOT EXISTS producers (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             workshop_name TEXT NOT NULL,
-            owner_name TEXT NOT NULL,
+            manager_name TEXT NOT NULL,
             phone TEXT NOT NULL,
             province TEXT NOT NULL,
             city TEXT NOT NULL,
-            workshop_type TEXT,
-            craft_category TEXT NOT NULL,
-            monthly_capacity TEXT,
-            address TEXT,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            craft_type TEXT NOT NULL,
+            capacity TEXT NOT NULL,
+            unit_type TEXT NOT NULL,
+            address TEXT
         )
-    ''')
-    conn.commit()
-    conn.close()
+    """)
+  # جدول محصولات کاتالوگ
+  cursor.execute("""
+        CREATE TABLE IF NOT EXISTS products (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            producer_id INTEGER,
+            product_name TEXT NOT NULL,
+            price TEXT NOT NULL,
+            min_order TEXT NOT NULL,
+            description TEXT,
+            FOREIGN KEY(producer_id) REFERENCES producers(id)
+        )
+    """)
+  # جدول جدید: استعلام‌ها و درخواست‌های خرید عمده (RFQ / White-Label)
+  cursor.execute("""
+        CREATE TABLE IF NOT EXISTS inquiries (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            product_id INTEGER,
+            buyer_name TEXT NOT NULL,
+            buyer_phone TEXT NOT NULL,
+            quantity TEXT NOT NULL,
+            destination_province TEXT NOT NULL,
+            notes TEXT,
+            status TEXT DEFAULT 'جدید',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY(product_id) REFERENCES products(id)
+        )
+    """)
+  conn.commit()
+  conn.close()
+
 
 init_db()
 
+
+# قالب جامع HTML همراه با رابط کاربری تب‌بندی شده و فرم استعلام امن
 HTML_TEMPLATE = """
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>سامانه هوشمند توسعه تولید و رفع موانع</title>
-    <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/fonts/webfonts/Vazirmatn-font-face.css" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>شبکه هوشمند توسعه تولید و رفع موانع</title>
+    <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet" type="text/css" />
     <style>
         :root {
-            --primary: #1e3a8a;
-            --primary-light: #3b82f6;
-            --accent: #10b981;
-            --bg: #f8fafc;
+            --primary: #10b981;
+            --primary-dark: #059669;
+            --secondary: #3b82f6;
+            --bg-color: #f8fafc;
             --card-bg: #ffffff;
-            --text-main: #0f172a;
-            --text-sub: #64748b;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
             --border: #e2e8f0;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Vazirmatn', sans-serif; }
-        body { background: var(--bg); color: var(--text-main); padding-bottom: 70px; }
+        body { background-color: var(--bg-color); color: var(--text-main); line-height: 1.6; padding-bottom: 80px; }
         
-        .header {
-            background: linear-gradient(135deg, #1e3a8a, #1e40af);
-            color: #fff;
-            padding: 18px 16px;
+        header {
+            background: linear-gradient(135deg, #065f46 0%, #047857 100%);
+            color: white;
+            padding: 20px 16px;
             text-align: center;
-            box-shadow: 0 4px 12px rgba(30, 58, 138, 0.15);
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
         }
-        .header h1 { font-size: 1.15rem; font-weight: 700; margin-bottom: 4px; }
-        .header p { font-size: 0.8rem; opacity: 0.85; }
+        header h1 { font-size: 1.25rem; font-weight: 700; margin-bottom: 5px; }
+        header p { font-size: 0.8rem; opacity: 0.9; }
 
-        .container { max-width: 600px; margin: 0 auto; padding: 16px; }
+        .container { max-width: 800px; margin: 16px auto; padding: 0 12px; }
 
-        /* تب‌های ناوبری موبایلی */
-        .tab-bar {
-            display: flex;
-            background: #fff;
-            border-radius: 12px;
-            padding: 4px;
-            margin-bottom: 16px;
-            border: 1px solid var(--border);
-            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-        }
-        .tab-btn {
-            flex: 1;
-            padding: 10px 8px;
-            text-align: center;
-            font-size: 0.85rem;
-            font-weight: 600;
-            border-radius: 8px;
-            border: none;
-            cursor: pointer;
-            background: transparent;
-            color: var(--text-sub);
-            transition: all 0.2s ease;
-        }
-        .tab-btn.active {
-            background: var(--primary);
-            color: #fff;
-            box-shadow: 0 2px 6px rgba(30, 58, 138, 0.25);
+        /* فلش ممسیج‌ها */
+        .flash {
+            background: #d1fae5; color: #065f46; padding: 12px; border-radius: 8px;
+            margin-bottom: 16px; font-size: 0.85rem; border: 1px solid #a7f3d0; text-align: center;
         }
 
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
-
+        /* کارت‌ها و فرم‌ها */
         .card {
-            background: var(--card-bg);
-            border-radius: 14px;
-            padding: 18px;
-            border: 1px solid var(--border);
-            box-shadow: 0 4px 10px rgba(0,0,0,0.03);
-            margin-bottom: 16px;
+            background: var(--card-bg); border-radius: 12px; padding: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05); margin-bottom: 16px; border: 1px solid var(--border);
         }
-        .card-title {
-            font-size: 1rem;
-            font-weight: 700;
-            color: var(--primary);
-            margin-bottom: 14px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            border-bottom: 2px solid #f1f5f9;
-            padding-bottom: 10px;
-        }
+        .card h2 { font-size: 1rem; color: #0f172a; margin-bottom: 14px; border-bottom: 2px solid var(--border); padding-bottom: 8px; }
 
-        .form-group { margin-bottom: 14px; }
-        .form-row { display: flex; gap: 10px; }
-        .form-row .form-group { flex: 1; }
-        label { display: block; font-size: 0.8rem; font-weight: 600; color: var(--text-sub); margin-bottom: 6px; }
+        .form-group { margin-bottom: 12px; }
+        label { display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 6px; color: var(--text-main); }
         input, select, textarea {
-            width: 100%;
-            padding: 11px 12px;
-            border: 1.5px solid var(--border);
-            border-radius: 9px;
-            font-size: 0.9rem;
-            background: #fff;
-            color: var(--text-main);
-            outline: none;
-            transition: border-color 0.2s;
+            width: 100%; padding: 10px 12px; border: 1px solid var(--border);
+            border-radius: 8px; font-size: 0.85rem; background: #fff; outline: none; transition: all 0.2s;
         }
-        input:focus, select:focus, textarea:focus { border-color: var(--primary-light); }
+        input:focus, select:focus, textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(16,185,129,0.1); }
         
-        .btn-submit {
-            width: 100%;
-            padding: 13px;
-            background: linear-gradient(135deg, #10b981, #059669);
-            color: #fff;
-            border: none;
-            border-radius: 10px;
-            font-size: 0.95rem;
-            font-weight: 700;
-            cursor: pointer;
-            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+        button, .btn {
+            background: var(--primary); color: white; border: none; padding: 12px;
+            border-radius: 8px; font-size: 0.9rem; font-weight: 600; width: 100%; cursor: pointer;
+            text-align: center; display: inline-block; text-decoration: none; transition: background 0.2s;
         }
+        button:hover, .btn:hover { background: var(--primary-dark); }
+        .btn-secondary { background: var(--secondary); }
+        .btn-secondary:hover { background: #2563eb; }
 
-        /* کارت نمایش داده‌ها */
+        /* لیست‌ها و کارت‌های اقلام */
         .item-card {
-            background: #fff;
-            border-radius: 12px;
-            padding: 14px;
-            margin-bottom: 10px;
-            border: 1px solid var(--border);
-            border-right: 4px solid var(--primary-light);
+            background: #fff; border: 1px solid var(--border); border-radius: 10px;
+            padding: 12px; margin-bottom: 10px; font-size: 0.85rem; position: relative;
         }
-        .item-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-        .item-title { font-size: 0.95rem; font-weight: 700; color: var(--primary); }
-        .item-tag { font-size: 0.75rem; background: #eff6ff; color: #1d4ed8; padding: 2px 8px; border-radius: 6px; }
-        .item-info { font-size: 0.8rem; color: var(--text-sub); line-height: 1.6; }
+        .item-title { font-weight: 700; color: #0f172a; font-size: 0.95rem; margin-bottom: 4px; }
+        .badge { background: #e0f2fe; color: #0369a1; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; display: inline-block; }
+        .badge-secure { background: #fef3c7; color: #d97706; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; display: inline-block; }
+
+        /* نوار ناوبری پایین صفحه (موبایل‌فرندلی) */
+        .tab-bar {
+            position: fixed; bottom: 0; left: 0; right: 0; background: white;
+            display: flex; justify-content: space-around; padding: 8px 0;
+            box-shadow: 0 -4px 10px rgba(0,0,0,0.08); border-top: 1px solid var(--border); z-index: 1000;
+        }
+        .tab-item {
+            text-align: center; color: var(--text-muted); text-decoration: none;
+            font-size: 0.75rem; flex: 1; display: flex; flex-direction: column; align-items: center;
+        }
+        .tab-item.active { color: var(--primary); font-weight: 700; }
+        .tab-item span.icon { font-size: 1.2rem; margin-bottom: 2px; }
+
+        /* مدال ساده یا فرم استعلام */
+        .inquiry-box { background: #f0fdf4; border: 1px dashed var(--primary); padding: 10px; border-radius: 8px; margin-top: 10px; }
     </style>
-</head>
-<body>
-
-    <div class="header">
-        <h1>شبکه هوشمند توسعه تولید و رفع موانع</h1>
-        <p>پلتفرم تخصصی پایش، توسعه و اتصال واحدهای تولیدی به بازار</p>
-    </div>
-
-    <div class="container">
-        <!-- منوی جابجایی تب‌ها برای راحتی کار با موبایل -->
-        <div class="tab-bar">
-            <button class="tab-btn active" onclick="switchTab('form-tab')">📝 ثبت واحد جدید</button>
-            <button class="tab-btn" onclick="switchTab('list-tab')">📋 بانک واحدها ({{ producers|length }})</button>
-        </div>
-
-        <!-- تب فرم ورود داده -->
-        <div id="form-tab" class="tab-content active">
-            <div class="card">
-                <div class="card-title">📝 مشخصات کارگاه و واحد تولیدی</div>
-                <form action="/add_producer" method="POST">
-                    
-                    <div class="form-group">
-                        <label>نام واحد تولیدی / کارگاه *</label>
-                        <input type="text" name="workshop_name" required placeholder="مثال: کارگاه میناکاری فیروزه">
-                    </div>
-
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>نام مدیر یا صاحب کارگاه *</label>
-                            <input type="text" name="owner_name" required placeholder="مثال: محمد امینی">
-                        </div>
-                        <div class="form-group">
-                            <label>شماره تماس مستقیم *</label>
-                            <input type="tel" name="phone" required placeholder="۰۹۱۲۳۴۵۶۷۸۹">
-                        </div>
-                    </div>
-
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>استان محل فعالیت *</label>
-                            <select id="province-select" name="province" required onchange="updateCities()">
-                                <option value="">انتخاب استان...</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>شهرستان *</label>
-                            <select id="city-select" name="city" required>
-                                <option value="">ابتدا استان را انتخاب کنید</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>رسته و حوزه فعالیت *</label>
-                            <select name="craft_category" required>
-                                <option value="">انتخاب رسته...</option>
-                                <option value="فرش و گلیم و دستبافته‌ها">فرش، گلیم و زیرانداز سنتی</option>
-                                <option value="سفال و سرامیک">سفال، سرامیک و لعاب‌کاری</option>
-                                <option value="صنایع دستی چوبی">منبت، معرق، خاتم و خراطی</option>
-                                <option value="صنایع دستی فلزی">قلم‌زنی، مسگری، ملیله و میناکاری</option>
-                                <option value="پوشاک و نساجی سنتی">پته‌دوزی، سوزن‌دوزی، سرمه‌دوزی، چاپ سنتی</option>
-                                <option value="محصولات چرمی دست‌دوز">چرم‌دوزی و حکاکی روی چرم</option>
-                                <option value="حصیربافی و بامبوبافی">حصیربافی، کپوبافی و مرواربافی</option>
-                                <option value="سنگ‌های قیمتی و زیورآلات سنتی">تراش سنگ، فیروزه‌کوبی، زیورآلات</option>
-                                <option value="صنایع غذایی خانگی و سوغات">صنایع تبدیلی، عرقیات، خشکبار، سوغات</option>
-                                <option value="سایر رسته‌های صنایع دستی">سایر رسته‌ها</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>نوع واحد</label>
-                            <select name="workshop_type">
-                                <option value="مشاغل خانگی">مشاغل خانگی / تولید در خانه</option>
-                                <option value="کارگاه خرد و کوچک">کارگاه خرد و کوچک مستقل</option>
-                                <option value="تعاونی / شبکه تولید">تعاونی تولیدی یا شبکه همکار</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label>ظرفیت تقریبی تولید در ماه</label>
-                        <input type="text" name="monthly_capacity" placeholder="مثال: ۱۵۰ قطعه ظروف میناکاری، ۳۰ متر مربع گلیم و...">
-                    </div>
-
-                    <div class="form-group">
-                        <label>آدرس یا نشانی دقیق کارگاه / روستا</label>
-                        <textarea name="address" rows="2" placeholder="شهر / روستا، خیابان، پلاک یا مشخصه محلی"></textarea>
-                    </div>
-
-                    <button type="submit" class="btn-submit">ثبت قطعی واحد در سامانه</button>
-                </form>
-            </div>
-        </div>
-
-        <!-- تب نمایش لیست واحدهای ثبت شده -->
-        <div id="list-tab" class="tab-content">
-            <div class="card">
-                <div class="card-title">
-                    📋 بانک واحدهای تولیدی
-                    <span style="font-size:0.8rem; font-weight:normal; color:var(--text-sub); margin-right:auto;">
-                        مجموع: {{ producers|length }} واحد
-                    </span>
-                </div>
-                
-                {% if not producers %}
-                    <p style="text-align: center; color: var(--text-sub); font-size: 0.9rem; padding: 20px;">
-                        هنوز اطلاعات هیچ واحدی ثبت نشده است.
-                    </p>
-                {% endif %}
-
-                {% for p in producers %}
-                    <div class="item-card">
-                        <div class="item-header">
-                            <span class="item-title">{{ p[1] }}</span>
-                            <span class="item-tag">{{ p[7] }}</span>
-                        </div>
-                        <div class="item-info">
-                            👤 مدیر: <b>{{ p[2] }}</b> | 📞 تماس: <a href="tel:{{ p[3] }}" style="color:var(--primary-light); text-decoration:none;">{{ p[3] }}</a><br>
-                            📍 مکان: <b>{{ p[4] }} - {{ p[5] }}</b> | 🏷️ نوع: {{ p[6] }}<br>
-                            ⚙️ ظرفیت ماهانه: {{ p[8] or 'نامشخص' }}<br>
-                            {% if p[9] %}
-                                🏠 آدرس: {{ p[9] }}
-                            {% endif %}
-                        </div>
-                    </div>
-                {% endfor %}
-            </div>
-        </div>
-
-    </div>
-
-    <!-- اسکریپت استان‌ها و شهرستان‌های ایران و مدیریت تب‌ها -->
     <script>
-        const iranDivisions = {
-            "آذربایجان شرقی": ["تبریز", "مراغه", "مرند", "میانه", "اهر", "بناب", "سراب", "آذرشهر", "اسکو", "شبستر", "کلیبر", "جلفا", "هشترود", "ورزقان", "هوراند", "چاراویماق", "عجب‌شیر", "خداآفرین"],
-            "آذربایجان غربی": ["ارومیه", "خوی", "بوکان", "مهاباد", "میاندوآب", "سلماس", "پیرانشهر", "نقده", "سردشت", "شاهین‌دژ", "تکاب", "اشنویه", "شوط", "پلدشت", "چالدران", "چایپاره"],
-            "اردبیل": ["اردبیل", "پارس‌آباد", "مشگین‌شهر", "خلخال", "گرمی", "نمین", "بیله‌سوار", "کوثر", "سرعین", "اصلاندوز"],
-            "اصفهان": ["اصفهان", "کاشان", "خمینی‌شهر", "نجف‌آباد", "لنجان", "فلاورجان", "شاهین‌شهر", "شهرضا", "مبارکه", "برخوار", "آران و بیدگل", "گلپایگان", "فریدن", "تیران و کرون", "سمیرم", "خوانسار", "اردستان", "نطنز", "نایین", "فریدون‌شهر", "دهاقان", "چادگان", "خور و بیابانک", "بویین میاندشت"],
-            "البرز": ["کرج", "فردیس", "ساوجبلاغ", "نظرآباد", "چهارباغ", "اشتهارد", "طالقان"],
-            "ایلام": ["ایلام", "دهلران", "ایوان", "آبدانان", "چرداول", "دره‌شهر", "مهران", "ملکشاهی", "بدره", "هلیلان", "سیروان", "چوار"],
-            "بوشهر": ["بوشهر", "دشتستان", "کنگان", "گناوه", "دشتی", "تنگستان", "عسلویه", "جم", "دیر", "دیلم"],
-            "تهران": ["تهران", "شهریار", "اسلامشهر", "بهارستان", "ملارد", "پاکدشت", "ری", "قدس", "رباط‌کریم", "ورامین", "قرچک", "پردیس", "دماوند", "پیشوا", "شمیرانات", "فیروزکوه"],
-            "چهارمحال و بختیاری": ["شهرکرد", "بروجن", "لردگان", "فارسان", "کیار", "اردل", "کوهرنگ", "سامان", "بن", "خانمیرزا"],
-            "خراسان جنوبی": ["بیرجند", "قائنات", "طبس", "فردوس", "نهبندان", "درمیان", "سربیشه", "سرایان", "زیرکوه", "بشرویه", "خوسف"],
-            "خراسان رضوی": ["مشهد", "نیشابور", "سبزوار", "تربت حیدریه", "کاشمر", "قوچان", "تربت جام", "تایباد", "چناران", "سرخس", "گناباد", "فریمان", "خواف", "درگز", "بردسکن", "طرقبه شاندیز", "زاوه", "بجستان"],
-            "خراسان شمالی": ["بجنورد", "شیروان", "اسفراین", "مانه و سملقان", "جاجرم", "فاروج", "گرمه", "راز و جرگلان"],
-            "خوزستان": ["اهواز", "دزفول", "آبادان", "بندر ماهشهر", "شوشتر", "ایذه", "بهبهان", "خرمشهر", "شوش", "شادگان", "دشت آزادگان", "مسجدسلیمان", "امیدیه", "باغ‌ملک", "رامهرمز", "گتوند", "لالی", "هندیجان", "هویزه", "اندیمشک"],
-            "زنجان": ["زنجان", "ابهر", "خدابنده", "خرمدره", "طارم", "ماه‌نشان", "ایجرود", "سلطانیه"],
-            "سمنان": ["سمنان", "شاهرود", "دامغان", "گرمسار", "مهدی‌شهر", "میامی", "سرخه", "آرادان"],
-            "سیستان و بلوچستان": ["زاهدان", "چابهار", "زابل", "ایرانشهر", "سراوان", "خاش", "کنارک", "نیک‌شهر", "دشتیاری", "هیرمند", "زهک", "سیب و سوران", "دلگان", "مهرستان", "میرجاوه", "قصرقند"],
-            "فارس": ["شیراز", "مرودشت", "کازرون", "فسا", "جهرم", "داراب", "لارستان", "آباده", "فیروزآباد", "ممسنی", "نی‌ریز", "اقلید", "استهبان", "سپیدان", "کوار", "زرین‌دشت", "قیر و کارزین", "لامرد", "مهر", "ارسنجان", "بوانات"],
-            "قزوین": ["قزوین", "البرز", "تاکستان", "بویین‌زهرا", "آبیک", "آوج"],
-            "قم": ["قم", "جعفرآباد", "کهک"],
-            "کردستان": ["سنندج", "سقز", "مریوان", "بانه", "قروه", "کامیاران", "بیجار", "دیواندره", "دهگلان", "سروآباد"],
-            "کرمان": ["کرمان", "سیرجان", "رفسنجان", "جیرفت", "بم", "زرند", "کهنوج", "شهربابک", "بافت", "بردسیر", "عنبرآباد", "راور", "منوجان", "رودبار جنوب", "قلعه گنج"],
-            "کرمانشاه": ["کرمانشاه", "اسلام‌آباد غرب", "سرپل ذهاب", "سنقر", "هرسین", "کنگاور", "جوانرود", "صحنه", "پاوه", "گیلانغرب", "روانسر", "دالاهو", "ثلاث باباجانی", "قصرشیرین"],
-            "کهگیلویه و بویراحمد": ["بویراحمد (یاسوج)", "کهگیلویه (دهدشت)", "گچساران (دوگنبدان)", "دنا (سی‌سخت)", "بهمئی", "چرام", "باشت", "لنده", "مارگون"],
-            "گلستان": ["گرگان", "گنبد کاووس", "علی‌آباد کتول", "آق‌قلا", "کلاله", "آزادشهر", "رامیان", "کردکوی", "ترکمن", "مینودشت", "گالیکش", "گمیشان", "مراوه‌تپه", "بندر گز"],
-            "گیلان": ["رشت", "بندر انزلی", "لاهیجان", "تالش", "لنگرود", "رودسر", "صومعه‌سرا", "آستانه اشرفیه", "رودبار", "فومن", "آستارا", "رضوانشهر", "شفت", "ماسال", "سیاهکل", "املش"],
-            "لرستان": ["خرم‌آباد", "بروجرد", "دورود", "الیگودرز", "کوهدشت", "دلفان", "ازنا", "پلدختر", "سلسله", "چگنی", "رومشکان"],
-            "مازندران": ["ساری", "بابل", "آمل", "قائم‌شهر", "بهشهر", "چالوس", "نکا", "بابلسر", "تنکابن", "نوشهر", "فریدونکنار", "رامسر", "جویبار", "محمودآباد", "سوادکوه", "گلوگاه", "عباس‌آباد"],
-            "مرکزی": ["اراک", "ساوه", "شازند", "خمین", "محلات", "زرندیه", "دلیجان", "تفرش", "فراهان", "کمیجان", "آشتیان", "خنداب"],
-            "هرمزگان": ["بندرعباس", "میناب", "قشم", "بندرلنگه", "رودان", "بستک", "حاجی‌آباد", "جاسک", "بندر خمیر", "پارسیان", "سیریک", "بشاگرد", "بوموسی"],
-            "همدان": ["همدان", "ملایر", "نهاوند", "اسدآباد", "تویسرکان", "بهار", "کبودرآهنگ", "رزن", "فامنین", "درگزین"],
-            "یزد": ["یزد", "میبد", "اردکان", "مهریز", "ابرکوه", "بافق", "تفت", "خاتم", "اشکذر", "بهاباد", "مروست"]
-        };
-
-        // پر کردن کشویی استان‌ها در زمان لود صفحه
-        const provSelect = document.getElementById("province-select");
-        const citySelect = document.getElementById("city-select");
-
-        for (const prov in iranDivisions) {
-            let opt = document.createElement("option");
-            opt.value = prov;
-            opt.textContent = prov;
-            provSelect.appendChild(opt);
-        }
-
-        // به‌روزرسانی کشویی شهرستان بر اساس استان انتخاب شده
+        // پویایی شهرستان‌ها بر اساس استان انتخاب شده
+        const provincesCities = {{ provinces_json | safe }};
         function updateCities() {
-            const selectedProv = provSelect.value;
-            citySelect.innerHTML = '<option value="">انتخاب شهرستان...</option>';
+            const provinceSelect = document.getElementById('province');
+            const citySelect = document.getElementById('city');
+            const selectedProvince = provinceSelect.value;
             
-            if (selectedProv && iranDivisions[selectedProv]) {
-                iranDivisions[selectedProv].forEach(city => {
-                    let opt = document.createElement("option");
+            citySelect.innerHTML = '';
+            if (provincesCities[selectedProvince]) {
+                provincesCities[selectedProvince].forEach(city => {
+                    const opt = document.createElement('option');
                     opt.value = city;
                     opt.textContent = city;
                     citySelect.appendChild(opt);
                 });
             }
         }
-
-        // مدیریت تغییر تب‌ها برای ساختار اپ موبایلی
-        function switchTab(tabId) {
-            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
-            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-            
-            document.getElementById(tabId).classList.add('active');
-            event.currentTarget.classList.add('active');
-        }
     </script>
+</head>
+<body>
+
+    <header>
+        <h1>شبکه هوشمند توسعه تولید و رفع موانع</h1>
+        <p>مدیریت متمرکز زنجیره تأمین و اتصال امن به بازار</p>
+    </header>
+
+    <div class="container">
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="flash">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <!-- تب ۱: ثبت واحد تولیدی -->
+        {% if active_tab == 'register' %}
+        <div class="card">
+            <h2>📝 ثبت مشخصات کارگاه و واحد تولیدی</h2>
+            <form method="POST" action="/register">
+                <div class="form-group">
+                    <label>نام کارگاه / واحد تولیدی *</label>
+                    <input type="text" name="workshop_name" required placeholder="مثال: کارگاه سفال نقش جهان">
+                </div>
+                <div class="form-group">
+                    <label>نام و نام خانوادگی مدیر کارگاه *</label>
+                    <input type="text" name="manager_name" required placeholder="مثال: علی رضایی">
+                </div>
+                <div class="form-group">
+                    <label>شماره تماس همراه *</label>
+                    <input type="text" name="phone" required placeholder="۰۹۱۲۳۴۵۶۷۸۹">
+                </div>
+                <div class="form-group">
+                    <label>استان محل فعالیت *</label>
+                    <select name="province" id="province" onchange="updateCities()" required>
+                        {% for prov in provinces_cities.keys() %}
+                        <option value="{{ prov }}">{{ prov }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>شهرستان *</label>
+                    <select name="city" id="city" required>
+                        <!-- با جاوااسکریپت پر می‌شود -->
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>رسته و حوزه صنایع دستی *</label>
+                    <select name="craft_type" required>
+                        {% for craft in crafts %}
+                        <option value="{{ craft }}">{{ craft }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>ظرفیت تولید تقریبی (ماهانه) *</label>
+                    <input type="text" name="capacity" required placeholder="مثال: ۲۰۰ قطعه در ماه">
+                </div>
+                <div class="form-group">
+                    <label>نوع واحد *</label>
+                    <select name="unit_type" required>
+                        <option value="مشاغل خانگی">مشاغل خانگی</option>
+                        <option value="کارگاه">کارگاه نیمه‌صنعتی / سنتی</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>آدرس دقیق روستا / شهر</label>
+                    <textarea name="address" rows="2" placeholder="آدرس پستی..."></textarea>
+                </div>
+                <button type="submit">ثبت واحد تولیدی در سامانه</button>
+            </form>
+        </div>
+        <script>window.onload = updateCities;</script>
+        {% endif %}
+
+        <!-- تب ۲: مدیریت کاتالوگ محصولات -->
+        {% if active_tab == 'catalog' %}
+        <div class="card">
+            <h2>📦 ثبت محصول جدید در کاتالوگ سامانه</h2>
+            <form method="POST" action="/add_product">
+                <div class="form-group">
+                    <label>انتخاب واحد تولیدی / کارگاه *</label>
+                    <select name="producer_id" required>
+                        {% for p in producers %}
+                        <option value="{{ p[0] }}">{{ p[1] }} (مدیر: {{ p[2] }} - {{ p[4] }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>نام محصول *</label>
+                    <input type="text" name="product_name" required placeholder="مثال: گلیم پشمی اعلا ۱*۲">
+                </div>
+                <div class="form-group">
+                    <label>قیمت همکاری عمده (تومان) *</label>
+                    <input type="text" name="price" required placeholder="مثال: ۱,۲۰۰,۰۰۰ تومان">
+                </div>
+                <div class="form-group">
+                    <label>حداقل تعداد سفارش (MOQ) *</label>
+                    <input type="text" name="min_order" required placeholder="مثال: ۱۰ عدد">
+                </div>
+                <div class="form-group">
+                    <label>توضیحات و ویژگی‌ها</label>
+                    <textarea name="description" rows="2" placeholder="رنگ‌بندی، جنس نخ، ابعاد..."></textarea>
+                </div>
+                <button type="submit" class="btn-secondary">افزودن محصول به کاتالوگ</button>
+            </form>
+        </div>
+        {% endif %}
+
+        <!-- تب ۳: بازار عمومی (مشتریان و خریداران عمده - مدل سفید/استعلام امن) -->
+        {% if active_tab == 'market' %}
+        <div class="card">
+            <h2>🛒 کاتالوگ بازار و استعلام خرید عمده</h2>
+            <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 14px;">
+                جهت حفظ زنجیره تأمین، ارتباطات مالی و تجاری منحصراً از طریق مدیریت سامانه انجام می‌شود.
+            </p>
+            
+            {% for prod in products %}
+            <div class="item-card">
+                <div class="item-title">{{ prod[1] }}</div>
+                <div style="margin-bottom: 6px;">
+                    <span class="badge">قیمت عمده: {{ prod[2] }}</span>
+                    <span class="badge" style="background:#f3e8ff; color:#7e22ce;">حداقل سفارش: {{ prod[3] }}</span>
+                    <span class="badge-secure">🔒 تأییدشده سامانه</span>
+                </div>
+                <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 8px;">{{ prod[4] or 'توضیحات تکمیلی ثبت نشده است.' }}</p>
+                
+                <!-- فرم استعلام و درخواست خرید (White-Label / RFQ) -->
+                <div class="inquiry-box">
+                    <form method="POST" action="/submit_inquiry">
+                        <input type="hidden" name="product_id" value="{{ prod[0] }}">
+                        <p style="font-size: 0.8rem; font-weight: 700; color: var(--primary-dark); margin-bottom: 6px;">📋 ثبت درخواست استعلام قیمت و خرید عمده</p>
+                        <div style="display: flex; gap: 8px; margin-bottom: 6px;">
+                            <input type="text" name="buyer_name" placeholder="نام خریدار / شرکت" required style="font-size:0.8rem; padding:6px;">
+                            <input type="text" name="buyer_phone" placeholder="شماره تماس" required style="font-size:0.8rem; padding:6px;">
+                        </div>
+                        <div style="display: flex; gap: 8px; margin-bottom: 6px;">
+                            <input type="text" name="quantity" placeholder="تعداد درخواستی" required style="font-size:0.8rem; padding:6px;">
+                            <input type="text" name="destination_province" placeholder="استان مقصد تحویل" required style="font-size:0.8rem; padding:6px;">
+                        </div>
+                        <button type="submit" style="padding: 6px; font-size: 0.8rem;">ارسال درخواست به مدیریت سامانه</button>
+                    </form>
+                </div>
+            </div>
+            {% else %}
+            <p style="text-align: center; color: var(--text-muted); font-size: 0.85rem;">هنوز محصولی در کاتالوگ ثبت نشده است.</p>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- تب ۴: پنل مدیریت سفارش‌ها و استعلام‌ها (اختصاصی مدیر سامانه) -->
+        {% if active_tab == 'admin' %}
+        <div class="card">
+            <h2>⚙️ پنل مدیریت استعلام‌ها و درخواست‌های بازار</h2>
+            <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 14px;">
+                این بخش فقط برای مدیر سامانه قابل مشاهده است تا سفارش‌های عمده تاجران را پیگیری کند.
+            </p>
+            
+            {% for inq in inquiries %}
+            <div class="item-card" style="border-left: 4px solid var(--primary);">
+                <div class="item-title">محصول: {{ inq[8] }} (شناسه کالا: {{ inq[1] }})</div>
+                <p style="font-size: 0.8rem; margin-bottom: 4px;">👤 <b>خریدار:</b> {{ inq[2] }} | 📞 <b>تماس:</b> {{ inq[3] }}</p>
+                <p style="font-size: 0.8rem; margin-bottom: 4px;">📦 <b>تعداد درخواستی:</b> {{ inq[4] }} | 📍 <b>مقصد:</b> {{ inq[5] }}</p>
+                <p style="font-size: 0.8rem; margin-bottom: 4px; color: var(--text-muted);">💬 <b>توضیحات:</b> {{ inq[6] or 'ندارد' }}</p>
+                <span class="badge" style="background: #fef08a; color: #854d0e;">وضعیت: {{ inq[7] }}</span>
+            </div>
+            {% else %}
+            <p style="text-align: center; color: var(--text-muted); font-size: 0.85rem;">هنوز درخواستی ثبت نشده است.</p>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+    </div>
+
+    <!-- نوار پایین صفحه -->
+    <div class="tab-bar">
+        <a href="/?tab=register" class="tab-item {% if active_tab == 'register' %}active{% endif %}">
+            <span class="icon">📝</span>ثبت کارگاه
+        </a>
+        <a href="/?tab=catalog" class="tab-item {% if active_tab == 'catalog' %}active{% endif %}">
+            <span class="icon">📦</span>ثبت محصول
+        </a>
+        <a href="/?tab=market" class="tab-item {% if active_tab == 'market' %}active{% endif %}">
+            <span class="icon">🛒</span>بازار عمومی
+        </a>
+        <a href="/?tab=admin" class="tab-item {% if active_tab == 'admin' %}active{% endif %}">
+            <span class="icon">⚙️</span>مدیریت سفارش‌ها
+        </a>
+    </div>
+
 </body>
 </html>
 """
 
-@app.route('/')
-def home():
-    conn = sqlite3.connect('database.db')
-    cursor = conn.cursor()
-    cursor.execute('SELECT id, workshop_name, owner_name, phone, province, city, workshop_type, craft_category, monthly_capacity, address FROM producers ORDER BY id DESC')
-    producers = cursor.fetchall()
-    conn.close()
-    return render_template_string(HTML_TEMPLATE, producers=producers)
 
-@app.route('/add_producer', methods=['POST'])
-def add_producer():
-    workshop_name = request.form.get('workshop_name')
-    owner_name = request.form.get('owner_name')
-    phone = request.form.get('phone')
-    province = request.form.get('province')
-    city = request.form.get('city')
-    workshop_type = request.form.get('workshop_type')
-    craft_category = request.form.get('craft_category')
-    monthly_capacity = request.form.get('monthly_capacity')
-    address = request.form.get('address')
+@app.route("/")
+def index():
+  active_tab = request.args.get("tab", "register")
+  conn = sqlite3.connect("database.db")
+  cursor = conn.cursor()
 
-    conn = sqlite3.connect('database.db')
-    cursor = conn.cursor()
-    cursor.execute('''
-        INSERT INTO producers (workshop_name, owner_name, phone, province, city, workshop_type, craft_category, monthly_capacity, address)
+  cursor.execute("SELECT * FROM producers")
+  producers = cursor.fetchall()
+
+  # پیوست نام محصول به جدول استعلام‌ها جهت نمایش در پنل مدیر
+  cursor.execute("""
+        SELECT inquiries.*, products.product_name 
+        FROM inquiries 
+        JOIN products ON inquiries.product_id = products.id
+        ORDER BY inquiries.id DESC
+    """)
+  inquiries = cursor.fetchall()
+
+  cursor.execute("SELECT * FROM products ORDER BY id DESC")
+  products = cursor.fetchall()
+  conn.close()
+
+  import json
+
+  return render_template_string(
+      HTML_TEMPLATE,
+      active_tab=active_tab,
+      provinces_cities=PROVINCES_CITIES,
+      provinces_json=json.dumps(PROVINCES_CITIES, ensure_ascii=False),
+      crafts=CRAFTS_CATEGORIES,
+      producers=producers,
+      products=products,
+      inquiries=inquiries,
+  )
+
+
+@app.route("/register", methods=["POST"])
+def register():
+  workshop_name = request.form.get("workshop_name")
+  manager_name = request.form.get("manager_name")
+  phone = request.form.get("phone")
+  province = request.form.get("province")
+  city = request.form.get("city")
+  craft_type = request.form.get("craft_type")
+  capacity = request.form.get("capacity")
+  unit_type = request.form.get("unit_type")
+  address = request.form.get("address")
+
+  conn = sqlite3.connect("database.db")
+  cursor = conn.cursor()
+  cursor.execute(
+      """
+        INSERT INTO producers (workshop_name, manager_name, phone, province, city, craft_type, capacity, unit_type, address)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-    ''', (workshop_name, owner_name, phone, province, city, workshop_type, craft_category, monthly_capacity, address))
-    conn.commit()
-    conn.close()
-    return redirect(url_for('home'))
+    """,
+      (
+          workshop_name,
+          manager_name,
+          phone,
+          province,
+          city,
+          craft_type,
+          capacity,
+          unit_type,
+          address,
+      ),
+  )
+  conn.commit()
+  conn.close()
 
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+  flash("واحد تولیدی با موفقیت ثبت شد.")
+  return redirect(url_for("index", tab="register"))
+
+
+@app.route("/add_product", methods=["POST"])
+def add_product():
+  producer_id = request.form.get("producer_id")
+  product_name = request.form.get("product_name")
+  price = request.form.get("price")
+  min_order = request.form.get("min_order")
+  description = request.form.get("description")
+
+  conn = sqlite3.connect("database.db")
+  cursor = conn.cursor()
+  cursor.execute(
+      """
+        INSERT INTO products (producer_id, product_name, price, min_order, description)
+        VALUES (?, ?, ?, ?, ?)
+    """,
+      (producer_id, product_name, price, min_order, description),
+  )
+  conn.commit()
+  conn.close()
+
+  flash("محصول با موفقیت به کاتالوگ اضافه شد.")
+  return redirect(url_for("index", tab="catalog"))
+
+
+@app.route("/submit_inquiry", methods=["POST"])
+def submit_inquiry():
+  product_id = request.form.get("product_id")
+  buyer_name = request.form.get("buyer_name")
+  buyer_phone = request.form.get("buyer_phone")
+  quantity = request.form.get("quantity")
+  destination_province = request.form.get("destination_province")
+  notes = request.form.get("notes", "")
+
+  conn = sqlite3.connect("database.db")
+  cursor = conn.cursor()
+  cursor.execute(
+      """
+        INSERT INTO inquiries (product_id, buyer_name, buyer_phone, quantity, destination_province, notes)
+        VALUES (?, ?, ?, ?, ?, ?)
+    """,
+      (
+          product_id,
+          buyer_name,
+          buyer_phone,
+          quantity,
+          destination_province,
+          notes,
+      ),
+  )
+  conn.commit()
+  conn.close()
+
+  flash("درخواست خرید عمده شما ثبت شد؛ مدیریت سامانه به زودی با شما تماس می‌گیرد.")
+  return redirect(url_for("index", tab="market"))
+
+
+if __name__ == "__main__":
+  app.run(host="0.0.0.0", port=5000, debug=True)
