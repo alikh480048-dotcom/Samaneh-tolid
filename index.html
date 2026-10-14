@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>شبکه هوشمند توسعه تولید و رفع موانع</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet" type="text/css" />
+    <style> body { font-family: 'Vazirmatn', sans-serif; } </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col">
+
+    <!-- Top Navbar -->
+    <header class="bg-slate-800/80 backdrop-blur border-b border-slate-700 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 to-emerald-500 flex items-center justify-center text-white shadow-lg shadow-emerald-500/20">
+                    <i class="fa-solid fa-network-wired text-lg"></i>
+                </div>
+                <div>
+                    <h1 class="text-base sm:text-lg font-bold text-white leading-tight">شبکه هوشمند توسعه تولید</h1>
+                    <p class="text-[11px] text-emerald-400">سامانه پایش، رفع موانع و بازاریابی صادراتی</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-2">
+                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse ml-1.5"></span>
+                    نسخه آنلاین ۱.۰
+                </span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+
+        <!-- Welcome Banner -->
+        <div class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-slate-800 via-slate-800 to-emerald-950/40 border border-slate-700 p-6 sm:p-8">
+            <div class="max-w-2xl">
+                <span class="text-xs uppercase font-semibold text-emerald-400 tracking-wider">مرکز مدیریت و راهبری هوشمند</span>
+                <h2 class="text-2xl sm:text-3xl font-extrabold text-white mt-1">سامانه توسعه تولید و بازاریابی صنایع‌دستی</h2>
+                <p class="text-slate-300 text-sm sm:text-base mt-2 leading-relaxed">
+                    پلتفرم هوشمند بخش خصوصی برای شناسایی موانع، اتصال کارگاه‌های خانگی و خرد به بازارهای بین‌المللی و زنجیره تأمین یکپارچه.
+                </p>
+            </div>
+        </div>
+
+        <!-- KPI Stats -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div class="bg-slate-800/60 border border-slate-700/70 p-4 rounded-xl">
+                <div class="text-slate-400 text-xs">واحدهای ثبتی فعال</div>
+                <div class="text-2xl font-bold text-white mt-1">۱,۲۴۰+</div>
+                <div class="text-emerald-400 text-xs mt-1">↑ ۱۲٪ رشد ماهانه</div>
+            </div>
+            <div class="bg-slate-800/60 border border-slate-700/70 p-4 rounded-xl">
+                <div class="text-slate-400 text-xs">موانع در حال پیگیری</div>
+                <div class="text-2xl font-bold text-amber-400 mt-1">۸۶ مورد</div>
+                <div class="text-slate-400 text-xs mt-1">۷۴٪ حل موانع موفق</div>
+            </div>
+            <div class="bg-slate-800/60 border border-slate-700/70 p-4 rounded-xl">
+                <div class="text-slate-400 text-xs">صادرات صنایع‌دستی</div>
+                <div class="text-2xl font-bold text-emerald-400 mt-1">$۴۲۰,۰۰۰</div>
+                <div class="text-slate-400 text-xs mt-1">بازار منطقه و خلیج فارس</div>
+            </div>
+            <div class="bg-slate-800/60 border border-slate-700/70 p-4 rounded-xl">
+                <div class="text-slate-400 text-xs">ماژول‌های هوشمند</div>
+                <div class="text-2xl font-bold text-sky-400 mt-1">۲۱ ماژول</div>
+                <div class="text-slate-400 text-xs mt-1">یکپارچه و داده‌محور</div>
+            </div>
+        </div>
+
+        <!-- 21 Modules Section -->
+        <div>
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-cubes-stacked text-amber-400"></i>
+                    ماژول‌های ۲۱ گانه سامانه هوشمند
+                </h3>
+                <span class="text-xs text-slate-400">طراحی مهندسی و تجاری</span>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" id="modulesGrid"></div>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-slate-950 border-t border-slate-800 py-6 text-center text-xs text-slate-500">
+        شبکه هوشمند توسعه تولید و رفع موانع | مدیر سامانه: مهندس علی | طراحی و پیاده‌سازی پلتفرم
+    </footer>
+
+    <script>
+        const modules = [
+            { icon: "fa-triangle-exclamation", color: "text-rose-400", title: "ثبت و پایش موانع تولید", desc: "گزارش مشکلات تأمین مواد اولیه، بیمه و مجوزها" },
+            { icon: "fa-bullseye", color: "text-emerald-400", title: "موتور بازاریابی صنایع‌دستی", desc: "شناسایی تقاضای بازار داخلی و بین‌المللی" },
+            { icon: "fa-globe", color: "text-sky-400", title: "درگاه صادرات خرد و چمدانی", desc: "تسهیل بسته‌بندی، لجستیک و تبادلات ارزی خرد" },
+            { icon: "fa-diagram-project", color: "text-purple-400", title: "بازارگراف استانی", desc: "پایش داده‌های زنجیره ارزش در ۳۱ استان کشور" },
+            { icon: "fa-handshake", color: "text-amber-400", title: "تأمین مالی خرد و سرمایه‌گذاری", desc: "پیوند سرمایه‌گذاران با کارگاه‌های خانگی صنایع‌دستی" },
+            { icon: "fa-certificate", color: "text-teal-400", title: "اصالت‌سنجی و نشان کیفیت", desc: "شناسنامه دیجیتال برای تولیدات اصیل دستی" },
+            { icon: "fa-truck-fast", color: "text-indigo-400", title: "لجستیک و توزیع یکپارچه", desc: "کاهش هزینه ارسال با ادغام بار کارگاه‌های کوچک" },
+            { icon: "fa-scale-balanced", color: "text-blue-400", title: "مشاوره حقوقی و مقررات‌زدایی", desc: "رفع تعارضات ثبتی و حل‌وفصل دعاوی تولید" },
+            { icon: "fa-graduation-cap", color: "text-cyan-400", title: "آکادمی آموزش تجاری‌سازی", desc: "دوره‌های تولید بر اساس سلیقه مصرف‌کننده جهانی" },
+            { icon: "fa-warehouse", color: "text-orange-400", title: "بورس مواد اولیه", desc: "خرید گروهی مواد اولیه با قیمت عمده برای کارگاه‌ها" },
+            { icon: "fa-chart-line", color: "text-green-400", title: "دیده‌بان قیمت‌گذاری و بازار", desc: "تحلیل رقبا و پیشنهاد قیمت عادلانه فروش" },
+            { icon: "fa-boxes-packing", color: "text-pink-400", title: "طراحی و بسته‌بندی صادراتی", desc: "استانداردسازی بسته‌بندی متناسب با استانداردهای گمرکی" },
+            { icon: "fa-users-gear", color: "text-yellow-400", title: "خوشه‌سازی تولیدکنندگان", desc: "هم‌افزایی تولیدکنندگان خانگی در قالب شبکه تولید" },
+            { icon: "fa-robot", color: "text-emerald-300", title: "دستیار هوش مصنوعی تجاری", desc: "پیشنهاد هوشمند فرصت‌های فروش به مدیران واحدها" },
+            { icon: "fa-comments-dollar", color: "text-violet-400", title: "درگاه تسویه و مالیات آسان", desc: "مدیریت تراکنش‌ها و شفاف‌سازی امور مالیاتی خرد" },
+            { icon: "fa-shield-halved", color: "text-red-400", title: "بیمه و حمایت حوادث کار", desc: "تسهیل پوشش‌های بیمه‌ای برای مشاغل خانگی" },
+            { icon: "fa-map-location-dot", color: "text-sky-300", title: "اطلس جغرافیایی تولید", desc: "نقشه پراکندگی کارگاه‌ها بر اساس مزیت نسبی اقلیم" },
+            { icon: "fa-building-columns", color: "text-amber-300", title: "میز ارتباط با دستگاه‌های دولتی", desc: "پیگیری خودکار مکاتبات اداری و پاسخ استعلام‌ها" },
+            { icon: "fa-medal", color: "text-fuchsia-400", title: "رتبه‌بندی اعتباری تولیدکننده", desc: "اعتبارسنجی شفاف جهت دریافت تسهیلات تولید" },
+            { icon: "fa-language", color: "text-teal-300", title: "چندزبانه و کاتالوگ بین‌المللی", desc: "تولید کاتالوگ انگلیسی و عربی برای بازار هدف" },
+            { icon: "fa-sliders", color: "text-slate-300", title: "داشبورد ارزیابی بهره‌وری", desc: "سنجش شاخص‌های رشد و سودآوری کل سامانه" }
+        ];
+
+        const container = document.getElementById('modulesGrid');
+        modules.forEach((mod, idx) => {
+            container.innerHTML += `
+                <div class="bg-slate-800/80 hover:bg-slate-800 border border-slate-700 hover:border-emerald-500/50 p-4 rounded-xl transition duration-200">
+                    <div class="flex items-start gap-3">
+                        <div class="w-10 h-10 rounded-lg bg-slate-900 flex items-center justify-center shrink-0 border border-slate-700/60">
+                            <i class="fa-solid ${mod.icon} ${mod.color}"></i>
+                        </div>
+                        <div>
+                            <div class="text-xs text-slate-400 mb-0.5">ماژول شماره ${idx + 1}</div>
+                            <h4 class="text-sm font-semibold text-white">${mod.title}</h4>
+                            <p class="text-xs text-slate-400 mt-1 leading-relaxed">${mod.desc}</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+    </script>
+</body>
+</html>
