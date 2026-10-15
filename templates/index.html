@@ -3,55 +3,293 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>سامانه هوشمند توسعه تولید و رفع موانع گلوگاهی</title>
+    <title>سامانه هوشمند توسعه تولید و اتصال به بازار</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet">
-    <style>body { font-family: Vazirmatn, sans-serif; }</style>
+    <style>
+        body { font-family: Vazirmatn, sans-serif; }
+    </style>
 </head>
-<body class="bg-slate-900 text-slate-100 min-h-screen">
-    
-    <!-- نوار ناوبری بالا -->
-    <header class="bg-slate-800/80 backdrop-blur border-b border-slate-700 sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col selection:bg-emerald-500 selection:text-white">
+
+    <!-- نوار ناوبری اصلی سامانه -->
+    <header class="bg-slate-900/90 backdrop-blur border-b border-slate-800 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
+            
+            <!-- عنوان سامانه و برند -->
             <div class="flex items-center gap-3">
-                <span class="p-2 bg-emerald-500/10 text-emerald-400 rounded-lg text-xl">⚙️</span>
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-400 flex items-center justify-center shadow-lg shadow-emerald-950/50">
+                    <span class="text-xl">⚙️</span>
+                </div>
                 <div>
-                    <h1 class="text-base md:text-lg font-black text-white">شبکه هوشمند توسعه تولید و رفع موانع</h1>
-                    <p class="text-xs text-slate-400">شناسنامه‌دار کردن کارگاه‌های خرد و اتصال به بازار</p>
+                    <h1 class="text-sm md:text-base font-black text-white tracking-tight">شبکه هوشمند توسعه تولید و اتصال به بازار</h1>
+                    <p class="text-[11px] text-emerald-400 font-medium">شناسنامه‌دار کردن کارگاه‌های خرد و هدایت به زنجیره ارزش تجاری</p>
                 </div>
             </div>
-            <div class="flex items-center gap-3">
-                <a href="{{ url_for('register') }}" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs md:text-sm font-bold px-4 py-2.5 rounded-xl transition flex items-center gap-1.5 shadow-lg shadow-emerald-900/30">
+
+            <!-- دکمه‌ها و وضعیت لاگین -->
+            <div class="flex items-center gap-2 md:gap-3">
+                <a href="{{ url_for('register') }}" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs md:text-sm font-bold px-4 py-2.5 rounded-xl transition flex items-center gap-2 shadow-lg shadow-emerald-900/30">
                     <span>+ ثبت واحد تولیدی جدید</span>
                 </a>
+
                 {% if session.get('user_id') %}
-                    <a href="{{ url_for('logout') }}" class="text-xs bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 px-3 py-2 rounded-lg border border-rose-500/30">خروج مدیر</a>
+                    <div class="flex items-center gap-2 bg-slate-800 border border-emerald-500/30 px-3 py-1.5 rounded-xl">
+                        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                        <span class="text-xs text-emerald-300 font-bold hidden md:inline">مدیر سامانه (فعال)</span>
+                        <a href="{{ url_for('logout') }}" class="text-xs bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 px-2.5 py-1 rounded-lg border border-rose-500/30 transition">خروج</a>
+                    </div>
                 {% else %}
-                    <a href="{{ url_for('login') }}" class="text-xs bg-slate-700 hover:bg-slate-600 text-slate-300 px-3 py-2 rounded-lg">ورود مدیریت</a>
+                    <a href="{{ url_for('login') }}" class="text-xs md:text-sm bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 px-3.5 py-2.5 rounded-xl transition flex items-center gap-1.5">
+                        <span>👤 ورود مدیر سامانه</span>
+                    </a>
                 {% endif %}
             </div>
         </div>
     </header>
 
-    <main class="max-w-7xl mx-auto px-4 py-8">
-        <!-- پیام‌های فلش -->
+    <!-- پیام‌های سیستم -->
+    <div class="max-w-7xl mx-auto px-4 mt-4 w-full">
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 {% for category, message in messages %}
-                    <div class="mb-6 p-4 rounded-xl text-sm font-semibold {% if category == 'success' %}bg-emerald-500/15 text-emerald-300 border border-emerald-500/30{% else %}bg-sky-500/15 text-sky-300 border border-sky-500/30{% endif %}">
+                    <div class="p-3.5 rounded-xl text-xs md:text-sm font-medium {% if category == 'success' %}bg-emerald-500/15 text-emerald-300 border border-emerald-500/30{% elif category == 'danger' %}bg-rose-500/15 text-rose-300 border border-rose-500/30{% else %}bg-sky-500/15 text-sky-300 border border-sky-500/30{% endif %}">
                         {{ message }}
                     </div>
                 {% endfor %}
             {% endif %}
         {% endwith %}
+    </div>
 
-        <!-- کارت‌های آمار و شاخص‌های کلیدی -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
-            <div class="bg-slate-800 p-5 rounded-2xl border border-slate-700">
-                <p class="text-xs text-slate-400 mb-1">کل واحدهای تولیدی ثبتی</p>
-                <div class="flex justify-between items-end">
-                    <span class="text-3xl font-black text-white">{{ total_workshops }}</span>
-                    <span class="text-xs text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded">پایش کشوری</span>
+    <!-- بنر مدیریتی اختصاصی (تنها در زمان لاگین بودن مدیر نمایش داده می‌شود) -->
+    {% if session.get('user_id') %}
+    <section class="max-w-7xl mx-auto px-4 mt-6 w-full">
+        <div class="bg-gradient-to-r from-slate-900 via-slate-850 to-slate-900 border-2 border-emerald-500/40 rounded-2xl p-5 shadow-2xl relative overflow-hidden">
+            <div class="absolute -left-10 -bottom-10 w-40 h-40 bg-emerald-500/10 rounded-full blur-2xl pointer-events-none"></div>
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                    <div class="flex items-center gap-2 text-emerald-400 text-xs font-bold uppercase tracking-wider mb-1">
+                        <span class="inline-block w-2.5 h-2.5 bg-emerald-500 rounded-sm"></span>
+                        پنل راهبری اختصاصی مدیریت
+                    </div>
+                    <h2 class="text-lg font-black text-white">داشبورد نظارت و مدیریت واحدهای تولیدی</h2>
+                    <p class="text-xs text-slate-400 mt-1">شما به تمامی اطلاعات تماس کامل، مدیریت رکوردها و پایش کشوری دسترسی دارید.</p>
+                </div>
+                <div class="flex flex-wrap items-center gap-2">
+                    <button onclick="window.print()" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 px-3 py-2 rounded-lg transition">🖨️ چاپ گزارش</button>
+                    <a href="{{ url_for('register') }}" class="text-xs bg-emerald-600 hover:bg-emerald-500 text-white px-3.5 py-2 rounded-lg font-bold transition">ثبت واحد جدید</a>
                 </div>
             </div>
-            <div class="bg-slate-800 p-5 rounded-2xl border border-slate-700">
+        </div>
+    </section>
+    {% endif %}
+
+    <!-- بخش معرفی و اهداف سامانه -->
+    <section class="max-w-7xl mx-auto px-4 py-8 w-full">
+        <div class="bg-gradient-to-b from-slate-900 to-slate-900/60 border border-slate-800 rounded-3xl p-6 md:p-10 text-center relative overflow-hidden">
+            <div class="max-w-3xl mx-auto relative z-10">
+                <span class="inline-block bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs font-bold px-3 py-1 rounded-full mb-4">
+                    سکوی ملی تجمیع، شناسنامه‌دار کردن و اتصال کارگاه‌های خرد به بازار
+                </span>
+                <h2 class="text-2xl md:text-4xl font-black text-white leading-tight">
+                    توسعه پایدار تولیدات خانگی و اتصال مستقیم به بازارهای هدف
+                </h2>
+                <p class="text-slate-400 text-xs md:text-sm mt-3 leading-relaxed">
+                    این شبکه با هدف ساماندهی تولیدکنندگان خرد، ثبت ظرفیت واقعی محصولات، بارگذاری تصاویر باکیفیت و حذف واسطه‌های غیرمولد، بستر مناسبی برای فروش عمده داخلی و بازارهای صادراتی فراهم کرده است.
+                </p>
+                <div class="mt-6 flex flex-wrap justify-center gap-3">
+                    <a href="{{ url_for('register') }}" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm px-6 py-3 rounded-xl shadow-lg shadow-emerald-900/40 transition">
+                        ثبت شناسنامه واحد تولیدی شما
+                    </a>
+                    <a href="#workshops-table" class="bg-slate-800 hover:bg-slate-700 text-slate-200 text-sm px-5 py-3 rounded-xl border border-slate-700 transition">
+                        مشاهده ویترین واحدهای ثبت‌شده
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ۳ ماژول کلیدی عملیاتی (بدون عارضه‌یابی) -->
+    <section class="max-w-7xl mx-auto px-4 py-4 w-full">
+        <div class="mb-4">
+            <h3 class="text-base font-black text-white flex items-center gap-2">
+                <span class="text-emerald-400">▣</span> ارکان و خدمات سامانه
+            </h3>
+            <p class="text-xs text-slate-400">زنجیره ارزش از تولیدکننده تا مصرف‌کننده نهایی</p>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <!-- ماژول ۱ -->
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 hover:border-emerald-500/50 transition">
+                <div class="w-10 h-10 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center text-lg mb-3">📋</div>
+                <h4 class="font-bold text-sm text-white mb-1.5">۱. شناسنامه دیجیتال تولید</h4>
+                <p class="text-xs text-slate-400 leading-relaxed">ثبت اطلاعات دقیق استان، شهرستان، رسته صنعتی، ظرفیت ماهانه، قیمت و تصاویر چندگانه محصولات.</p>
+            </div>
+
+            <!-- ماژول ۲ -->
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 hover:border-sky-500/50 transition">
+                <div class="w-10 h-10 rounded-lg bg-sky-500/10 text-sky-400 flex items-center justify-center text-lg mb-3">🤝</div>
+                <h4 class="font-bold text-sm text-white mb-1.5">۲. اتصال به بازار و عمده‌فروشان</h4>
+                <p class="text-xs text-slate-400 leading-relaxed">معرفی محصولات به بازارهای تجاری، ایجاد ارتباط مستقیم با خریداران عمده و حذف واسطه‌ها.</p>
+            </div>
+
+            <!-- ماژول ۳ -->
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 hover:border-indigo-500/50 transition">
+                <div class="w-10 h-10 rounded-lg bg-indigo-500/10 text-indigo-400 flex items-center justify-center text-lg mb-3">🌐</div>
+                <h4 class="font-bold text-sm text-white mb-1.5">۳. توسعه بازار و صادرات</h4>
+                <p class="text-xs text-slate-400 leading-relaxed">آماده‌سازی واحدهای برتر برای بسته‌بندی استاندارد، صادرات منطقه‌ای و حضور در نمایشگاه‌های تخصصی.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- کارت‌های آمار کلیدی (KPIs) -->
+    <section class="max-w-7xl mx-auto px-4 py-4 w-full">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="bg-slate-900 p-5 rounded-2xl border border-slate-800 flex items-center justify-between">
+                <div>
+                    <p class="text-xs text-slate-400 mb-1">واحدهای تولیدی ثبت‌شده</p>
+                    <span class="text-3xl font-black text-white">{{ total_workshops }}</span>
+                </div>
+                <span class="text-xs text-emerald-400 bg-emerald-500/10 px-3 py-1.5 rounded-xl font-bold">فعال</span>
+            </div>
+
+            <div class="bg-slate-900 p-5 rounded-2xl border border-slate-800 flex items-center justify-between">
+                <div>
+                    <p class="text-xs text-slate-400 mb-1">رسته‌های صنعتی تحت پوشش</p>
+                    <span class="text-3xl font-black text-sky-400">{{ total_industries }}</span>
+                </div>
+                <span class="text-xs text-sky-400 bg-sky-500/10 px-3 py-1.5 rounded-xl font-bold">شاخه</span>
+            </div>
+
+            <div class="bg-slate-900 p-5 rounded-2xl border border-slate-800 flex items-center justify-between">
+                <div>
+                    <p class="text-xs text-slate-400 mb-1">استان‌های مشارکت‌کننده</p>
+                    <span class="text-3xl font-black text-amber-400">کشوری</span>
+                </div>
+                <span class="text-xs text-amber-400 bg-amber-500/10 px-3 py-1.5 rounded-xl font-bold">۳۱ استان</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- جدول پایگاه داده کارگاه‌ها و محصولات -->
+    <section id="workshops-table" class="max-w-7xl mx-auto px-4 py-6 w-full flex-1">
+        <div class="bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden shadow-2xl">
+            
+            <div class="p-5 border-b border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-3">
+                <div>
+                    <h3 class="text-base font-bold text-white flex items-center gap-2">
+                        <span>فهرست ویترین واحدهای تولیدی و محصولات</span>
+                        {% if session.get('user_id') %}
+                            <span class="bg-emerald-500/20 text-emerald-400 text-[10px] px-2 py-0.5 rounded-full border border-emerald-500/30">دسترسی مدیریتی</span>
+                        {% endif %}
+                    </h3>
+                    <p class="text-xs text-slate-400 mt-0.5">مشخصات فنی، ظرفیت تولید ماهانه، قیمت و گالری تصاویر محصولات ثبت‌شده</p>
+                </div>
+                
+                <!-- فیلتر سریع متنی -->
+                <input type="text" id="searchInput" onkeyup="filterTable()" placeholder="جستجو در نام واحد، شهر یا رسته..." class="bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200 outline-none focus:border-emerald-500 w-full md:w-64">
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-right text-xs md:text-sm" id="mainTable">
+                    <thead class="bg-slate-950/80 text-slate-400 border-b border-slate-800 font-bold">
+                        <tr>
+                            <th class="py-3 px-4">کد</th>
+                            <th class="py-3 px-4">واحد تولیدی / مسئول</th>
+                            <th class="py-3 px-4">رسته صنایع</th>
+                            <th class="py-3 px-4">استان / شهرستان</th>
+                            <th class="py-3 px-4">ظرفیت ماهانه</th>
+                            <th class="py-3 px-4">قیمت واحد</th>
+                            <th class="py-3 px-4">تصاویر محصول</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800/80 text-slate-300">
+                        {% for w in workshops %}
+                        <tr class="hover:bg-slate-850/60 transition">
+                            <td class="py-3.5 px-4 font-mono text-slate-500">#{{ w.id }}</td>
+                            
+                            <td class="py-3.5 px-4">
+                                <div class="font-bold text-white text-sm">{{ w.title or 'ثبت پیشین' }}</div>
+                                <div class="text-xs text-slate-400 mt-0.5 flex items-center gap-1">
+                                    <span>{{ w.owner_name or '-' }}</span>
+                                    <span>•</span>
+                                    <span class="font-mono text-slate-400">
+                                        {% if session.get('user_id') %}
+                                            {{ w.phone or '-' }}
+                                        {% else %}
+                                            {{ (w.phone[:4] + '****' + w.phone[-3:]) if w.phone and w.phone|length >= 7 else (w.phone or '-') }}
+                                        {% endif %}
+                                    </span>
+                                </div>
+                            </td>
+
+                            <td class="py-3.5 px-4">
+                                <span class="bg-slate-800 text-sky-300 text-xs px-2.5 py-1 rounded-md border border-slate-700">
+                                    {{ w.industry_group or w.field or 'سایر دست‌سازه‌ها' }}
+                                </span>
+                            </td>
+
+                            <td class="py-3.5 px-4 text-xs">
+                                <div class="font-semibold text-slate-200">{{ w.province or '-' }}</div>
+                                {% if w.county %}
+                                    <div class="text-slate-400 text-[11px]">{{ w.county }}</div>
+                                {% endif %}
+                            </td>
+
+                            <td class="py-3.5 px-4 text-xs font-mono text-emerald-400 font-bold">
+                                {% if w.capacity is not none and w.capacity != '' %}{{ w.capacity }}{% else %}-{% endif %}
+                                <span class="text-slate-400 font-normal text-[11px]">{{ w.unit or '' }}</span>
+                            </td>
+
+                            <td class="py-3.5 px-4 text-xs font-mono text-slate-200">
+                                {% if w.price %}
+                                    {{ "{:,.0f}".format(w.price) }} <span class="text-[11px] text-slate-400">{{ w.price_currency or 'تومان' }}</span>
+                                {% else %}
+                                    <span class="text-slate-500">-</span>
+                                {% endif %}
+                            </td>
+
+                            <td class="py-3.5 px-4">
+                                {% if w.images and w.images|length > 0 %}
+                                    <div class="flex items-center gap-1.5 flex-wrap">
+                                        {% for img_path in w.images %}
+                                            <a href="{{ url_for('static', filename=img_path) }}" target="_blank" class="block">
+                                                <img src="{{ url_for('static', filename=img_path) }}" class="w-10 h-10 object-cover rounded-lg border border-slate-700 hover:border-emerald-500 transition shadow" alt="عکس محصول">
+                                            </a>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    <span class="text-slate-500 text-xs">-</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="7" class="text-center py-10 text-slate-500">تاکنون هیچ کارگاهی در سامانه ثبت نشده است.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <!-- فوتر سامانه -->
+    <footer class="bg-slate-900 border-t border-slate-800 py-6 mt-12 text-center text-xs text-slate-500">
+        <p>شبکه هوشمند توسعه تولید و اتصال به بازار • طراحی شده ویژه توانمندسازی کارگاه‌های خرد و زنجیره ارزش</p>
+    </footer>
+
+    <!-- اسکریپت فیلتر آنی جدول -->
+    <script>
+        function filterTable() {
+            const input = document.getElementById("searchInput").value.toLowerCase();
+            const rows = document.querySelectorAll("#mainTable tbody tr");
+
+            rows.forEach(row => {
+                const text = row.innerText.toLowerCase();
+                row.style.display = text.includes(input) ? "" : "none";
+            });
+        }
+    </script>
+</body>
+</html>
