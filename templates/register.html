@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ثبت کارگاه تولیدی | شبکه هوشمند تولید</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.rtl.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css">
+    <style>
+        body { font-family: 'Vazirmatn', sans-serif; background-color: #f8f9fa; }
+    </style>
+</head>
+<body class="py-5">
+    <div class="container" style="max-width: 750px;">
+        <div class="card shadow-sm border-0 rounded-4">
+            <div class="card-header bg-primary text-white py-3">
+                <h5 class="fw-bold mb-0"><i class="fa-solid fa-industry me-2"></i>فرم ثبت مشخصات واحد تولیدی و طرح مانع</h5>
+            </div>
+            <div class="card-body p-4">
+                <form action="/register-workshop" method="POST">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">نام واحد تولیدی / کارگاه:</label>
+                            <input type="text" class="form-control" name="name" required placeholder="مثال: کارگاه قالی‌بافی ترنج">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">نام مسئول کارگاه:</label>
+                            <input type="text" class="form-control" name="owner" required placeholder="مثال: علیرضا حسینی">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">رسته صنایع‌دستی:</label>
+                            <select class="form-select" name="field">
+                                <option value="گلیم و فرش دست‌باف">گلیم و فرش دست‌باف</option>
+                                <option value="سفال و سرامیک">سفال و سرامیک</option>
+                                <option value="زیورآلات سنتی">زیورآلات سنتی</option>
+                                <option value="صنایع چرم">صنایع چرم</option>
+                                <option value="سایر دست‌سازه‌ها">سایر دست‌سازه‌ها</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">استان و شهر:</label>
+                            <input type="text" class="form-control" name="province" placeholder="مثال: اصفهان - نجف‌آباد">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">شماره تماس مستقیم:</label>
+                            <input type="text" class="form-control" name="phone" placeholder="0912...">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">ظرفیت ماهانه:</label>
+                            <input type="text" class="form-control" name="capacity" placeholder="مثال: ۱۰۰ عدد در ماه">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-bold text-danger">مانع یا گلوگاه اصلی تولید:</label>
+                            <textarea class="form-control" name="issue" rows="3" placeholder="توضیح دهید در مواد اولیه، فروش، بسته‌بندی یا نقدینگی چه مشکلی دارید..."></textarea>
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-between mt-4">
+                        <a href="/" class="btn btn-light">بازگشت</a>
+                        <button type="submit" class="btn btn-primary px-4 fw-bold">ثبت نهایی اطلاعات کارگاه</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
