@@ -1,67 +1,123 @@
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <title>ثبت واحد در شبکه ملی تولید | شبکه هوشمند توسعه تولید و رفع موانع</title>
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ثبت واحد تولیدی و چک‌لیست موانع</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet">
-
     <script src="https://unpkg.com/lucide@latest"></script>
+    <style>body { font-family: Vazirmatn, sans-serif; }</style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen py-8 px-4 pb-24">
+    <div class="max-w-2xl mx-auto bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl space-y-6">
+        
+        <div class="text-center space-y-2 border-b border-slate-800 pb-5">
+            <h2 class="text-xl font-bold text-white flex items-center justify-center gap-2">
+                <i data-lucide="clipboard-check" class="text-emerald-400"></i>
+                ثبت اطلاعات و شناسنامه واحد تولیدی
+            </h2>
+            <p class="text-xs text-slate-400">اطلاعات کارگاه یا کارخانه خود را جهت ورود به زنجیره تأمین و صادرات ثبت کنید.</p>
+        </div>
 
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Vazirmatn', 'sans-serif'],
-                    },
-                    colors: {
-                        zincx: {
-                            950: '#09090b',
-                            900: '#111118',
-                            850: '#16161f',
-                            800: '#1c1c26',
-                            700: '#27272f',
-                            600: '#3a3a46',
-                        }
-                    },
-                    boxShadow: {
-                        soft: '0 10px 35px rgba(0,0,0,.35)',
-                        glass: '0 8px 30px rgba(0,0,0,.28)',
-                    }
-                }
-            }
-        }
-    </script>
+        <form action="/register" method="POST" enctype="multipart/form-data" class="space-y-5">
+            
+            <!-- نام واحد و مالک -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 mb-1.5">نام واحد تولیدی / کارخانه *</label>
+                    <input type="text" name="title" required placeholder="مثال: قطعه‌سازی پیشگام یا کارگاه سفالگری" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm focus:border-emerald-500 outline-none text-white">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 mb-1.5">نام مدیر / مسئول واحد *</label>
+                    <input type="text" name="owner_name" required placeholder="نام و نام‌خانوادگی" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm focus:border-emerald-500 outline-none text-white">
+                </div>
+            </div>
 
-    <style>
-        html {
-            scroll-behavior: smooth;
-        }
+            <!-- تماس و رسته -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 mb-1.5">شماره تماس (محفوظ در دبیرخانه) *</label>
+                    <input type="tel" name="phone" required placeholder="۰۹۱۲۳۴۵۶۷۸۹" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm focus:border-emerald-500 outline-none text-white text-left font-mono">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 mb-1.5">رسته و حوزه تولید *</label>
+                    <select name="industry_group" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm focus:border-emerald-500 outline-none text-white">
+                        {% for group in industry_groups %}
+                        <option value="{{ group }}">{{ group }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
 
-        body {
-            font-family: Vazirmatn, sans-serif;
-            background:
-                radial-gradient(circle at top right, rgba(16,185,129,.10), transparent 22%),
-                radial-gradient(circle at top left, rgba(59,130,246,.10), transparent 18%),
-                linear-gradient(180deg, #0a0a0f 0%, #111118 45%, #0b0b10 100%);
-        }
+            <!-- استان و شهرستان -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 mb-1.5">استان *</label>
+                    <input type="text" name="province" required placeholder="مثال: تهران، اصفهان، فارس..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm focus:border-emerald-500 outline-none text-white">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 mb-1.5">شهرستان / شهرک صنعتی</label>
+                    <input type="text" name="county" placeholder="مثال: شهرک صنعتی شمس‌آباد" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm focus:border-emerald-500 outline-none text-white">
+                </div>
+            </div>
 
-        .glass {
-            background: rgba(24, 24, 33, 0.72);
-            backdrop-filter: blur(14px);
-            -webkit-backdrop-filter: blur(14px);
-            border: 1px solid rgba(255,255,255,.08);
-        }
+            <!-- ظرفیت و واحد سنجش -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 mb-1.5">ظرفیت ماهانه اسمی (عدد)</label>
+                    <input type="number" name="capacity" placeholder="مثال: ۵۰۰۰" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm focus:border-emerald-500 outline-none text-white">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 mb-1.5">واحد سنجش ظرفیت</label>
+                    <input type="text" name="unit" placeholder="مثال: عدد، تن، تخته، مترمربع" value="عدد در ماه" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm focus:border-emerald-500 outline-none text-white">
+                </div>
+            </div>
 
-        .field {
-            width: 100%;
-            background: rgba(10, 10, 15, 0.72);
-            border: 1px solid rgba(255,255,255,.09);
-            color: #f3f4f6;
-            border-radius: 1rem;
-            padding: .9rem 1rem;
-            font-size: .95rem;
-            outline: none;
+            <!-- چک‌لیست موانع و گلوگاه‌های تولید -->
+            <div class="bg-slate-950/70 border border-slate-800 rounded-2xl p-4 space-y-3">
+                <label class="block text-xs font-bold text-amber-400 flex items-center gap-1.5">
+                    <i data-lucide="alert-triangle" class="w-4 h-4"></i>
+                    چک‌لیست موانع و نیازهای اولویت‌دار واحد:
+                </label>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs text-slate-300">
+                    <label class="flex items-center gap-2 p-2 bg-slate-900 rounded-lg cursor-pointer hover:bg-slate-850">
+                        <input type="checkbox" name="barriers" value="تأمین مواد اولیه با نرخ مصوب" class="rounded text-emerald-500 focus:ring-0">
+                        <span>تأمین مواد اولیه با نرخ مصوب</span>
+                    </label>
+                    <label class="flex items-center gap-2 p-2 bg-slate-900 rounded-lg cursor-pointer hover:bg-slate-850">
+                        <input type="checkbox" name="barriers" value="سرمایه در گردش و تسهیلات بانکی" class="rounded text-emerald-500 focus:ring-0">
+                        <span>سرمایه در گردش و تسهیلات بانکی</span>
+                    </label>
+                    <label class="flex items-center gap-2 p-2 bg-slate-900 rounded-lg cursor-pointer hover:bg-slate-850">
+                        <input type="checkbox" name="barriers" value="بازاریابی، فروش و اتصال به صادرات" class="rounded text-emerald-500 focus:ring-0">
+                        <span>بازاریابی، فروش و اتصال به صادرات</span>
+                    </label>
+                    <label class="flex items-center gap-2 p-2 bg-slate-900 rounded-lg cursor-pointer hover:bg-slate-850">
+                        <input type="checkbox" name="barriers" value="بسته‌بندی استاندارد و گمرک" class="rounded text-emerald-500 focus:ring-0">
+                        <span>بسته‌بندی استاندارد و گمرک</span>
+                    </label>
+                </div>
+                <input type="text" name="other_barrier" placeholder="سایر موانع اختصاصی اگر وجود دارد بنویسید..." class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-xs focus:border-amber-400 outline-none text-white mt-2">
+            </div>
+
+            <!-- آپلود تصاویر محصولات -->
+            <div>
+                <label class="block text-xs font-bold text-slate-300 mb-1.5 flex items-center gap-1.5">
+                    <i data-lucide="images" class="w-4 h-4 text-emerald-400"></i>
+                    تصاویر محصولات و توانمندی واحد (امکان انتخاب همزمان چند عکس)
+                </label>
+                <input type="file" name="product_images" multiple accept="image/*" class="w-full text-xs text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-emerald-600 file:text-white hover:file:bg-emerald-500 cursor-pointer bg-slate-950 border border-slate-800 rounded-xl p-2">
+            </div>
+
+            <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-emerald-950 transition flex items-center justify-center gap-2 text-sm">
+                <i data-lucide="check-circle-2" class="w-5 h-5"></i>
+                ثبت نهایی و ورود به شبکه تولید
+            </button>
+            <a href="/" class="block text-center text-xs text-slate-400 hover:text-white mt-2">انصراف و بازگشت</a>
+        </form>
+    </div>
+
+    <script>lucide.createIcons();</script>
+</body>
+</html>
