@@ -7,97 +7,38 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.rtl.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css">
-    
     <style>
-        body {
-            font-family: 'Vazirmatn', sans-serif;
-            background-color: #f8f9fa;
-            color: #2b2d42;
-        }
-        .hero-banner {
-            background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
-            color: white;
-            padding: 70px 0 50px 0;
-            border-bottom: 4px solid #f39c12;
-        }
-        .stat-card {
-            background: #ffffff;
-            border-radius: 12px;
-            padding: 24px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.04);
-            border-right: 6px solid #2c5364;
-            transition: transform 0.2s;
-        }
-        .stat-card:hover {
-            transform: translateY(-3px);
-        }
-        .action-card {
-            border: 1px solid #e9ecef;
-            border-radius: 14px;
-            transition: all 0.3s ease;
-            background: #fff;
-            height: 100%;
-        }
-        .action-card:hover {
-            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
-            border-color: #f39c12;
-            transform: translateY(-4px);
-        }
+        body { font-family: 'Vazirmatn', sans-serif; background-color: #f8f9fa; color: #2b2d42; }
+        .hero-banner { background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%); color: white; padding: 60px 0; border-bottom: 4px solid #f39c12; }
+        .stat-card { background: #fff; border-radius: 12px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.04); border-right: 5px solid #2c5364; }
         .badge-pending { background-color: #dc3545; color: white; }
         .badge-in_progress { background-color: #fd7e14; color: white; }
         .badge-resolved { background-color: #198754; color: white; }
-        .product-box {
-            border-radius: 12px;
-            overflow: hidden;
-            background: #ffffff;
-            border: 1px solid #eef0f2;
-            transition: 0.3s;
-        }
-        .product-box:hover {
-            box-shadow: 0 8px 20px rgba(0,0,0,0.07);
-        }
     </style>
 </head>
 <body>
 
-    <!-- نوار ناوبری اصلی سامانه -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top shadow-sm py-3">
         <div class="container">
-            <a class="navbar-brand fw-bold d-flex align-items-center" href="/">
-                <i class="fa-solid fa-network-wired text-warning fs-4 me-2"></i>
-                <span>شبکه هوشمند توسعه تولید و رفع موانع</span>
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navContent">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navContent">
-                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                    <li class="nav-item"><a class="nav-link active" href="/"><i class="fa-solid fa-house me-1"></i> صفحه اصلی</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#registerModal"><i class="fa-solid fa-industry me-1"></i> ثبت کارگاه</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#workshopsSection"><i class="fa-solid fa-list-check me-1"></i> پایش واحدها و موانع</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#productsSection"><i class="fa-solid fa-store me-1"></i> ویترین بازار و صادرات</a></li>
-                </ul>
-                <div class="d-flex align-items-center gap-2">
-                    {% if is_admin %}
-                        <span class="badge bg-success p-2"><i class="fa-solid fa-user-shield me-1"></i> مدیر سامانه فعال</span>
-                        <a href="/logout" class="btn btn-outline-danger btn-sm px-3">خروج</a>
-                    {% else %}
-                        <button class="btn btn-warning btn-sm px-3 fw-bold" data-bs-toggle="modal" data-bs-target="#loginModal">
-                            <i class="fa-solid fa-arrow-right-to-bracket me-1"></i> ورود مدیر
-                        </button>
-                    {% endif %}
-                </div>
+            <a class="navbar-brand fw-bold" href="/"><i class="fa-solid fa-network-wired text-warning me-2"></i>شبکه هوشمند توسعه تولید</a>
+            <div class="d-flex align-items-center gap-2">
+                <a href="/register-workshop" class="btn btn-outline-light btn-sm"><i class="fa-solid fa-plus me-1"></i>ثبت کارگاه</a>
+                {% if is_admin %}
+                    <span class="badge bg-success p-2">مدیر فعال</span>
+                    <a href="/logout" class="btn btn-danger btn-sm">خروج</a>
+                {% else %}
+                    <a href="/login" class="btn btn-warning btn-sm fw-bold"><i class="fa-solid fa-arrow-right-to-bracket me-1"></i>ورود مدیر</a>
+                {% endif %}
             </div>
         </div>
     </nav>
 
-    <!-- پیام‌های سیستم (Flash Messages) -->
     <div class="container mt-3">
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 {% for category, message in messages %}
-                    <div class="alert alert-{{ category }} alert-dismissible fade show shadow-sm" role="alert">
-                        <i class="fa-solid fa-circle-info me-2"></i>{{ message }}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                        {{ message }}
                         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                     </div>
                 {% endfor %}
@@ -105,131 +46,79 @@
         {% endwith %}
     </div>
 
-    <!-- سربرگ جامع سامانه -->
     <header class="hero-banner text-center">
         <div class="container">
             <h1 class="fw-bold mb-3">سامانه هوشمند توسعه تولید و رفع موانع گلوگاهی</h1>
-            <p class="lead mb-4 mx-auto text-light opacity-90" style="max-width: 820px;">
-                زیرساخت اختصاصی پایش، شناسنامه‌دار کردن و اتصال کارگاه‌های خرد و خانگی صنایع‌دستی به بازارهای مصرف ملی و کریدورهای صادراتی همراه با عارضه‌یابی هوشمند
+            <p class="lead mb-4 mx-auto text-light opacity-90" style="max-width: 800px;">
+                پایش، شناسنامه‌دار کردن و اتصال کارگاه‌های خرد به بازار و رفع موانع تولید
             </p>
-            <div class="d-flex justify-content-center gap-3 flex-wrap">
-                <button class="btn btn-warning btn-lg fw-bold px-4 shadow-sm" data-bs-toggle="modal" data-bs-target="#registerModal">
-                    <i class="fa-solid fa-plus-circle me-2"></i> ثبت فوری مشخصات کارگاه
-                </button>
-                <a href="#workshopsSection" class="btn btn-outline-light btn-lg px-4">
-                    <i class="fa-solid fa-chart-line me-2"></i> مشاهده پایش موانع و کارگاه‌ها
-                </a>
+            <div class="d-flex justify-content-center gap-3">
+                <a href="/register-workshop" class="btn btn-warning btn-lg fw-bold px-4 shadow-sm"><i class="fa-solid fa-plus-circle me-2"></i>ثبت مشخصات کارگاه</a>
+                <a href="#workshopsSection" class="btn btn-outline-light btn-lg px-4"><i class="fa-solid fa-list-check me-2"></i>مشاهده کارگاه‌ها</a>
             </div>
         </div>
     </header>
 
     <main class="container my-5">
-        <!-- شاخص‌های کلیدی عملکرد شبکه (KPIs) -->
         <div class="row g-4 mb-5">
             <div class="col-md-4">
                 <div class="stat-card">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <div class="text-muted small fw-bold">کل کارگاه‌های ثبتی</div>
-                            <h2 class="fw-bold mt-2 mb-0">{{ total_workshops }}</h2>
-                        </div>
-                        <i class="fa-solid fa-industry fa-2x text-primary opacity-50"></i>
-                    </div>
+                    <div class="text-muted small fw-bold">کل کارگاه‌های ثبتی</div>
+                    <h2 class="fw-bold mt-2 mb-0">{{ total_workshops }}</h2>
                 </div>
             </div>
             <div class="col-md-4">
                 <div class="stat-card" style="border-right-color: #dc3545;">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <div class="text-muted small fw-bold">موانع تولید در حال پیگیری</div>
-                            <h2 class="fw-bold mt-2 mb-0 text-danger">{{ active_issues }}</h2>
-                        </div>
-                        <i class="fa-solid fa-triangle-exclamation fa-2x text-danger opacity-50"></i>
-                    </div>
+                    <div class="text-muted small fw-bold">موانع تولید در حال پیگیری</div>
+                    <h2 class="fw-bold mt-2 mb-0 text-danger">{{ active_issues }}</h2>
                 </div>
             </div>
             <div class="col-md-4">
                 <div class="stat-card" style="border-right-color: #198754;">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <div class="text-muted small fw-bold">رسته‌های فعال صنایع‌دستی</div>
-                            <h2 class="fw-bold mt-2 mb-0 text-success">{{ active_categories }}</h2>
-                        </div>
-                        <i class="fa-solid fa-shapes fa-2x text-success opacity-50"></i>
-                    </div>
+                    <div class="text-muted small fw-bold">رسته‌های فعال</div>
+                    <h2 class="fw-bold mt-2 mb-0 text-success">{{ active_categories }}</h2>
                 </div>
             </div>
         </div>
 
-        <!-- سه ماژول عملیاتی سامانه -->
-        <div class="row g-4 mb-5">
-            <div class="col-md-4">
-                <div class="action-card p-4 text-center d-flex flex-column">
-                    <div class="mb-3 text-primary"><i class="fa-solid fa-address-card fa-3x"></i></div>
-                    <h5 class="fw-bold">۱. شناسنامه دیجیتال کارگاه</h5>
-                    <p class="text-muted small flex-grow-1">ثبت اطلاعات تخصصی تولیدکننده، ماشین‌آلات، مهارت‌ها و ظرفیت ماهانه جهت استانداردسازی.</p>
-                    <button class="btn btn-outline-primary w-100 mt-3" data-bs-toggle="modal" data-bs-target="#registerModal">ورود به فرم ثبت</button>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="action-card p-4 text-center d-flex flex-column">
-                    <div class="mb-3 text-danger"><i class="fa-solid fa-screwdriver-wrench fa-3x"></i></div>
-                    <h5 class="fw-bold">۲. پایش و عارضه‌یابی موانع</h5>
-                    <p class="text-muted small flex-grow-1">تحلیل گلوگاه‌های تأمین متریال مرغوب، بسته‌بندی ایمن صادراتی و رفع موانع نقدینگی.</p>
-                    <a href="#workshopsSection" class="btn btn-outline-danger w-100 mt-3">بررسی و پایش موانع</a>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="action-card p-4 text-center d-flex flex-column">
-                    <div class="mb-3 text-success"><i class="fa-solid fa-earth-americas fa-3x"></i></div>
-                    <h5 class="fw-bold">۳. بازاریابی تجاری و صادرات</h5>
-                    <p class="text-muted small flex-grow-1">اتصال مستقیم به خریداران عمده و پلتفرم‌های بین‌المللی با تمرکز بر درآمدزایی پایدار شبکه.</p>
-                    <a href="#productsSection" class="btn btn-outline-success w-100 mt-3">مشاهده ویترین بازار</a>
-                </div>
-            </div>
-        </div>
-
-        <!-- جدول پایش واحدهای تولیدی و مدیریت موانع -->
         <div id="workshopsSection" class="card shadow-sm border-0 mb-5">
             <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
-                <h5 class="fw-bold mb-0 text-dark"><i class="fa-solid fa-clipboard-list text-primary me-2"></i>کارتابل واحدهای تولیدی و آخرین وضعیت موانع</h5>
-                <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#registerModal">
-                    <i class="fa-solid fa-plus me-1"></i> ثبت کارگاه جدید
-                </button>
+                <h5 class="fw-bold mb-0"><i class="fa-solid fa-clipboard-list text-primary me-2"></i>فهرست کارگاه‌ها و وضعیت موانع</h5>
+                <a href="/register-workshop" class="btn btn-sm btn-primary"><i class="fa-solid fa-plus me-1"></i>ثبت جدید</a>
             </div>
             <div class="card-body p-0">
                 <div class="table-responsive">
                     <table class="table table-hover align-middle mb-0">
                         <thead class="table-light">
                             <tr>
-                                <th>شناسه</th>
-                                <th>نام کارگاه / واحد</th>
+                                <th>#</th>
+                                <th>نام کارگاه</th>
                                 <th>مدیر کارگاه</th>
-                                <th>رسته تولیدی</th>
+                                <th>رسته</th>
                                 <th>موقعیت</th>
                                 <th>ظرفیت ماهانه</th>
-                                <th>مانع گلوگاهی مطرح‌شده</th>
-                                <th>وضعیت بررسی</th>
+                                <th>مانع مطرح‌شده</th>
+                                <th>وضعیت</th>
                                 {% if is_admin %}<th>اقدام مدیر</th>{% endif %}
                             </tr>
                         </thead>
                         <tbody>
                             {% for w in workshops %}
                             <tr>
-                                <td><span class="badge bg-light text-dark border">#{{ w.id }}</span></td>
+                                <td>#{{ w.id }}</td>
                                 <td class="fw-bold">{{ w.name }}</td>
                                 <td>{{ w.owner }} <br><small class="text-muted">{{ w.phone or '-' }}</small></td>
                                 <td><span class="badge bg-secondary">{{ w.field }}</span></td>
                                 <td><small>{{ w.province or '-' }}</small></td>
                                 <td><small>{{ w.capacity or '-' }}</small></td>
-                                <td><div class="text-danger small" style="max-width: 250px;">{{ w.issue or 'بدون مانع گزارش‌شده' }}</div></td>
+                                <td><div class="text-danger small">{{ w.issue or 'بدون مانع' }}</div></td>
                                 <td>
                                     {% if w.issue_status == 'pending' %}
-                                        <span class="badge badge-pending">در انتظار بررسی</span>
+                                        <span class="badge badge-pending">در انتظار</span>
                                     {% elif w.issue_status == 'in_progress' %}
                                         <span class="badge badge-in_progress">در حال پیگیری</span>
                                     {% else %}
-                                        <span class="badge badge-resolved">مانع رفع شد</span>
+                                        <span class="badge badge-resolved">رفع شد</span>
                                     {% endif %}
                                 </td>
                                 {% if is_admin %}
@@ -245,129 +134,18 @@
                                 </td>
                                 {% endif %}
                             </tr>
-                            {% else %}
-                            <tr>
-                                <td colspan="9" class="text-center py-4 text-muted">هیچ کارگاهی در سیستم ثبت نشده است.</td>
-                            </tr>
                             {% endfor %}
                         </tbody>
                     </table>
                 </div>
             </div>
         </div>
-
-        <!-- ویترین محصولات صنایع دستی و دست‌سازه‌ها -->
-        <div id="productsSection" class="mb-5">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h4 class="fw-bold text-dark mb-0"><i class="fa-solid fa-boxes-packing text-warning me-2"></i>ویترین منتخب محصولات آماده اتصال به بازار و صادرات</h4>
-            </div>
-            <div class="row g-4">
-                {% for p in products %}
-                <div class="col-md-3">
-                    <div class="product-box">
-                        <div class="bg-light p-4 text-center border-bottom">
-                            <i class="fa-solid {{ p.icon }} fa-3x text-secondary mb-2"></i>
-                            <div class="small fw-bold text-muted">{{ p.category }}</div>
-                        </div>
-                        <div class="p-3">
-                            <h6 class="fw-bold mb-1">{{ p.title }}</h6>
-                            <div class="d-flex justify-content-between text-muted small mt-2">
-                                <span><i class="fa-solid fa-location-dot me-1"></i>{{ p.city }}</span>
-                                <span><i class="fa-solid fa-gauge me-1"></i>{{ p.capacity }}</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
-        </div>
     </main>
 
-    <!-- فوتر پایانی -->
-    <footer class="bg-dark text-white-50 text-center py-4 border-top border-secondary">
-        <div class="container">
-            <p class="mb-1 text-white fw-bold">شبکه هوشمند توسعه تولید و رفع موانع کسب‌وکارهای خرد و خانگی</p>
-            <small class="text-secondary">زیرساخت پایدار و توسعه‌یافته بر پایه معماری ماژولار</small>
-        </div>
+    <footer class="bg-dark text-white-50 text-center py-4 border-top">
+        <p class="mb-0 text-white">شبکه هوشمند توسعه تولید و رفع موانع کسب‌وکارهای خرد</p>
     </footer>
 
-    <!-- پاپ‌آپ کامل ثبت کارگاه -->
-    <div class="modal fade" id="registerModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered modal-lg">
-            <div class="modal-content border-0 shadow">
-                <div class="modal-header bg-primary text-white">
-                    <h5 class="modal-title fw-bold"><i class="fa-solid fa-industry me-2"></i>ثبت مشخصات کارگاه و طرح مانع تولید</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
-                <form action="/register-workshop" method="POST">
-                    <div class="modal-body p-4">
-                        <div class="row g-3">
-                            <div class="col-md-6">
-                                <label class="form-label fw-bold">نام واحد تولیدی / کارگاه:</label>
-                                <input type="text" class="form-control" name="name" required placeholder="مثال: کارگاه قالی‌بافی ترنج">
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label fw-bold">نام و نام خانوادگی مسئول:</label>
-                                <input type="text" class="form-control" name="owner" required placeholder="مثال: علیرضا حسینی">
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label fw-bold">رسته فعالیت صنایع‌دستی:</label>
-                                <select class="form-select" name="field">
-                                    <option value="گلیم و فرش دست‌باف">گلیم و فرش دست‌باف</option>
-                                    <option value="سفال و سرامیک">سفال و سرامیک</option>
-                                    <option value="زیورآلات سنتی">زیورآلات سنتی و فیروزه‌کوبی</option>
-                                    <option value="صنایع چرم">صنایع چرم و سراجی سنتی</option>
-                                    <option value="صنایع چوب و خاتم">صنایع چوب، منبت و خاتم</option>
-                                    <option value="سایر دست‌سازه‌ها">سایر دست‌سازه‌ها</option>
-                                </select>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label fw-bold">استان و شهر:</label>
-                                <input type="text" class="form-control" name="province" placeholder="مثال: اصفهان - نجف‌آباد">
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label fw-bold">شماره تماس مستقیم:</label>
-                                <input type="text" class="form-control" name="phone" placeholder="0912...">
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label fw-bold">ظرفیت تولید ماهانه:</label>
-                                <input type="text" class="form-control" name="capacity" placeholder="مثال: ۱۰۰ عدد در ماه">
-                            </div>
-                            <div class="col-12">
-                                <label class="form-label fw-bold text-danger">عارضه یا مانع اصلی پیش‌روی تولید:</label>
-                                <textarea class="form-control" name="issue" rows="3" placeholder="موانع در حوزه مواد اولیه، مجوزها، قیمت تمام‌شده، بسته‌بندی یا نبود کانال فروش صادراتی را شرح دهید..."></textarea>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="modal-footer bg-light">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">انصراف</button>
-                        <button type="submit" class="btn btn-primary px-4 fw-bold">ثبت نهایی در شبکه</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <!-- پاپ‌آپ کامل ورود مدیر و چک‌لیست -->
-    <div class="modal fade" id="loginModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content border-0 shadow">
-                <div class="modal-header bg-dark text-white">
-                    <h5 class="modal-title fw-bold"><i class="fa-solid fa-lock text-warning me-2"></i>ورود مدیر سامانه</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
-                <form action="/login" method="POST">
-                    <div class="modal-body p-4">
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">نام کاربری:</label>
-                            <input type="text" class="form-control" name="username" value="admin" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">رمز عبور:</label>
-                            <input type="password" class="form-control" name="password" placeholder="admin123" required>
-                            <div class="form-text small text-muted">حساب پیش‌فرض مدیر: <code>admin</code> با رمز: <code>admin123</code></div>
-                        </div>
-                        <div class="bg-light p-3 rounded border mb-2">
-                            <span class="small fw-bold text-secondary d-block mb-2"><i class="fa-solid fa-list-check me-1"></i>چک‌لیست تأیید دسترسی:</span>
-                            <div class="form-check small mb-1">
-                                <input class="form-check-input" 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
