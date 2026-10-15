@@ -3,19 +3,16 @@ import sqlite3
 from flask import Flask, flash, redirect, render_template_string, request, url_for
 
 app = Flask(__name__)
-app.secret_key = "secret-samaneh-tolid-574cc"
+app.secret_key = "GAPGPTMASKTOKENjjvweqzo8w9X0X"
 
 DB_NAME = "database.db"
 
-# تعریف ۲۱ ماژول با رنگ‌بندی و دسته‌بندی دقیق مطابق اینفوگرافی اصلی
 MODULES = [
-    # گروه ۱: مدیریت پایه و ثبت (سبز فیروزه‌ای)
     {
         "id": 1,
         "title": "ثبت و مدیریت واحدهای تولیدی",
         "desc": "ثبت‌نام خوداظهاری واحدها، اطلاعات پایه، ظرفیت‌ها",
         "category": "ثبت و پایه",
-        "color": "emerald",
         "active": True,
     },
     {
@@ -23,7 +20,6 @@ MODULES = [
         "title": "شناسایی و ثبت موانع تولید",
         "desc": "ثبت موانع، اولویت‌بندی بر اساس اثرگذاری و ریشه‌یابی",
         "category": "ثبت و پایه",
-        "color": "emerald",
         "active": False,
     },
     {
@@ -31,16 +27,13 @@ MODULES = [
         "title": "مدیریت پرونده‌ها و گردش کار",
         "desc": "ثبت و ارجاع درخواست‌ها، تعیین مسئول و پیگیری خودکار",
         "category": "ثبت و پایه",
-        "color": "emerald",
         "active": False,
     },
-    # گروه ۲: نظارت و ارزیابی (آبی کلاسیک)
     {
         "id": 4,
         "title": "کارشناسان و مدیران جهادی",
         "desc": "تخصیص کارشناسان، بازدید و تشخیص میدانی",
         "category": "نظارت و مدیریت",
-        "color": "sky",
         "active": False,
     },
     {
@@ -48,7 +41,6 @@ MODULES = [
         "title": "ارزیابی و پایش عملکرد",
         "desc": "شاخص‌های کمی/کیفی، گزارش‌های دوره‌ای",
         "category": "نظارت و مدیریت",
-        "color": "sky",
         "active": False,
     },
     {
@@ -56,16 +48,13 @@ MODULES = [
         "title": "توسعه منطقه‌ای و استانی",
         "desc": "پوشش ۳۱ استان، شهرستان‌ها و مناطق ویژه",
         "category": "نظارت و مدیریت",
-        "color": "sky",
         "active": False,
     },
-    # گروه ۳: بازار و تجارت (نارنجی / کهربایی)
     {
         "id": 5,
         "title": "بازار و تجارت هوشمند",
         "desc": "تحلیل بازار داخلی و خارجی، قیمت و تقاضا",
         "category": "بازار و تجارت",
-        "color": "amber",
         "active": False,
     },
     {
@@ -73,7 +62,6 @@ MODULES = [
         "title": "زنجیره تأمین و مواد اولیه",
         "desc": "شناسایی تأمین‌کنندگان، پایش قیمت و موجودی",
         "category": "بازار و تجارت",
-        "color": "amber",
         "active": False,
     },
     {
@@ -81,16 +69,13 @@ MODULES = [
         "title": "صادرات و توسعه بازار",
         "desc": "بازاریابی بین‌المللی، دیپلماسی اقتصادی",
         "category": "بازار و تجارت",
-        "color": "amber",
         "active": False,
     },
-    # گروه ۴: منابع مالی و حقوقی (بنفش / ارغوانی)
     {
         "id": 7,
         "title": "تسهیلات و منابع مالی",
         "desc": "معرفی بانک‌ها، درخواست تسهیلات، اعتبارسنجی",
         "category": "مالی و حقوقی",
-        "color": "purple",
         "active": False,
     },
     {
@@ -98,7 +83,6 @@ MODULES = [
         "title": "حقوقی و مقرراتی",
         "desc": "رصد قوانین، پاسخ به ابهامات، استعلام‌ها",
         "category": "مالی و حقوقی",
-        "color": "purple",
         "active": False,
     },
     {
@@ -106,16 +90,13 @@ MODULES = [
         "title": "بیمه و تأمین اجتماعی",
         "desc": "بیمه‌های تولید و صادرات، رفع مشکلات بیمه‌ای",
         "category": "مالی و حقوقی",
-        "color": "purple",
         "active": False,
     },
-    # گروه ۵: زیرساخت و فناوری (سرخابی / صورتی)
     {
         "id": 10,
         "title": "زیرساخت و انرژی",
         "desc": "برق، گاز، آب، حمل و نقل و لجستیک",
         "category": "زیرساخت و فناوری",
-        "color": "rose",
         "active": False,
     },
     {
@@ -123,7 +104,6 @@ MODULES = [
         "title": "فناوری و نوآوری",
         "desc": "توسعه فناوری، دانش‌بنیان، دیجیتال‌سازی",
         "category": "زیرساخت و فناوری",
-        "color": "rose",
         "active": False,
     },
     {
@@ -131,16 +111,13 @@ MODULES = [
         "title": "محیط زیست و استانداردها",
         "desc": "استانداردهای ملی/بین‌المللی، تولید سبز",
         "category": "زیرساخت و فناوری",
-        "color": "rose",
         "active": False,
     },
-    # گروه ۶: نیروی انسانی و داده (سبز تیره / زیتونی)
     {
         "id": 12,
         "title": "بازار کار و نیروی انسانی",
         "desc": "تأمین نیروی متخصص، آموزش و مهارت‌آموزی",
         "category": "منابع انسانی و داده",
-        "color": "teal",
         "active": False,
     },
     {
@@ -148,7 +125,6 @@ MODULES = [
         "title": "آموزش و توانمندسازی",
         "desc": "دوره‌های تخصصی، انتقال تجربه و دانش",
         "category": "منابع انسانی و داده",
-        "color": "teal",
         "active": False,
     },
     {
@@ -156,16 +132,13 @@ MODULES = [
         "title": "اطلاعات و داده‌کاوی",
         "desc": "بانک اطلاعات جامع، هوش مصنوعی و تحلیل",
         "category": "منابع انسانی و داده",
-        "color": "teal",
         "active": False,
     },
-    # گروه ۷: امنیت و ارتباطات (خاکستری مقتدر)
     {
         "id": 19,
         "title": "نظام حقوقی و امنیت",
         "desc": "حفاظت از داده‌ها، امنیت دسترسی‌ها و پشتیبان‌گیری",
         "category": "امنیت و ارتباطات",
-        "color": "slate",
         "active": False,
     },
     {
@@ -173,7 +146,6 @@ MODULES = [
         "title": "ارتباطات بین‌المللی",
         "desc": "همکاری با نهادهای خارجی و دیپلماسی تجاری",
         "category": "امنیت و ارتباطات",
-        "color": "slate",
         "active": False,
     },
     {
@@ -181,7 +153,6 @@ MODULES = [
         "title": "ارتباطات بین دستگاهی",
         "desc": "همکاری با وزارتخانه‌ها، مجلس و قوای سه‌گانه",
         "category": "امنیت و ارتباطات",
-        "color": "slate",
         "active": False,
     },
 ]
@@ -207,8 +178,7 @@ def init_db():
   conn.close()
 
 
-TEMPLATE = """
-<!DOCTYPE html>
+TEMPLATE = """<!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
     <meta charset="UTF-8">
@@ -221,7 +191,6 @@ TEMPLATE = """
     </style>
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen">
-    <!-- Header Banner -->
     <header class="bg-gradient-to-r from-slate-900 via-sky-950 to-slate-900 border-b border-sky-800/40 py-8 px-4 shadow-2xl">
         <div class="max-w-7xl mx-auto flex flex-col items-center text-center">
             <div class="flex items-center gap-2 mb-3">
@@ -235,9 +204,9 @@ TEMPLATE = """
                 پلتفرم جامع مدیریت، تحلیل و رفع موانع صنایع دستی و واحدهای تولیدی کوچک
             </p>
             <div class="flex flex-wrap justify-center gap-4 mt-5 text-xs text-slate-300 bg-slate-900/80 border border-slate-800 px-6 py-2.5 rounded-full shadow-inner">
-                <span>🎯 طراح طرح: مهندس علی توشه</span>
+                <span>طراح طرح: مهندس علی توشه</span>
                 <span>•</span>
-                <span>📈 رفع موانع امروز، جهش تولید فردا</span>
+                <span>رفع موانع امروز، جهش تولید فردا</span>
             </div>
         </div>
     </header>
@@ -253,7 +222,6 @@ TEMPLATE = """
           {% endif %}
         {% endwith %}
 
-        <!-- Active Module 1 Section (Workshop Registration) -->
         <div class="bg-slate-900/90 border border-emerald-500/40 rounded-3xl p-6 md:p-8 shadow-2xl backdrop-blur relative overflow-hidden">
             <div class="absolute top-0 right-0 w-40 h-40 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
             <div class="flex flex-col md:flex-row items-start md:items-center justify-between border-b border-slate-800 pb-4 mb-6 gap-2">
@@ -302,12 +270,11 @@ TEMPLATE = """
                     </div>
                 </div>
                 <button type="submit" class="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-slate-950 font-extrabold py-3.5 rounded-xl transition duration-200 shadow-lg shadow-emerald-600/20 text-sm">
-                    ثبت و ذخیره اطلاعات کارگاه در سامانه
+                    ثبت و ذخیره اطلاعات کارگاه در شبکه هوشمند
                 </button>
             </form>
         </div>
 
-        <!-- Workshops Records Table -->
         <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 md:p-8 shadow-2xl backdrop-blur">
             <h3 class="text-lg font-bold text-slate-200 mb-1">گزارش کارگاه‌های ثبت‌شده (آزمایش خروجی‌های زنده)</h3>
             <p class="text-xs text-slate-400 mb-6">دیتابیس زنده SQLite سامانه</p>
@@ -343,7 +310,6 @@ TEMPLATE = """
             </div>
         </div>
 
-        <!-- 21 Modules Graphical Dashboard (Infographic Layout) -->
         <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 md:p-8 shadow-2xl backdrop-blur">
             <div class="flex flex-col md:flex-row items-start md:items-center justify-between mb-6 gap-2">
                 <div>
@@ -357,4 +323,84 @@ TEMPLATE = """
                 {% for m in modules %}
                 <div class="p-4 rounded-2xl border transition duration-200 {% if m.active %}bg-emerald-950/60 border-emerald-500 shadow-lg shadow-emerald-950/50{% else %}bg-slate-950/60 border-slate-800 hover:border-slate-700{% endif %}">
                     <div class="flex items-center justify-between mb-2">
-                        <span class="w-7 h-7 rounded-xl {% if m.active %}bg-emerald-500 
+                        <span class="w-7 h-7 rounded-xl {% if m.active %}bg-emerald-500 text-slate-950 font-black{% else %}bg-slate-800 text-slate-300 font-bold{% endif %} flex items-center justify-center text-xs shadow">
+                            {{ m.id }}
+                        </span>
+                        <span class="text-[10px] px-2.5 py-0.5 rounded-full font-semibold {% if m.active %}bg-emerald-500/20 text-emerald-300 border border-emerald-500/30{% else %}bg-slate-900 text-slate-400 border border-slate-800{% endif %}">
+                            {{ m.category }}
+                        </span>
+                    </div>
+                    <h4 class="font-bold text-sm {% if m.active %}text-emerald-300{% else %}text-slate-200{% endif %} mb-1">{{ m.title }}</h4>
+                    <p class="text-[11px] text-slate-400 leading-relaxed">{{ m.desc }}</p>
+                    <div class="mt-3 pt-2 border-t border-slate-800/60 flex items-center justify-between text-[10px]">
+                        <span class="{% if m.active %}text-emerald-400 font-bold{% else %}text-slate-500{% endif %}">
+                            {% if m.active %}● فعال و در حال بهره‌برداری{% else %}○ در نوبت توسعه فازهای بعدی{% endif %}
+                        </span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </main>
+
+    <footer class="border-t border-slate-900 bg-slate-950 py-6 mt-12 text-center text-xs text-slate-500">
+        شبکه هوشمند توسعه تولید و رفع موانع (Samaneh-tolid) • طراحی و توسعه مرحله‌به‌مرحله
+    </footer>
+</body>
+</html>
+"""
+
+
+@app.route("/", methods=["GET", "POST"])
+def index():
+  init_db()
+  if request.method == "POST":
+    try:
+      workshop_name = request.form.get("workshop_name")
+      owner_name = request.form.get("owner_name")
+      phone = request.form.get("phone")
+      province = request.form.get("province")
+      city = request.form.get("city")
+      craft_type = request.form.get("craft_type")
+      employees_count = request.form.get("employees_count", 1)
+      description = request.form.get("description", "")
+
+      conn = sqlite3.connect(DB_NAME)
+      cursor = conn.cursor()
+      cursor.execute(
+          """
+                INSERT INTO workshops (workshop_name, owner_name, phone, province, city, craft_type, employees_count, description)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+          (
+              workshop_name,
+              owner_name,
+              phone,
+              province,
+              city,
+              craft_type,
+              employees_count,
+              description,
+          ),
+      )
+      conn.commit()
+      conn.close()
+      flash("کارگاه شما با موفقیت در شبکه ثبت شد.", "success")
+    except Exception as e:
+      flash(f"خطا در ثبت اطلاعات: {str(e)}", "error")
+    return redirect(url_for("index"))
+
+  conn = sqlite3.connect(DB_NAME)
+  cursor = conn.cursor()
+  cursor.execute("SELECT * FROM workshops ORDER BY id DESC")
+  workshops = cursor.fetchall()
+  conn.close()
+
+  return render_template_string(
+      TEMPLATE, modules=MODULES, workshops=workshops
+  )
+
+
+if __name__ == "__main__":
+  init_db()
+  app.run(host="0.0.0.0", port=5000)
