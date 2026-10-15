@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ورود مدیر سامانه | شبکه هوشمند تولید</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.rtl.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css">
+    <style>
+        body { font-family: 'Vazirmatn', sans-serif; background-color: #f0f2f5; min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+        .login-card { width: 100%; max-width: 440px; border-radius: 16px; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.08); background: #fff; overflow: hidden; }
+        .login-header { background: #1e293b; color: white; padding: 25px; text-align: center; }
+    </style>
+</head>
+<body>
+    <div class="login-card">
+        <div class="login-header">
+            <i class="fa-solid fa-user-shield fa-3x text-warning mb-2"></i>
+            <h4 class="fw-bold mb-1">ورود به پنل مدیریت</h4>
+            <p class="text-white-50 small mb-0">شبکه هوشمند توسعه تولید و رفع موانع</p>
+        </div>
+        <div class="p-4">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }} py-2 small mb-3">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <form action="/login" method="POST">
+                <div class="mb-3">
+                    <label class="form-label fw-bold small">نام کاربری مدیر:</label>
+                    <input type="text" name="username" class="form-control" value="admin" required autofocus>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold small">رمز عبور امنیتی:</label>
+                    <input type="password" name="password" class="form-control" placeholder="admin123" required>
+                    <div class="form-text small text-muted">حساب پیش‌فرض: <code>admin</code> با رمز: <code>admin123</code></div>
+                </div>
+
+                <!-- چک‌لیست اعتبارسنجی ورود -->
+                <div class="bg-light p-3 rounded border mb-4">
+                    <div class="fw-bold small text-secondary mb-2"><i class="fa-solid fa-list-check me-1"></i> چک‌لیست امنیتی نشست:</div>
+                    <div class="form-check small mb-1">
+                        <input class="form-check-input" type="checkbox" id="c1" checked required>
+                        <label class="form-check-label" for="c1">پایش امن و ثبت لاگ مدیریتی</label>
+                    </div>
+                    <div class="form-check small">
+                        <input class="form-check-input" type="checkbox" id="c2" checked required>
+                        <label class="form-check-label" for="c2">تأیید اختیار تغییر وضعیت گلوگاه‌ها</label>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-warning w-100 fw-bold py-2 mb-2">ورود به داشبورد</button>
+                <a href="/" class="btn btn-light w-100 text-muted small">بازگشت به صفحه اصلی</a>
+            </form>
+        </div>
+    </div>
+</body>
+</html>
