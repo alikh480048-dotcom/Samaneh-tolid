@@ -3,149 +3,55 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>شبکه هوشمند توسعه تولید و رفع موانع</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.rtl.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css">
-    <style>
-        body { font-family: 'Vazirmatn', sans-serif; background-color: #f8f9fa; color: #2b2d42; }
-        .hero-banner { background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%); color: white; padding: 60px 0; border-bottom: 4px solid #f39c12; }
-        .stat-card { background: #fff; border-radius: 12px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.04); border-right: 5px solid #2c5364; }
-        .badge-pending { background-color: #dc3545; color: white; }
-        .badge-in_progress { background-color: #fd7e14; color: white; }
-        .badge-resolved { background-color: #198754; color: white; }
-    </style>
+    <title>سامانه هوشمند توسعه تولید و رفع موانع گلوگاهی</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet">
+    <style>body { font-family: Vazirmatn, sans-serif; }</style>
 </head>
-<body>
-
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top shadow-sm py-3">
-        <div class="container">
-            <a class="navbar-brand fw-bold" href="/"><i class="fa-solid fa-network-wired text-warning me-2"></i>شبکه هوشمند توسعه تولید</a>
-            <div class="d-flex align-items-center gap-2">
-                <a href="/register-workshop" class="btn btn-outline-light btn-sm"><i class="fa-solid fa-plus me-1"></i>ثبت کارگاه</a>
-                {% if is_admin %}
-                    <span class="badge bg-success p-2">مدیر فعال</span>
-                    <a href="/logout" class="btn btn-danger btn-sm">خروج</a>
-                {% else %}
-                    <a href="/login" class="btn btn-warning btn-sm fw-bold"><i class="fa-solid fa-arrow-right-to-bracket me-1"></i>ورود مدیر</a>
-                {% endif %}
+<body class="bg-slate-900 text-slate-100 min-h-screen">
+    
+    <!-- نوار ناوبری بالا -->
+    <header class="bg-slate-800/80 backdrop-blur border-b border-slate-700 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <span class="p-2 bg-emerald-500/10 text-emerald-400 rounded-lg text-xl">⚙️</span>
+                <div>
+                    <h1 class="text-base md:text-lg font-black text-white">شبکه هوشمند توسعه تولید و رفع موانع</h1>
+                    <p class="text-xs text-slate-400">شناسنامه‌دار کردن کارگاه‌های خرد و اتصال به بازار</p>
+                </div>
             </div>
-        </div>
-    </nav>
-
-    <div class="container mt-3">
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-                        {{ message }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    </div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
-    </div>
-
-    <header class="hero-banner text-center">
-        <div class="container">
-            <h1 class="fw-bold mb-3">سامانه هوشمند توسعه تولید و رفع موانع گلوگاهی</h1>
-            <p class="lead mb-4 mx-auto text-light opacity-90" style="max-width: 800px;">
-                پایش، شناسنامه‌دار کردن و اتصال کارگاه‌های خرد به بازار و رفع موانع تولید
-            </p>
-            <div class="d-flex justify-content-center gap-3">
-                <a href="/register-workshop" class="btn btn-warning btn-lg fw-bold px-4 shadow-sm"><i class="fa-solid fa-plus-circle me-2"></i>ثبت مشخصات کارگاه</a>
-                <a href="#workshopsSection" class="btn btn-outline-light btn-lg px-4"><i class="fa-solid fa-list-check me-2"></i>مشاهده کارگاه‌ها</a>
+            <div class="flex items-center gap-3">
+                <a href="{{ url_for('register') }}" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs md:text-sm font-bold px-4 py-2.5 rounded-xl transition flex items-center gap-1.5 shadow-lg shadow-emerald-900/30">
+                    <span>+ ثبت واحد تولیدی جدید</span>
+                </a>
+                {% if session.get('user_id') %}
+                    <a href="{{ url_for('logout') }}" class="text-xs bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 px-3 py-2 rounded-lg border border-rose-500/30">خروج مدیر</a>
+                {% else %}
+                    <a href="{{ url_for('login') }}" class="text-xs bg-slate-700 hover:bg-slate-600 text-slate-300 px-3 py-2 rounded-lg">ورود مدیریت</a>
+                {% endif %}
             </div>
         </div>
     </header>
 
-    <main class="container my-5">
-        <div class="row g-4 mb-5">
-            <div class="col-md-4">
-                <div class="stat-card">
-                    <div class="text-muted small fw-bold">کل کارگاه‌های ثبتی</div>
-                    <h2 class="fw-bold mt-2 mb-0">{{ total_workshops }}</h2>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="stat-card" style="border-right-color: #dc3545;">
-                    <div class="text-muted small fw-bold">موانع تولید در حال پیگیری</div>
-                    <h2 class="fw-bold mt-2 mb-0 text-danger">{{ active_issues }}</h2>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="stat-card" style="border-right-color: #198754;">
-                    <div class="text-muted small fw-bold">رسته‌های فعال</div>
-                    <h2 class="fw-bold mt-2 mb-0 text-success">{{ active_categories }}</h2>
-                </div>
-            </div>
-        </div>
+    <main class="max-w-7xl mx-auto px-4 py-8">
+        <!-- پیام‌های فلش -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="mb-6 p-4 rounded-xl text-sm font-semibold {% if category == 'success' %}bg-emerald-500/15 text-emerald-300 border border-emerald-500/30{% else %}bg-sky-500/15 text-sky-300 border border-sky-500/30{% endif %}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
 
-        <div id="workshopsSection" class="card shadow-sm border-0 mb-5">
-            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
-                <h5 class="fw-bold mb-0"><i class="fa-solid fa-clipboard-list text-primary me-2"></i>فهرست کارگاه‌ها و وضعیت موانع</h5>
-                <a href="/register-workshop" class="btn btn-sm btn-primary"><i class="fa-solid fa-plus me-1"></i>ثبت جدید</a>
-            </div>
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0">
-                        <thead class="table-light">
-                            <tr>
-                                <th>#</th>
-                                <th>نام کارگاه</th>
-                                <th>مدیر کارگاه</th>
-                                <th>رسته</th>
-                                <th>موقعیت</th>
-                                <th>ظرفیت ماهانه</th>
-                                <th>مانع مطرح‌شده</th>
-                                <th>وضعیت</th>
-                                {% if is_admin %}<th>اقدام مدیر</th>{% endif %}
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for w in workshops %}
-                            <tr>
-                                <td>#{{ w.id }}</td>
-                                <td class="fw-bold">{{ w.name }}</td>
-                                <td>{{ w.owner }} <br><small class="text-muted">{{ w.phone or '-' }}</small></td>
-                                <td><span class="badge bg-secondary">{{ w.field }}</span></td>
-                                <td><small>{{ w.province or '-' }}</small></td>
-                                <td><small>{{ w.capacity or '-' }}</small></td>
-                                <td><div class="text-danger small">{{ w.issue or 'بدون مانع' }}</div></td>
-                                <td>
-                                    {% if w.issue_status == 'pending' %}
-                                        <span class="badge badge-pending">در انتظار</span>
-                                    {% elif w.issue_status == 'in_progress' %}
-                                        <span class="badge badge-in_progress">در حال پیگیری</span>
-                                    {% else %}
-                                        <span class="badge badge-resolved">رفع شد</span>
-                                    {% endif %}
-                                </td>
-                                {% if is_admin %}
-                                <td>
-                                    <form action="/update-issue-status/{{ w.id }}" method="POST" class="d-flex gap-1">
-                                        <select name="status" class="form-select form-select-sm" style="width: auto;">
-                                            <option value="pending" {% if w.issue_status == 'pending' %}selected{% endif %}>در انتظار</option>
-                                            <option value="in_progress" {% if w.issue_status == 'in_progress' %}selected{% endif %}>پیگیری</option>
-                                            <option value="resolved" {% if w.issue_status == 'resolved' %}selected{% endif %}>رفع شد</option>
-                                        </select>
-                                        <button class="btn btn-sm btn-dark" type="submit">ثبت</button>
-                                    </form>
-                                </td>
-                                {% endif %}
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+        <!-- کارت‌های آمار و شاخص‌های کلیدی -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
+            <div class="bg-slate-800 p-5 rounded-2xl border border-slate-700">
+                <p class="text-xs text-slate-400 mb-1">کل واحدهای تولیدی ثبتی</p>
+                <div class="flex justify-between items-end">
+                    <span class="text-3xl font-black text-white">{{ total_workshops }}</span>
+                    <span class="text-xs text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded">پایش کشوری</span>
                 </div>
             </div>
-        </div>
-    </main>
-
-    <footer class="bg-dark text-white-50 text-center py-4 border-top">
-        <p class="mb-0 text-white">شبکه هوشمند توسعه تولید و رفع موانع کسب‌وکارهای خرد</p>
-    </footer>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+            <div class="bg-slate-800 p-5 rounded-2xl border border-slate-700">
