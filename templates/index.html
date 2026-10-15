@@ -1,1 +1,332 @@
 
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>شبکه هوشمند توسعه تولید و رفع موانع | پلتفرم صنایع دستی</title>
+    <!-- بوت‌استرپ راست‌چین -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.rtl.min.css">
+    <!-- آیکون‌های FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- فونت وزیرمتن -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css">
+    
+    <style>
+        :root {
+            --bg-dark: #0a1120;
+            --card-bg: rgba(16, 29, 54, 0.7);
+            --card-border: rgba(212, 160, 23, 0.25);
+            --accent-gold: #f59e0b;
+            --accent-gold-hover: #d97706;
+            --accent-cyan: #38bdf8;
+            --text-light: #f1f5f9;
+            --text-muted: #94a3b8;
+        }
+
+        body {
+            font-family: 'Vazirmatn', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            background-image: radial-gradient(circle at 80% 20%, rgba(245, 158, 11, 0.08) 0%, transparent 40%),
+                              radial-gradient(circle at 20% 80%, rgba(56, 189, 248, 0.08) 0%, transparent 40%);
+            min-height: 100vh;
+        }
+
+        /* نوار ناوبری لوکس شیشه‌ای */
+        .glass-nav {
+            background: rgba(10, 17, 32, 0.85);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        /* استایل کارت‌های شیشه‌ای */
+        .glass-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            transition: all 0.35s ease;
+        }
+
+        .glass-card:hover {
+            transform: translateY(-6px);
+            border-color: var(--accent-gold);
+            box-shadow: 0 12px 40px rgba(245, 158, 11, 0.18);
+        }
+
+        /* دکمه‌های پر زرق‌وبرق و طلایی */
+        .btn-gold {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: #0b0f19;
+            font-weight: 700;
+            border: none;
+            border-radius: 10px;
+            padding: 10px 24px;
+            box-shadow: 0 4px 15px rgba(245, 158, 11, 0.35);
+            transition: all 0.3s ease;
+        }
+        .btn-gold:hover {
+            color: #000;
+            background: linear-gradient(135deg, #fbbf24 0%, #b45309 100%);
+            box-shadow: 0 6px 20px rgba(245, 158, 11, 0.5);
+        }
+
+        .btn-outline-gold {
+            border: 1px solid var(--accent-gold);
+            color: var(--accent-gold);
+            border-radius: 10px;
+            padding: 10px 22px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        .btn-outline-gold:hover {
+            background-color: var(--accent-gold);
+            color: #0b0f19;
+        }
+
+        /* برچسب‌های نشانگر */
+        .badge-status {
+            background: rgba(56, 189, 248, 0.15);
+            color: var(--accent-cyan);
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            border-radius: 20px;
+            padding: 4px 12px;
+            font-size: 0.8rem;
+        }
+
+        /* تصاویر گالری محصولات */
+        .product-img {
+            height: 190px;
+            object-fit: cover;
+            border-top-left-radius: 15px;
+            border-top-right-radius: 15px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- نوار ناوبری -->
+    <nav class="navbar navbar-expand-lg navbar-dark glass-nav sticky-top py-3">
+        <div class="container">
+            <a class="navbar-brand fw-bold d-flex align-items-center gap-2" href="/">
+                <i class="fa-solid fa-shapes text-warning fs-3"></i>
+                <span style="letter-spacing: -0.5px;">شبکه هوشمند توسعه تولید</span>
+            </a>
+            
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navMenu">
+                <ul class="navbar-nav mx-auto mb-2 mb-lg-0 gap-lg-3">
+                    <li class="nav-item"><a class="nav-link text-warning fw-bold" href="/"><i class="fa-solid fa-home me-1"></i> صفحه اصلی</a></li>
+                    <li class="nav-item"><a class="nav-link text-light" href="#products"><i class="fa-solid fa-gem me-1"></i> محصولات صادراتی</a></li>
+                    <li class="nav-item"><a class="nav-link text-light" href="#workshops"><i class="fa-solid fa-industry me-1"></i> کارگاه‌های تولیدی</a></li>
+                    <li class="nav-item"><a class="nav-link text-light" href="/register-workshop"><i class="fa-solid fa-plus-circle me-1"></i> ثبت کارگاه جدید</a></li>
+                    <li class="nav-item"><a class="nav-link text-light" href="#obstacles"><i class="fa-solid fa-shield-halved me-1"></i> رفع موانع</a></li>
+                </ul>
+                <div class="d-flex align-items-center gap-2">
+                    <a href="/login" class="btn btn-outline-gold btn-sm px-3">
+                        <i class="fa-solid fa-user-lock me-1"></i> ورود مدیر
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- بخش معرفی اصلی (Hero Section با جلوه بصری بین‌المللی) -->
+    <header class="py-5 text-center position-relative">
+        <div class="container py-4">
+            <div class="row align-items-center gy-4">
+                <div class="col-lg-7 text-lg-end text-center">
+                    <div class="badge-status mb-3 d-inline-block">
+                        <i class="fa-solid fa-circle-check me-1"></i> پلتفرم تخصصی B2B و صادرات مستقیم
+                    </div>
+                    <h1 class="display-5 fw-extrabold mb-3 lh-base">
+                        شبکه هوشمند <span class="text-warning">توسعه تولید</span> و رفع موانع
+                    </h1>
+                    <p class="fs-5 text-muted mb-4" style="line-height: 2;">
+                        سامانه جامع اتصال تولیدات اصیل صنایع دستی و کارگاه‌های خانگی به بازارهای کلان و زنجیره‌های صادراتی جهانی؛ پایش هوشمند موانع تأمین، بسته‌بندی و بازاریابی.
+                    </p>
+                    <div class="d-flex flex-wrap justify-content-lg-start justify-content-center gap-3">
+                        <a href="/register-workshop" class="btn btn-gold btn-lg">
+                            <i class="fa-solid fa-arrow-left me-2"></i> ثبت کارگاه و شناسنامه تولید
+                        </a>
+                        <a href="#products" class="btn btn-outline-gold btn-lg">
+                            <i class="fa-solid fa-bag-shopping me-2"></i> ویترین محصولات فعال
+                        </a>
+                    </div>
+                </div>
+
+                <!-- ویجت نقشه اتصال زنجیره تأمین -->
+                <div class="col-lg-5">
+                    <div class="glass-card p-4 text-center">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <span class="text-muted small">اتصال مستقیم به بازارهای جهانی</span>
+                            <span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-50">آنلاین</span>
+                        </div>
+                        <i class="fa-solid fa-earth-americas display-1 text-warning mb-3 opacity-75"></i>
+                        <h5 class="fw-bold">پایش صادرات و بازارهای منطقه‌ای</h5>
+                        <p class="text-muted small">ایجاد درگاه تجاری برای خریداران عمده داخلی و بازرگانان امارات، عمان و اروپا</p>
+                        <div class="row g-2 mt-2 pt-3 border-top border-secondary border-opacity-25">
+                            <div class="col-4">
+                                <div class="small text-muted">صادرات فعال</div>
+                                <div class="fw-bold text-warning">+۱۲ کشور</div>
+                            </div>
+                            <div class="col-4">
+                                <div class="small text-muted">کارگاه‌ها</div>
+                                <div class="fw-bold text-info">{{ total_workshops|default(140) }}+</div>
+                            </div>
+                            <div class="col-4">
+                                <div class="small text-muted">ارزش تجاری</div>
+                                <div class="fw-bold text-success">$2.4M</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- بخش ویترین و نمایش زنده محصولات صنایع دستی -->
+    <section id="products" class="py-5">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-end mb-4 flex-wrap gap-2">
+                <div>
+                    <span class="text-warning small fw-bold">محصولات تاییدشده</span>
+                    <h2 class="fw-bold mt-1">نمایش محصولات و دست‌سازه‌ها</h2>
+                </div>
+                <a href="/products" class="btn btn-outline-gold btn-sm">مشاهده کاتالوگ جامع <i class="fa-solid fa-angle-left ms-1"></i></a>
+            </div>
+
+            <div class="row g-4">
+                <!-- محصول ۱ -->
+                <div class="col-md-6 col-lg-3">
+                    <div class="glass-card h-100 overflow-hidden d-flex flex-column">
+                        <img src="https://images.unsplash.com/photo-1606744837616-56c9a5c6a6eb?q=80&w=800&auto=format&fit=crop" class="product-img w-100" alt="گلیم و فرش سنتی">
+                        <div class="p-3 d-flex flex-column flex-grow-1">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="badge-status">فرش و زیرانداز</span>
+                                <span class="text-warning small"><i class="fa-solid fa-star"></i> ۴.۹</span>
+                            </div>
+                            <h5 class="fw-bold text-light mb-1">گلیم دست‌بافت نقشه سنتی</h5>
+                            <p class="text-muted small mb-3">تولید کارگاه خانگی شیراز | پشم طبیعی با رنگرزی سنتی</p>
+                            <div class="mt-auto d-flex justify-content-between align-items-center pt-2 border-top border-secondary border-opacity-25">
+                                <span class="fw-bold text-warning">ظرفیت: ۲۰ تخته/ماه</span>
+                                <a href="#" class="btn btn-sm btn-outline-light"><i class="fa-solid fa-eye"></i> جزئیات</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- محصول ۲ -->
+                <div class="col-md-6 col-lg-3">
+                    <div class="glass-card h-100 overflow-hidden d-flex flex-column">
+                        <img src="https://images.unsplash.com/photo-1578749556568-bc2c40e68b61?q=80&w=800&auto=format&fit=crop" class="product-img w-100" alt="سفال و سرامیک">
+                        <div class="p-3 d-flex flex-column flex-grow-1">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="badge-status">سفال و سرامیک</span>
+                                <span class="text-warning small"><i class="fa-solid fa-star"></i> ۴.۸</span>
+                            </div>
+                            <h5 class="fw-bold text-light mb-1">ظروف دست‌ساز سرامیکی لوکس</h5>
+                            <p class="text-muted small mb-3">کارگاه سفالگری لالجین همدان | مناسب صادرات</p>
+                            <div class="mt-auto d-flex justify-content-between align-items-center pt-2 border-top border-secondary border-opacity-25">
+                                <span class="fw-bold text-warning">ظرفیت: ۳۰۰ ست/ماه</span>
+                                <a href="#" class="btn btn-sm btn-outline-light"><i class="fa-solid fa-eye"></i> جزئیات</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- محصول ۳ -->
+                <div class="col-md-6 col-lg-3">
+                    <div class="glass-card h-100 overflow-hidden d-flex flex-column">
+                        <img src="https://images.unsplash.com/photo-1611085583191-a3b181a88401?q=80&w=800&auto=format&fit=crop" class="product-img w-100" alt="زیورآلات سنتی">
+                        <div class="p-3 d-flex flex-column flex-grow-1">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="badge-status">زیورآلات و فیروزه</span>
+                                <span class="text-warning small"><i class="fa-solid fa-star"></i> ۵.۰</span>
+                            </div>
+                            <h5 class="fw-bold text-light mb-1">زیورآلات نقره و فیروزه نیشابور</h5>
+                            <p class="text-muted small mb-3">تولید بانوان سرپرست خانوار خراسان رضوی</p>
+                            <div class="mt-auto d-flex justify-content-between align-items-center pt-2 border-top border-secondary border-opacity-25">
+                                <span class="fw-bold text-warning">تولید سفارشی</span>
+                                <a href="#" class="btn btn-sm btn-outline-light"><i class="fa-solid fa-eye"></i> جزئیات</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- محصول ۴ -->
+                <div class="col-md-6 col-lg-3">
+                    <div class="glass-card h-100 overflow-hidden d-flex flex-column">
+                        <img src="https://images.unsplash.com/photo-1590874103328-eac38a683ce7?q=80&w=800&auto=format&fit=crop" class="product-img w-100" alt="چرم دست‌دوز">
+                        <div class="p-3 d-flex flex-column flex-grow-1">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="badge-status">صنایع چرمی</span>
+                                <span class="text-warning small"><i class="fa-solid fa-star"></i> ۴.۷</span>
+                            </div>
+                            <h5 class="fw-bold text-light mb-1">کیف چرم کاملاً دست‌دوز</h5>
+                            <p class="text-muted small mb-3">کارگاه خرد تبریز | چرم گاوی درجه یک با دوخت موم‌زده</p>
+                            <div class="mt-auto d-flex justify-content-between align-items-center pt-2 border-top border-secondary border-opacity-25">
+                                <span class="fw-bold text-warning">ظرفیت: ۵۰ عدد/ماه</span>
+                                <a href="#" class="btn btn-sm btn-outline-light"><i class="fa-solid fa-eye"></i> جزئیات</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- کارت‌های سه‌گانه عملیاتی سامانه -->
+    <section class="py-5 bg-black bg-opacity-25">
+        <div class="container">
+            <div class="text-center mb-5">
+                <span class="text-warning small fw-bold">هسته اصلی خدمات</span>
+                <h2 class="fw-bold">مراحل هوشمند توسعه و شتاب‌دهی</h2>
+            </div>
+
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="glass-card p-4 text-center h-100">
+                        <div class="fs-1 text-warning mb-3"><i class="fa-solid fa-address-card"></i></div>
+                        <h4 class="fw-bold mb-3">شناسنامه و ظرفیت کارگاهی</h4>
+                        <p class="text-muted small">ثبت مشخصات دقیق تولیدی، تجهیزات و ظرفیت تولید به همراه صدور پرونده استاندارد برای خریداران عمده داخلی و صادراتی.</p>
+                        <a href="/register-workshop" class="btn btn-sm btn-outline-gold mt-2">ثبت مشخصات کارگاه</a>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="glass-card p-4 text-center h-100">
+                        <div class="fs-1 text-info mb-3"><i class="fa-solid fa-microchip"></i></div>
+                        <h4 class="fw-bold mb-3">تشخیص هوشمند موانع</h4>
+                        <p class="text-muted small">پایش گلوگاه‌های مواد اولیه، سرمایه در گردش، مجوزهای کسب‌وکار و بسته‌بندی با الگوریتم‌های اولویت‌بندی رفع مانع.</p>
+                        <a href="#obstacles" class="btn btn-sm btn-outline-info mt-2">عارضه‌یابی و پایش</a>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="glass-card p-4 text-center h-100">
+                        <div class="fs-1 text-success mb-3"><i class="fa-solid fa-truck-ramp-box"></i></div>
+                        <h4 class="fw-bold mb-3">اتصال به بازار جهانی و صادرات</h4>
+                        <p class="text-muted small">شبکه‌سازی کارگاه‌ها با صادرکنندگان بزرگ، فروشگاه‌های زنجیره‌ای و برقراری جریان درآمدزایی پایدار برای تولیدکننده.</p>
+                        <a href="#products" class="btn btn-sm btn-outline-success mt-2">فرصت‌های تجاری</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- فوتر رسمی و بین‌المللی -->
+    <footer class="py-4 border-top border-secondary border-opacity-25 mt-5">
+        <div class="container text-center">
+            <p class="text-light mb-1 fw-bold">شبکه هوشمند توسعه تولید و رفع موانع کسب‌وکارهای خرد و خانگی</p>
+            <p class="text-muted small mb-0">تمامی حقوق برای مدیریت سامانه محفوظ است &copy; 2026</p>
+        </div>
+    </footer>
+
+    <!-- اسکریپت بوت‌استرپ -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
