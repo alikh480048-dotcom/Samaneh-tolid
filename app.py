@@ -3,7 +3,7 @@ import sqlite3
 from flask import Flask, flash, redirect, render_template_string, request, url_for
 
 app = Flask(__name__)
-app.secret_key = "GAPGPTMASKTOKENjjvweqzo8w9X0X"
+app.secret_key = "GAPGPTMASKTOKENqxscrewfjc8X0X"
 
 DB_NAME = "database.db"
 
@@ -403,4 +403,5 @@ def index():
 
 if __name__ == "__main__":
   init_db()
-  app.run(host="0.0.0.0", port=5000)
+  port = int(os.environ.get("PORT", 5000))
+  app.run(host="0.0.0.0", port=port)
