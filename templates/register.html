@@ -1,221 +1,67 @@
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>چک‌لیست ثبت و شناسنامه‌دار کردن واحد تولیدی</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>ثبت واحد در شبکه ملی تولید | شبکه هوشمند توسعه تولید و رفع موانع</title>
+
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet">
-    <style>body { font-family: Vazirmatn, sans-serif; }</style>
-</head>
-<body class="bg-slate-900 text-slate-100 min-h-screen py-10 px-4">
-    <div class="max-w-4xl mx-auto bg-slate-800 rounded-2xl shadow-2xl border border-slate-700 p-6 md:p-10">
-        
-        <div class="border-b border-slate-700 pb-5 mb-8 flex justify-between items-center">
-            <div>
-                <h1 class="text-2xl font-black text-emerald-400">چک‌لیست ورود اطلاعات واحد تولیدی</h1>
-                <p class="text-slate-400 text-sm mt-1">تکمیل مشخصات شناسنامه‌ای، توان تولید و استخراج مستقیم موانع گلوگاهی</p>
-            </div>
-            <a href="{{ url_for('index') }}" class="text-sm bg-slate-700 hover:bg-slate-600 px-4 py-2 rounded-lg transition">بازگشت به پیشخوان</a>
-        </div>
 
-        <form action="{{ url_for('register') }}" method="POST" enctype="multipart/form-data" class="space-y-8">
-            
-            <!-- بخش ۱: هویت کارگاه و مالک -->
-            <div class="bg-slate-850 p-5 rounded-xl border border-slate-700">
-                <h2 class="text-lg font-bold text-sky-400 mb-4 flex items-center gap-2">
-                    <span>۱. مشخصات عمومی و ارتباطی</span>
-                </h2>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div>
-                        <label class="block text-xs text-slate-300 mb-1">نام واحد تولیدی / برند *</label>
-                        <input type="text" name="title" required placeholder="مثال: کارگاه سفال نقش جهان" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm focus:border-emerald-500 outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-xs text-slate-300 mb-1">نام و نام خانوادگی مدیر *</label>
-                        <input type="text" name="owner_name" required placeholder="مثال: مرتضی رضایی" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm focus:border-emerald-500 outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-xs text-slate-300 mb-1">شماره تماس مستقیم *</label>
-                        <input type="text" name="phone" required placeholder="۰۹۱۲۳۴۵۶۷۸۹" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm focus:border-emerald-500 outline-none text-left">
-                    </div>
-                </div>
-            </div>
+    <script src="https://unpkg.com/lucide@latest"></script>
 
-            <!-- بخش ۲: مکان‌یابی و رسته تولید -->
-            <div class="bg-slate-850 p-5 rounded-xl border border-slate-700">
-                <h2 class="text-lg font-bold text-sky-400 mb-4 flex items-center gap-2">
-                    <span>۲. رسته فعالیت و موقعیت مکانی کشوری</span>
-                </h2>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div>
-                        <label class="block text-xs text-slate-300 mb-1">گروه صنایع / رسته تولیدی *</label>
-                        <select name="industry_group" required class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm focus:border-emerald-500 outline-none">
-                            <option value="">-- انتخاب کنید --</option>
-                            {% for group in industry_groups %}
-                            <option value="{{ group }}">{{ group }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-xs text-slate-300 mb-1">استان *</label>
-                        <select id="provinceSelect" name="province" required onchange="updateCounties()" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm focus:border-emerald-500 outline-none">
-                            <option value="">-- انتخاب استان --</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-xs text-slate-300 mb-1">شهرستان (وابسته به استان) *</label>
-                        <select id="countySelect" name="county" required class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm focus:border-emerald-500 outline-none">
-                            <option value="">-- ابتدا استان را انتخاب کنید --</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
-
-            <!-- بخش ۳: توان و مختصات تولید (ظرفیت عددی، قیمت و عکس‌ها) -->
-            <div class="bg-slate-850 p-5 rounded-xl border border-slate-700">
-                <h2 class="text-lg font-bold text-sky-400 mb-4 flex items-center gap-2">
-                    <span>۳. توان، برآورد اقتصادی و تصاویر محصول</span>
-                </h2>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                    <div>
-                        <label class="block text-xs text-slate-300 mb-1">کل ظرفیت تولید (عدد) *</label>
-                        <input type="number" step="any" min="0" name="capacity" required placeholder="مثلاً: 500 یا 2.5" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm focus:border-emerald-500 outline-none text-left">
-                    </div>
-                    <div>
-                        <label class="block text-xs text-slate-300 mb-1">واحد اندازه‌گیری ظرفیت *</label>
-                        <input type="text" name="unit" required placeholder="مثال: تن در ماه / عدد در هفته / کیلوگرم" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm focus:border-emerald-500 outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-xs text-slate-300 mb-1">میانگین قیمت محصول (تومان) *</label>
-                        <input type="number" step="any" min="0" name="price" required placeholder="مثلاً: 250000" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm focus:border-emerald-500 outline-none text-left">
-                    </div>
-                </div>
-
-                <div>
-                    <label class="block text-xs text-slate-300 mb-2">تصاویر محصولات (امکان انتخاب همزمان چند عکس) :</label>
-                    <input type="file" name="product_images" multiple accept="image/*" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-sm text-slate-300 file:ml-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:bg-emerald-600 file:text-white hover:file:bg-emerald-500">
-                    <p class="text-xs text-slate-400 mt-1">فرمت‌های مجاز: JPG, PNG, WEBP. می‌توانید با نگه داشتن کلید Ctrl چند عکس را انتخاب فرمایید.</p>
-                </div>
-            </div>
-
-            <!-- بخش ۴: استخراج موانع گلوگاهی از چک‌لیست -->
-            <div class="bg-slate-850 p-5 rounded-xl border border-slate-700">
-                <h2 class="text-lg font-bold text-amber-400 mb-2 flex items-center gap-2">
-                    <span>۴. چک‌لیست عارضه‌یابی و استخراج موانع گلوگاهی</span>
-                </h2>
-                <p class="text-xs text-slate-400 mb-4">موانع اصلی کارگاه را علامت بزنید؛ نیازی به ورود مجدد در فرم دیگر نیست:</p>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
-                    <label class="flex items-center gap-2 bg-slate-900 p-2.5 rounded-lg border border-slate-700 hover:border-slate-500 cursor-pointer">
-                        <input type="checkbox" name="barriers" value="نبود یا کمبود نقدینگی و سرمایه در گردش" class="w-4 h-4 text-emerald-500 rounded">
-                        <span>نبود یا کمبود نقدینگی و سرمایه در گردش</span>
-                    </label>
-                    <label class="flex items-center gap-2 bg-slate-900 p-2.5 rounded-lg border border-slate-700 hover:border-slate-500 cursor-pointer">
-                        <input type="checkbox" name="barriers" value="دسترسی سخت به مواد اولیه یا گرانی آن" class="w-4 h-4 text-emerald-500 rounded">
-                        <span>دسترسی سخت به مواد اولیه یا گرانی آن</span>
-                    </label>
-                    <label class="flex items-center gap-2 bg-slate-900 p-2.5 rounded-lg border border-slate-700 hover:border-slate-500 cursor-pointer">
-                        <input type="checkbox" name="barriers" value="نبود بازار فروش داخلی پایدار و مطمئن" class="w-4 h-4 text-emerald-500 rounded">
-                        <span>نبود بازار فروش داخلی پایدار و مطمئن</span>
-                    </label>
-                    <label class="flex items-center gap-2 bg-slate-900 p-2.5 rounded-lg border border-slate-700 hover:border-slate-500 cursor-pointer">
-                        <input type="checkbox" name="barriers" value="عدم دسترسی به زنجیره صادرات" class="w-4 h-4 text-emerald-500 rounded">
-                        <span>عدم دسترسی به زنجیره صادرات</span>
-                    </label>
-                    <label class="flex items-center gap-2 bg-slate-900 p-2.5 rounded-lg border border-slate-700 hover:border-slate-500 cursor-pointer">
-                        <input type="checkbox" name="barriers" value="مشکلات بسته‌بندی نامناسب و غیراستاندارد" class="w-4 h-4 text-emerald-500 rounded">
-                        <span>مشکلات بسته‌بندی نامناسب و غیراستاندارد</span>
-                    </label>
-                    <label class="flex items-center gap-2 bg-slate-900 p-2.5 rounded-lg border border-slate-700 hover:border-slate-500 cursor-pointer">
-                        <input type="checkbox" name="barriers" value="کمبود نیروی کار ماهر یا هزینه بالای کارگری" class="w-4 h-4 text-emerald-500 rounded">
-                        <span>کمبود نیروی کار ماهر یا هزینه بالای کارگری</span>
-                    </label>
-                    <label class="flex items-center gap-2 bg-slate-900 p-2.5 rounded-lg border border-slate-700 hover:border-slate-500 cursor-pointer">
-                        <input type="checkbox" name="barriers" value="فرسودگی تجهیزات یا نیاز به ابزار نوین" class="w-4 h-4 text-emerald-500 rounded">
-                        <span>فرسودگی تجهیزات یا نیاز به ابزار نوین</span>
-                    </label>
-                    <label class="flex items-center gap-2 bg-slate-900 p-2.5 rounded-lg border border-slate-700 hover:border-slate-500 cursor-pointer">
-                        <input type="checkbox" name="barriers" value="موانع مجوزی، بیمه، استاندارد یا مالیات" class="w-4 h-4 text-emerald-500 rounded">
-                        <span>موانع مجوزی، بیمه، استاندارد یا مالیات</span>
-                    </label>
-                </div>
-
-                <div class="mt-4">
-                    <label class="block text-xs text-slate-300 mb-1">سایر موانع یا توضیحات تکمیلی مانع تولید (اختیاری):</label>
-                    <textarea name="other_barrier" rows="2" placeholder="چنانچه مانع خاص دیگری وجود دارد در اینجا قید فرمایید..." class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm focus:border-emerald-500 outline-none"></textarea>
-                </div>
-            </div>
-
-            <!-- دکمه ثبت نهایی -->
-            <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3.5 rounded-xl shadow-lg transition flex items-center justify-center gap-2 text-base">
-                <span>ثبت نهایی اطلاعات واحد تولیدی و چک‌لیست موانع</span>
-            </button>
-        </form>
-    </div>
-
-    <!-- دیتابیس ۳۱ استان و شهرستان‌های ایران (بدون نیاز به اتصال اینترنت خارجی) -->
     <script>
-        const iranDivisions = {
-            "آذربایجان شرقی": ["تبریز", "مراغه", "مرند", "میانه", "اهر", "بناب", "سراب", "آذرشهر", "اسکو", "شبستر", "عجب‌شیر", "جلفا", "ملکان", "هریس"],
-            "آذربایجان غربی": ["ارومیه", "خوی", "بوکان", "مهاباد", "میاندوآب", "سلماس", "پیرانشهر", "نقده", "سردشت", "شاهین‌دژ", "تکاب", "ماکو"],
-            "اردبیل": ["اردبیل", "پارس‌آباد", "مشگین‌شهر", "خلخال", "گرمی", "بیله‌سوار", "نمین", "کوثر", "سرعین"],
-            "اصفهان": ["اصفهان", "کاشان", "خمینی‌شهر", "نجف‌آباد", "لنجان", "فلاورجان", "شاهین‌شهر", "شهرضا", "مبارکه", "گلپایگان", "نائین", "نطنز"],
-            "البرز": ["کرج", "فردیس", "ساوجبلاغ", "نظرآباد", "اشتهارد", "طالقان", "چهارباغ"],
-            "ایلام": ["ایلام", "دهلران", "ایوان", "آبدانان", "چرداول", "دره‌شهر", "مهران", "ملکشاهی"],
-            "بوشهر": ["بوشهر", "دشتستان", "کنگان", "گناوه", "دشتی", "تنگستان", "عسلویه", "دیر", "جم", "دیلم"],
-            "تهران": ["تهران", "شهریار", "اسلامشهر", "بهارستان", "ملارد", "پاکدشت", "ری", "قدس", "رباط‌کریم", "ورامین", "دماوند", "پردیس", "شمیرانات"],
-            "چهارمحال و بختیاری": ["شهرکرد", "بروجن", "لردگان", "فارسان", "کیار", "اردل", "کوهرنگ", "سامان", "بن"],
-            "خراسان جنوبی": ["بیرجند", "قائنات", "فردوس", "طبس", "نهبندان", "درمیان", "سرایان", "سربیشه", "بشرویه"],
-            "خراسان رضوی": ["مشهد", "نیشابور", "سبزوار", "تربت حیدریه", "کاشمر", "قوچان", "تربت جام", "تایباد", "چناران", "سرخس", "گناباد", "فریمان"],
-            "خراسان شمالی": ["بجنورد", "شیروان", "اسفراین", "مانه و سملقان", "جاجرم", "فاروج", "گرمه", "راز و جرگلان"],
-            "خوزستان": ["اهواز", "دزفول", "آبادان", "ماهشهر", "شوشتر", "بهبهان", "خرمشهر", "شوش", "مسجدسلیمان", "ایذه", "رامهرمز", "اندیمشک"],
-            "زنجان": ["زنجان", "ابهر", "خرمدره", "خدابنده", "طارم", "ماه‌نشان", "ایجرود", "سلطانیه"],
-            "سمنان": ["سمنان", "شاهرود", "دامغان", "گرمسار", "مهدی‌شهر", "میامی", "سرخه", "آرادان"],
-            "سیستان و بلوچستان": ["زاهدان", "زابل", "ایرانشهر", "چابهار", "سراوان", "خاش", "نیک‌شهر", "کنارک", "زهک"],
-            "فارس": ["شیراز", "مرودشت", "کازرون", "فسا", "جهرم", "داراب", "فیروزآباد", "لارستان", "آباده", "لامرد", "سپیدان"],
-            "قزوین": ["قزوین", "تاکستان", "البرز", "بوئین‌زهرا", "آبیک", "آوج"],
-            "قم": ["قم", "جعفرآباد", "کهک"],
-            "کردستان": ["سنندج", "سقز", "مریوان", "بانه", "قروه", "کامیاران", "بیجار", "دیواندره", "دهگلان"],
-            "کرمان": ["کرمان", "سیرجان", "رفسنجان", "جیرفت", "بم", "زرند", "کهنوج", "شهربابک", "بافت", "بردسیر"],
-            "کرمانشاه": ["کرمانشاه", "اسلام‌آباد غرب", "جوانرود", "کنگاور", "سرپل ذهاب", "سنقر", "هرسین", "صحنه", "پاوه"],
-            "کهگیلویه و بویراحمد": ["یاسوج", "گچساران", "دهدشت", "دنا", "بهمئی", "چرام", "لنده"],
-            "گلستان": ["گرگان", "گنبد کاووس", "علی‌آباد", "آق‌قلا", "کلاله", "آزادشهر", "کردکوی", "بندر ترکمن", "مینودشت"],
-            "گیلان": ["رشت", "لاهیجان", "بندر انزلی", "تالش", "لنگرود", "رودسر", "صومعه‌سرا", "آستارا", "فومن", "رودبار", "آستانه اشرفیه", "شفت", "ماسال"],
-            "لرستان": ["خرم‌آباد", "بروجرد", "دورود", "کوهدشت", "دلفان", "الیگودرز", "سلسله", "ازنا", "پلدختر"],
-            "مازندران": ["ساری", "بابل", "آمل", "قائم‌شهر", "بهشهر", "چالوس", "نکا", "بابلسر", "تنکابن", "نوشهر", "رامسر", "محمودآباد"],
-            "مرکزی": ["اراک", "ساوه", "خمین", "محلات", "زرندیه", "دلیجان", "شازند", "فراهان", "تفرش", "آشتیان"],
-            "هرمزگان": ["بندرعباس", "میناب", "قشم", "بندرلنگه", "کیش", "رودان", "بستک", "حاجی‌آباد", "جاسک", "پارسیان"],
-            "همدان": ["همدان", "ملایر", "نهاوند", "اسدآباد", "تویسرکان", "بهار", "کبودرآهنگ", "رزن", "فامنین"],
-            "یزد": ["یزد", "میبد", "اردکان", "مهریز", "بافق", "ابرکوه", "تفت", "اشکذر", "خاتم", "بهاباد"]
-        };
-
-        const provinceSelect = document.getElementById("provinceSelect");
-        const countySelect = document.getElementById("countySelect");
-
-        // پر کردن کشویی استان
-        for (const prov in iranDivisions) {
-            const opt = document.createElement("option");
-            opt.value = prov;
-            opt.textContent = prov;
-            provinceSelect.appendChild(opt);
-        }
-
-        function updateCounties() {
-            const selectedProv = provinceSelect.value;
-            countySelect.innerHTML = '<option value="">-- انتخاب شهرستان --</option>';
-
-            if (selectedProv && iranDivisions[selectedProv]) {
-                iranDivisions[selectedProv].forEach(county => {
-                    const opt = document.createElement("option");
-                    opt.value = county;
-                    opt.textContent = county;
-                    countySelect.appendChild(opt);
-                });
-            } else {
-                countySelect.innerHTML = '<option value="">-- ابتدا استان را انتخاب کنید --</option>';
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Vazirmatn', 'sans-serif'],
+                    },
+                    colors: {
+                        zincx: {
+                            950: '#09090b',
+                            900: '#111118',
+                            850: '#16161f',
+                            800: '#1c1c26',
+                            700: '#27272f',
+                            600: '#3a3a46',
+                        }
+                    },
+                    boxShadow: {
+                        soft: '0 10px 35px rgba(0,0,0,.35)',
+                        glass: '0 8px 30px rgba(0,0,0,.28)',
+                    }
+                }
             }
         }
     </script>
-</body>
-</html>
+
+    <style>
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: Vazirmatn, sans-serif;
+            background:
+                radial-gradient(circle at top right, rgba(16,185,129,.10), transparent 22%),
+                radial-gradient(circle at top left, rgba(59,130,246,.10), transparent 18%),
+                linear-gradient(180deg, #0a0a0f 0%, #111118 45%, #0b0b10 100%);
+        }
+
+        .glass {
+            background: rgba(24, 24, 33, 0.72);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border: 1px solid rgba(255,255,255,.08);
+        }
+
+        .field {
+            width: 100%;
+            background: rgba(10, 10, 15, 0.72);
+            border: 1px solid rgba(255,255,255,.09);
+            color: #f3f4f6;
+            border-radius: 1rem;
+            padding: .9rem 1rem;
+            font-size: .95rem;
+            outline: none;
