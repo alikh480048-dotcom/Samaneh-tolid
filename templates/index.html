@@ -1,310 +1,201 @@
 <!DOCTYPE html>
-<html lang="fa" dir="rtl" class="dark scroll-smooth">
+<html lang="fa" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>شبکه هوشمند توسعه تولید و رفع موانع | پایگاه جامع ظرفیت‌های تولیدی کشور</title>
-    
-    <!-- فونت رسمی و استاندارد وزیرمتن -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-    
-    <!-- Tailwind CSS CDN -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>شبکه هوشمند توسعه تولید و رفع موانع کشور</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Vazirmatn', 'sans-serif'],
-                    },
-                    colors: {
-                        brand: {
-                            500: '#10b981',
-                            600: '#059669',
-                            accent: '#0284c7'
-                        }
-                    }
-                }
-            }
-        }
-    </script>
-    
-    <!-- آیکون‌های Lucide -->
+    <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
-
     <style>
-        body {
-            font-family: 'Vazirmatn', sans-serif;
-            -webkit-tap-highlight-color: transparent;
-        }
-        .no-scrollbar::-webkit-scrollbar {
-            display: none;
-        }
-        .no-scrollbar {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-        }
+        body { font-family: Vazirmatn, sans-serif; }
         .glass-card {
-            background: rgba(15, 23, 42, 0.75);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.08);
-        }
-        .glass-nav {
-            background: rgba(9, 13, 22, 0.88);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-top: 1px solid rgba(255, 255, 255, 0.08);
         }
     </style>
 </head>
-<body class="bg-[#070b14] text-slate-100 min-h-screen pb-24 md:pb-12 antialiased selection:bg-brand-500 selection:text-black">
+<body class="bg-slate-950 text-slate-100 min-h-screen pb-24">
 
-    <!-- نوار هدر اصلی -->
-    <header class="sticky top-0 z-40 w-full border-b border-slate-800/80 bg-[#070b14]/85 backdrop-blur-xl">
-        <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 via-emerald-500 to-cyan-500 flex items-center justify-center shadow-lg shadow-brand-500/20">
-                    <i data-lucide="factory" class="w-5 h-5 text-white"></i>
-                </div>
-                <div>
-                    <span class="text-base font-extrabold tracking-tight block text-white">شبکه هوشمند تولید کشور</span>
-                    <span class="text-[10px] text-slate-400 font-medium block">پلتفرم جامع اتصال زنجیره تأمین و صادرات</span>
-                </div>
+    <!-- نوار ناوبری بالا -->
+    <header class="sticky top-0 z-50 bg-slate-900/90 backdrop-blur-md border-b border-slate-800 px-4 py-3.5 flex justify-between items-center shadow-lg">
+        <div class="flex items-center gap-2">
+            <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center text-slate-950 font-black shadow-lg shadow-emerald-500/20">
+                <i data-lucide="factory" class="w-5 h-5"></i>
             </div>
-
-            <div class="hidden md:flex items-center gap-4">
-                <a href="#stats" class="text-sm font-medium text-slate-300 hover:text-white transition">داشبورد ظرفیت‌ها</a>
-                <a href="#showcase" class="text-sm font-medium text-slate-300 hover:text-white transition">بانک واحدهای تولیدی</a>
-                <a href="/register" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-brand-600 hover:bg-emerald-500 text-white text-sm font-semibold transition shadow-md shadow-brand-600/30">
-                    <i data-lucide="plus-circle" class="w-4 h-4"></i>
-                    ثبت واحد صنعتی / تولیدی
-                </a>
-                <a href="/login" class="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-sm font-medium transition border border-slate-700">
-                    <i data-lucide="shield-check" class="w-4 h-4 text-emerald-400"></i>
-                    ورود مدیریت
-                </a>
-            </div>
-
-            <div class="flex md:hidden items-center gap-2">
-                <a href="/login" class="p-2 rounded-lg bg-slate-800/80 border border-slate-700 text-slate-300">
-                    <i data-lucide="user" class="w-5 h-5"></i>
-                </a>
+            <div>
+                <h1 class="text-sm font-bold text-white leading-tight">شبکه هوشمند تولید کشور</h1>
+                <p class="text-[10px] text-emerald-400 font-medium">پایگاه جامع اتصال به بازار و رفع موانع</p>
             </div>
         </div>
+        <a href="/register" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-3.5 py-2 rounded-xl flex items-center gap-1.5 shadow-md shadow-emerald-900/40 transition">
+            <i data-lucide="plus-circle" class="w-4 h-4"></i>
+            ثبت واحد
+        </a>
     </header>
 
-    <main class="max-w-7xl mx-auto px-4 pt-6 space-y-8">
+    <main class="max-w-4xl mx-auto px-4 pt-6 space-y-6">
 
-        <!-- بخش معرفی مقیاس کلان و ملی -->
-        <section class="relative overflow-hidden rounded-3xl p-6 md:p-10 border border-slate-800 glass-card">
-            <div class="absolute -top-24 -left-24 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
-            <div class="absolute -bottom-24 -right-24 w-80 h-80 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none"></div>
+        <!-- بنر آمار و ظرفیت ملی -->
+        <section class="glass-card rounded-2xl p-5 border border-slate-800 bg-gradient-to-br from-slate-900 via-slate-850 to-slate-900 shadow-xl">
+            <div class="text-center space-y-2 mb-5">
+                <span class="inline-block bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs px-3 py-1 rounded-full font-medium">پلتفرم اتصال زنجیره تأمین و صادرات</span>
+                <h2 class="text-lg md:text-xl font-black text-white">هم‌رسانی ظرفیت‌های مازاد کارخانجات و کارگاه‌ها</h2>
+                <p class="text-xs text-slate-400 leading-relaxed max-w-xl mx-auto">ثبت و معرفی توان تولیدی صنایع بزرگ، SMEها، کارگاه‌های صنعتی و مشاغل تخصصی جهت عقد قراردادهای تأمین و رفع موانع.</p>
+            </div>
 
-            <div class="relative z-10 max-w-3xl space-y-4">
-                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold">
-                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                    هم‌رسانی ظرفیت‌های مازاد کارخانجات و کارگاه‌های سراسر ایران
+            <!-- جعبه‌های آمار -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-center">
+                <div class="bg-slate-800/80 rounded-xl p-3 border border-slate-700/50">
+                    <div class="text-emerald-400 font-black text-lg md:text-xl">{{ total_workshops if total_workshops else '۰' }}</div>
+                    <div class="text-[11px] text-slate-400 mt-0.5">واحدهای ثبت‌شده</div>
                 </div>
-                <h1 class="text-2xl md:text-4xl font-extrabold text-white leading-tight">
-                    پایگاه ملی اتصال تولید به <br>
-                    <span class="bg-gradient-to-l from-emerald-400 via-teal-300 to-cyan-400 bg-clip-text text-transparent">بازارهای کلان داخلی و خطوط صادرات</span>
-                </h1>
-                <p class="text-sm md:text-base text-slate-300 leading-relaxed">
-                    ثبت و معرفی توان تولیدی واحدهای صنعتی بزرگ، صنایع کوچک و متوسط (SME)، کارگاه‌های قطعه‌سازی، صنایع تبدیلی و مشاغل تخصصی جهت عقد قراردادهای تأمین، رفع موانع و صادرات کالا.
-                </p>
-
-                <div class="pt-2 flex flex-col sm:flex-row gap-3">
-                    <a href="/register" class="flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold text-sm shadow-lg shadow-emerald-600/30 active:scale-95 transition">
-                        <i data-lucide="building-2" class="w-4 h-4"></i>
-                        ثبت مشخصات و خطوط تولید واحد
-                    </a>
-                    <a href="#showcase" class="flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 border border-slate-700 text-slate-200 font-semibold text-sm active:scale-95 transition">
-                        <i data-lucide="search" class="w-4 h-4"></i>
-                        جستجوی ظرفیت‌های تولیدی کشور
-                    </a>
+                <div class="bg-slate-800/80 rounded-xl p-3 border border-slate-700/50">
+                    <div class="text-blue-400 font-black text-lg md:text-xl">۳۱ استان</div>
+                    <div class="text-[11px] text-slate-400 mt-0.5">پوشش سراسری</div>
+                </div>
+                <div class="bg-slate-800/80 rounded-xl p-3 border border-slate-700/50">
+                    <div class="text-amber-400 font-black text-lg md:text-xl">{{ total_industries if total_industries else '۱۰+' }}</div>
+                    <div class="text-[11px] text-slate-400 mt-0.5">رسته‌های صنعتی</div>
+                </div>
+                <div class="bg-slate-800/80 rounded-xl p-3 border border-slate-700/50">
+                    <div class="text-purple-400 font-black text-lg md:text-xl">گرید A</div>
+                    <div class="text-[11px] text-slate-400 mt-0.5">استاندارد صادراتی</div>
                 </div>
             </div>
         </section>
 
-        <!-- داشبورد شاخص‌های کلیدی (KPIs) در سطح کلان -->
-        <section id="stats" class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-            <div class="glass-card p-4 rounded-2xl">
-                <div class="flex items-center justify-between text-slate-400 mb-2">
-                    <span class="text-xs font-medium">واحدهای ثبت‌شده</span>
-                    <i data-lucide="factory" class="w-4 h-4 text-emerald-400"></i>
-                </div>
-                <div class="text-xl md:text-2xl font-black text-white">{{ stats.total_units if stats else '۳۴۰+' }}</div>
-                <div class="text-[10px] text-emerald-400 mt-1 flex items-center gap-1">
-                    <i data-lucide="activity" class="w-3 h-3"></i> صنعتی، تبدیلی و کارگاهی
-                </div>
-            </div>
-
-            <div class="glass-card p-4 rounded-2xl">
-                <div class="flex items-center justify-between text-slate-400 mb-2">
-                    <span class="text-xs font-medium">ظرفیت ماهانه اسمی</span>
-                    <i data-lucide="boxes" class="w-4 h-4 text-cyan-400"></i>
-                </div>
-                <div class="text-xl md:text-2xl font-black text-white">{{ stats.total_capacity if stats else '۱,۲۵۰,۰۰۰' }}</div>
-                <div class="text-[10px] text-slate-400 mt-1">تن / قطعه در ماه</div>
-            </div>
-
-            <div class="glass-card p-4 rounded-2xl">
-                <div class="flex items-center justify-between text-slate-400 mb-2">
-                    <span class="text-xs font-medium">پوشش جغرافیایی</span>
-                    <i data-lucide="map" class="w-4 h-4 text-amber-400"></i>
-                </div>
-                <div class="text-xl md:text-2xl font-black text-white">۳۱ استان</div>
-                <div class="text-[10px] text-slate-400 mt-1">شهرک‌های صنعتی و نواحی تولید</div>
-            </div>
-
-            <div class="glass-card p-4 rounded-2xl">
-                <div class="flex items-center justify-between text-slate-400 mb-2">
-                    <span class="text-xs font-medium">استاندارد و صادرات</span>
-                    <i data-lucide="shield-alert" class="w-4 h-4 text-purple-400"></i>
-                </div>
-                <div class="text-xl md:text-2xl font-black text-white">سطح تجاری A</div>
-                <div class="text-[10px] text-purple-300 mt-1">آماده عقد قراردادهای کلان</div>
+        <!-- لیست دسته‌بندی صنایع (انتخاب سریع رسته) -->
+        <section class="space-y-2">
+            <h3 class="text-xs font-bold text-slate-300 flex items-center gap-1.5">
+                <i data-lucide="layers" class="w-4 h-4 text-emerald-400"></i>
+                رسته‌ها و بخش‌های تولیدی فعال
+            </h3>
+            <div class="flex gap-2 overflow-x-auto pb-2 scrollbar-none text-xs">
+                <a href="/" class="whitespace-nowrap px-3.5 py-1.5 rounded-xl bg-emerald-600 text-white font-medium shadow-sm">همه صنایع</a>
+                <span class="whitespace-nowrap px-3 py-1.5 rounded-xl bg-slate-800/80 text-slate-300 border border-slate-700">صنایع فلزی و ماشین‌سازی</span>
+                <span class="whitespace-nowrap px-3 py-1.5 rounded-xl bg-slate-800/80 text-slate-300 border border-slate-700">شیمیایی و پلیمری</span>
+                <span class="whitespace-nowrap px-3 py-1.5 rounded-xl bg-slate-800/80 text-slate-300 border border-slate-700">غذایی، فرآوری و دارویی</span>
+                <span class="whitespace-nowrap px-3 py-1.5 rounded-xl bg-slate-800/80 text-slate-300 border border-slate-700">نساجی، پوشاک و چرم</span>
+                <span class="whitespace-nowrap px-3 py-1.5 rounded-xl bg-slate-800/80 text-slate-300 border border-slate-700">صنایع چوب و مبلمان</span>
+                <span class="whitespace-nowrap px-3 py-1.5 rounded-xl bg-slate-800/80 text-slate-300 border border-slate-700">صنایع دستی و خرد</span>
             </div>
         </section>
 
-        <!-- دسته‌بندی جامع صنایع کلان کشور (چیپ‌های کشویی افقی) -->
-        <section class="space-y-3">
-            <div class="flex items-center justify-between">
-                <h2 class="text-base font-bold text-white flex items-center gap-2">
-                    <i data-lucide="layers" class="w-4 h-4 text-emerald-400"></i>
-                    شاخه‌ها و بخش‌های صنعتی فعال
-                </h2>
-                <span class="text-xs text-slate-400">تمام صنایع کشور</span>
-            </div>
-            
-            <div class="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
-                <button class="px-4 py-2 rounded-xl bg-brand-600 text-white text-xs font-bold whitespace-nowrap shadow-sm shadow-brand-500/30">همه صنایع</button>
-                <button class="px-4 py-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700 text-xs font-medium whitespace-nowrap">صنایع فلزی و ماشین‌سازی</button>
-                <button class="px-4 py-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700 text-xs font-medium whitespace-nowrap">شیمیایی، پلیمر و پلاستیک</button>
-                <button class="px-4 py-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700 text-xs font-medium whitespace-nowrap">صنایع غذایی، دارویی و تبدیلی</button>
-                <button class="px-4 py-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700 text-xs font-medium whitespace-nowrap">نساجی، پوشاک و چرم</button>
-                <button class="px-4 py-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700 text-xs font-medium whitespace-nowrap">برق، الکترونیک و تجهیزات دقیق</button>
-                <button class="px-4 py-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700 text-xs font-medium whitespace-nowrap">کانی غیرفلزی و مصالح ساختمانی</button>
-                <button class="px-4 py-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700 text-xs font-medium whitespace-nowrap">صنایع دستی و تولیدات خرد</button>
-            </div>
-        </section>
-
-        <!-- ویترین جامع واحدهای تولیدی -->
-        <section id="showcase" class="space-y-4">
-            <div class="flex items-center justify-between">
-                <div>
-                    <h2 class="text-lg font-bold text-white">بانک ظرفیت‌های تولیدی و کارخانجات</h2>
-                    <p class="text-xs text-slate-400">امکان ثبت سفارش، قرارداد تأمین و پیگیری از طریق دبیرخانه شبکه</p>
-                </div>
+        <!-- فهرست کارگاه‌ها و واحدهای تولیدی -->
+        <section class="space-y-4">
+            <div class="flex justify-between items-center">
+                <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                    <i data-lucide="layout-grid" class="w-4 h-4 text-emerald-400"></i>
+                    بانک اطلاعات و ظرفیت کارخانجات
+                </h3>
+                <span class="text-xs text-slate-400">{{ total_workshops if total_workshops else '۰' }} واحد آماده همکاری</span>
             </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {% if units %}
-                    {% for unit in units %}
-                    <div class="glass-card rounded-2xl overflow-hidden border border-slate-800 hover:border-slate-700 transition flex flex-col justify-between">
+            {% if workshops %}
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {% for w in workshops %}
+                    <div class="glass-card rounded-2xl p-4 border border-slate-800 space-y-3 relative overflow-hidden flex flex-col justify-between">
                         <div>
-                            <!-- تصویر خط تولید یا محصول -->
-                            <div class="relative h-48 bg-slate-800 overflow-hidden">
-                                {% if unit.images %}
-                                    <img src="{{ url_for('static', filename='uploads/' + unit.images.split(',')[0]) }}" alt="{{ unit.name }}" class="w-full h-full object-cover">
-                                {% else %}
-                                    <div class="w-full h-full flex flex-col items-center justify-center text-slate-500 bg-slate-800/50">
-                                        <i data-lucide="factory" class="w-8 h-8 mb-1"></i>
-                                        <span class="text-xs">تصویر واحد یا محصول ثبت نشده</span>
-                                    </div>
-                                {% endif %}
-                                <div class="absolute top-3 right-3 bg-black/60 backdrop-blur-md px-2.5 py-1 rounded-lg text-[11px] font-bold text-white flex items-center gap-1 border border-white/10">
-                                    <i data-lucide="map-pin" class="w-3 h-3 text-emerald-400"></i>
-                                    {{ unit.province or 'سراسری' }} - {{ unit.city or '' }}
+                            <!-- سربرگ کارت -->
+                            <div class="flex justify-between items-start gap-2 mb-2">
+                                <div>
+                                    <h4 class="font-bold text-white text-base leading-snug">{{ w.title if w.title else 'واحد تولیدی نامشخص' }}</h4>
+                                    <p class="text-xs text-slate-400 flex items-center gap-1 mt-1">
+                                        <i data-lucide="map-pin" class="w-3.5 h-3.5 text-slate-500"></i>
+                                        {{ w.province }} - {{ w.county if w.county else 'مرکز' }}
+                                    </p>
                                 </div>
-                                <div class="absolute bottom-3 left-3 bg-emerald-500/90 text-black px-2 py-0.5 rounded text-[10px] font-black uppercase">
-                                    ظرفیت فعال
-                                </div>
+                                <span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[11px] px-2.5 py-1 rounded-lg whitespace-nowrap font-medium">
+                                    {{ w.industry_group if w.industry_group else (w.field if w.field else 'صنعتی') }}
+                                </span>
                             </div>
 
-                            <!-- مشخصات واحد تولیدی -->
-                            <div class="p-4 space-y-3">
-                                <div>
-                                    <span class="text-[11px] text-emerald-400 font-semibold">{{ unit.category or 'صنعتی / تولیدی' }}</span>
-                                    <h3 class="text-base font-bold text-white mt-0.5">{{ unit.name }}</h3>
-                                </div>
-
-                                <div class="grid grid-cols-2 gap-2 text-xs py-2 border-y border-slate-800/80">
-                                    <div>
-                                        <span class="text-slate-400 block text-[10px]">ظرفیت تولید ماهانه:</span>
-                                        <span class="font-bold text-slate-200">{{ unit.capacity or 'طبق استعلام' }}</span>
+                            <!-- بخش تصاویر و دانلود مستقیم عکس -->
+                            {% if w.images %}
+                            <div class="space-y-2 my-3">
+                                <div class="grid grid-cols-2 gap-2">
+                                    {% for img in w.images %}
+                                    <div class="relative group rounded-xl overflow-hidden bg-slate-900 border border-slate-800 h-28">
+                                        <img src="{{ url_for('static', filename=img) }}" alt="تصویر محصول" class="w-full h-full object-cover">
+                                        <a href="{{ url_for('static', filename=img) }}" download class="absolute bottom-1.5 left-1.5 bg-slate-950/80 hover:bg-emerald-600 text-white text-[10px] px-2 py-1 rounded-lg flex items-center gap-1 backdrop-blur-sm transition">
+                                            <i data-lucide="download" class="w-3 h-3"></i>
+                                            دانلود
+                                        </a>
                                     </div>
-                                    <div>
-                                        <span class="text-slate-400 block text-[10px]">حداقل پذیرش سفارش:</span>
-                                        <span class="font-bold text-slate-200">{{ unit.min_order or 'توافقی' }}</span>
-                                    </div>
+                                    {% endfor %}
                                 </div>
+                            </div>
+                            {% endif %}
 
-                                <!-- شماره تماس ماسک شده برای تضمین درآمد و نظارت دبیرخانه -->
-                                <div class="flex items-center justify-between bg-slate-900/60 p-2 rounded-xl border border-slate-800 text-xs">
-                                    <span class="text-slate-400 flex items-center gap-1">
-                                        <i data-lucide="lock" class="w-3.5 h-3.5 text-amber-400"></i>
-                                        ارتباط مستقیم:
-                                    </span>
-                                    <span class="font-mono text-slate-300">۰۹********* (اختصاصی دبیرخانه)</span>
+                            <!-- مشخصات ظرفیت و تولید -->
+                            <div class="bg-slate-900/60 rounded-xl p-3 border border-slate-800/80 space-y-1.5 text-xs">
+                                <div class="flex justify-between text-slate-300">
+                                    <span class="text-slate-400">ظرفیت ماهانه اسمی:</span>
+                                    <span class="font-bold text-white">{{ w.capacity if w.capacity else 'توافقی' }} {{ w.unit if w.unit else 'واحد' }}</span>
                                 </div>
+                                {% if w.price %}
+                                <div class="flex justify-between text-slate-300">
+                                    <span class="text-slate-400">حداقل سفارش / قیمت:</span>
+                                    <span class="font-bold text-emerald-400">{{ w.price }} {{ w.price_currency if w.price_currency else 'تومان' }}</span>
+                                </div>
+                                {% endif %}
+                                {% if w.barriers or w.issue %}
+                                <div class="pt-1 border-t border-slate-800 text-[11px] text-amber-400 flex items-start gap-1">
+                                    <i data-lucide="alert-circle" class="w-3.5 h-3.5 shrink-0 mt-0.5"></i>
+                                    <span>موانع ثبت شده: {{ w.barriers if w.barriers else w.issue }}</span>
+                                </div>
+                                {% endif %}
                             </div>
                         </div>
 
-                        <!-- دکمه اتصال و مذاکره تأمین -->
-                        <div class="p-4 pt-0">
-                            <a href="tel:02100000000" class="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-slate-800 hover:bg-emerald-600 hover:text-white text-slate-300 text-xs font-bold transition border border-slate-700">
-                                <i data-lucide="handshake" class="w-4 h-4"></i>
-                                درخواست استعلام و اتصال به واحد
+                        <!-- دکمه تماس امن از طریق دبیرخانه -->
+                        <div class="pt-3 border-t border-slate-800/60 flex items-center justify-between gap-2 mt-2">
+                            <div class="text-[11px] text-slate-400">
+                                ارتباط مستقیم: <span class="text-slate-300 font-mono">۰۹****** (دبیرخانه)</span>
+                            </div>
+                            <a href="tel:09120000000" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-emerald-400 text-xs font-bold px-3 py-1.5 rounded-xl flex items-center gap-1 transition">
+                                <i data-lucide="phone-call" class="w-3.5 h-3.5"></i>
+                                استعلام و پیگیری
                             </a>
                         </div>
                     </div>
                     {% endfor %}
-                {% else %}
-                    <!-- حالت پیش‌فرض برای دیتابیس خالی -->
-                    <div class="col-span-full glass-card p-8 rounded-2xl text-center space-y-3 border border-slate-800">
-                        <i data-lucide="building" class="w-12 h-12 text-slate-500 mx-auto"></i>
-                        <h3 class="text-base font-bold text-white">ثبت نخستین واحد تولیدی و صنعتی</h3>
-                        <p class="text-xs text-slate-400 max-w-md mx-auto">کارخانجات، کارگاه‌ها و واحدهای تولیدی در هر رسته می‌توانند ظرفیت مازاد و محصولات خود را در این سامانه ثبت کنند.</p>
-                        <a href="/register" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-brand-600 text-white font-bold text-xs mt-2">
-                            <i data-lucide="plus" class="w-4 h-4"></i> ثبت اطلاعات واحد صنعتی
-                        </a>
-                    </div>
-                {% endif %}
-            </div>
+                </div>
+            {% else %}
+                <div class="glass-card rounded-2xl p-8 text-center border border-slate-800 space-y-3">
+                    <i data-lucide="package-open" class="w-12 h-12 text-slate-600 mx-auto"></i>
+                    <h4 class="text-base font-bold text-white">هنوز واحدی ثبت نشده است</h4>
+                    <p class="text-xs text-slate-400 max-w-sm mx-auto">شما اولین تولیدکننده‌ای باشید که توانمندی و ظرفیت مازاد خود را در شبکه ملی ثبت می‌کند.</p>
+                    <a href="/register" class="inline-flex items-center gap-1.5 bg-emerald-600 text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow-md">
+                        <i data-lucide="plus" class="w-4 h-4"></i>
+                        ثبت اطلاعات واحد تولیدی
+                    </a>
+                </div>
+            {% endif %}
         </section>
-
-        <!-- دعوت به اقدام کلان -->
-        <section class="glass-card rounded-3xl p-6 md:p-8 border border-emerald-500/30 text-center space-y-4">
-            <h2 class="text-xl md:text-2xl font-black text-white">دارای خط تولید، کارخانه یا کارگاه صنعتی هستید؟</h2>
-            <p class="text-xs md:text-sm text-slate-300 max-w-2xl mx-auto leading-relaxed">
-                ظرفیت خالی، محصولات و نیازهای زنجیره تأمین خود را ثبت کنید تا به شبکه تجار بین‌المللی، خریداران عمده و نهادهای رفع موانع تولید متصل شوید.
-            </p>
-            <div class="pt-1">
-                <a href="/register" class="inline-flex items-center gap-2 px-8 py-3.5 rounded-2xl bg-white text-slate-950 font-black text-sm hover:bg-slate-200 transition shadow-xl">
-                    <i data-lucide="check-circle" class="w-4 h-4 text-emerald-600"></i>
-                    ثبت واحد در شبکه ملی تولید (رایگان)
-                </a>
-            </div>
-        </section>
-
-        <!-- فوتر جامع سازمانی -->
-        <footer class="pt-6 border-t border-slate-800/80 text-center text-xs text-slate-500 space-y-2">
-            <p>© شبکه هوشمند توسعه تولید و رفع موانع | پایگاه ملی هم‌رسانی ظرفیت‌های صنعتی و تولیدی کشور</p>
-            <div class="flex justify-center gap-4 text-[11px] text-slate-400">
-                <a href="#" class="hover:text-slate-200">میز صادرات</a>
-                <span>•</span>
-                <a href="#" class="hover:text-slate-200">رفع موانع و استعلامات</a>
-                <span>•</span>
-                <a href="/login" class="hover:text-slate-200">پنل نظارت و مدیریت</a>
-            </div>
-        </footer>
 
     </main>
 
-    <!-- نوار ناوبری اختصاصی گوشی سامسونگ (Bottom Navigation) -->
-    <nav class="md:hidden 
+    <!-- نوار ناوبری ارگونومیک پایین (مخصوص گوشی) -->
+    <nav class="fixed bottom-0 inset-x-0 z-50 bg-slate-900/95 backdrop-blur-md border-t border-slate-800 py-2 px-6 flex justify-around items-center">
+        <a href="/" class="flex flex-col items-center gap-1 text-emerald-400">
+            <i data-lucide="home" class="w-5 h-5"></i>
+            <span class="text-[10px] font-bold">صفحه اصلی</span>
+        </a>
+        <a href="/register" class="flex flex-col items-center gap-1 text-slate-400 hover:text-white">
+            <i data-lucide="plus-square" class="w-5 h-5"></i>
+            <span class="text-[10px] font-medium">ثبت واحد</span>
+        </a>
+        <a href="/login" class="flex flex-col items-center gap-1 text-slate-400 hover:text-white">
+            <i data-lucide="shield-check" class="w-5 h-5"></i>
+            <span class="text-[10px] font-medium">دبیرخانه</span>
+        </a>
+    </nav>
+
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>
