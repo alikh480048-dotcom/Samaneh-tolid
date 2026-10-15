@@ -1,10 +1,11 @@
 import os
 import sqlite3
-import json
 from flask import Flask, g, redirect, render_template_string, request, url_for
 
 app = Flask(__name__)
-DATABASE = "samaneh.db"
+app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "samaneh-tolid-secure-key")
+
+DATABASE = "database.db"
 
 
 def get_db():
@@ -25,387 +26,485 @@ def close_connection(exception):
 def init_db():
   with app.app_context():
     db = get_db()
-    db.execute("""
-            CREATE TABLE IF NOT EXISTS producers (
+    cursor = db.cursor()
+    # جدول کارگاه‌ها و واحدهای تولیدی
+    cursor.execute("""
+            CREATE TABLE IF NOT EXISTS workshops (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
-                name TEXT NOT NULL,
-                manager TEXT NOT NULL,
-                phone TEXT NOT NULL,
+                workshop_name TEXT NOT NULL,
+                manager_name TEXT NOT NULL,
                 province TEXT NOT NULL,
                 city TEXT NOT NULL,
                 category TEXT NOT NULL,
-                capacity TEXT NOT NULL,
-                unit_type TEXT NOT NULL,
+                phone TEXT NOT NULL,
                 address TEXT,
+                description TEXT,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         """)
-    db.execute("""
+    # جدول محصولات
+    cursor.execute("""
             CREATE TABLE IF NOT EXISTS products (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
-                producer_id INTEGER NOT NULL,
-                prod_name TEXT NOT NULL,
-                prod_desc TEXT,
-                min_order TEXT,
-                price_range TEXT,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY(producer_id) REFERENCES producers(id)
+                workshop_id INTEGER,
+                product_name TEXT NOT NULL,
+                price TEXT,
+                capacity TEXT,
+                image_url TEXT,
+                FOREIGN KEY (workshop_id) REFERENCES workshops (id)
             )
         """)
-    db.execute("""
+    # جدول استعلام‌ها (RFQ)
+    cursor.execute("""
             CREATE TABLE IF NOT EXISTS inquiries (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
-                product_id INTEGER NOT NULL,
+                product_id INTEGER,
                 buyer_name TEXT NOT NULL,
-                buyer_phone TEXT NOT NULL,
-                buyer_company TEXT,
-                quantity_needed TEXT NOT NULL,
+                buyer_contact TEXT NOT NULL,
                 message TEXT,
-                status TEXT DEFAULT 'Pending',
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY(product_id) REFERENCES products(id)
+                FOREIGN KEY (product_id) REFERENCES products (id)
             )
         """)
     db.commit()
 
 
-IRAN_DIVISIONS = {
-    "تهران": ["تهران", "ری", "شمیرانات", "پردیس", "دماوند", "فیروزکوه", "اسلامشهر", "رباط‌کریم", "بهارستان", "ورامین", "پیشوا", "پاکدشت", "ملارد", "شهریار", "قدس"],
-    "اصفهان": ["اصفهان", "کاشان", "نجف‌آباد", "خمینی‌شهر", "شاهین‌شهر", "شهرضا", "فلاورجان", "گلپایگان", "فریدن", "نائین", "نطنز", "اردستان", "سمیرم", "خوانسار", "برخوار", "تیران و کرون", "چادگان", "دهاقان", "خور و بیابانک"],
-    "خراسان رضوی": ["مشهد", "سبزوار", "نیشابور", "تربت حیدریه", "قوچان", "کاشمر", "تربت جام", "چناران", "خواف", "سرخس", "فریمان", "گناباد", "بجستان", "بردسکن", "تایباد", "رشتخوار", "زاوه", "خلیل‌آباد", "درگز", "کلات", "جغتای", "جوین", "داورزن", "باخرز"],
-    "فارس": ["شیراز", "مرودشت", "جهرم", "فسا", "داراب", "لارستان", "فیروزآباد", "اقلید", "آباده", "ممسنی", "کازرون", "استهبان", "نی‌ریز", "زرین‌دشت", "ارسنجان", "بوانات", "خرم‌بید", "رستم", "سپیدان", "کوار", "گراش", "لامرد", "مهر", "سرچهان", "بیضا", "پاسارگاد"],
-    "آذربایجان شرقی": ["تبریز", "مراغه", "مرند", "میانه", "اهر", "شبستر", "بناب", "سراب", "آذرشهر", "عجب‌شیر", "ملکان", "هریس", "چاراویماق", "خداآفرین", "ورزقان", "کلیبر", "جلفا", "هشترود"],
-    "مازندران": ["ساری", "بابل", "آمل", "قائم‌شهر", "بهشهر", "بابلسر", "تنکابن", "نوشهر", "چالوس", "فریدونکنار", "رامسر", "نکا", "جویبار", "محمودآباد", "سوادکوه", "عباس‌آباد", "میاندرود", "کلاردشت", "گلوگاه", "سیمرغ"],
-    "گیلان": ["رشت", "بندرانزلی", "لاهیجان", "لنگرود", "هشتپر", "آستارا", "صومعه‌سرا", "آستانه اشرفیه", "رودسر", "فومن", "خمام", "شفت", "رضوانشهر", "املش", "سیاهکل", "رودبار"],
-    "گلستان": ["گرگان", "گنبد کاووس", "علی‌آباد کتول", "بندر ترکمن", "کردکوی", "آق‌قلا", "مینودشت", "آزادشهر", "کلاله", "مراوه‌تپه", "رامیان", "گمیشان"],
-    "البرز": ["کرج", "فردیس", "ساوجبلاغ", "نظرآباد", "طالقان", "اشتهارد", "چهارباغ"],
-    "آذربایجان غربی": ["ارومیه", "خوی", "بوکان", "مهاباد", "میاندوآب", "سلماس", "پیرانشهر", "نقده", "تکاب", "ماکو", "سردشت", "شاهین‌دژ", "اشنویه", "چایپاره", "پلدشت", "شوط"],
-    "کرمان": ["کرمان", "سیرجان", "رفسنجان", "جیرفت", "بم", "زرند", "شهربابک", "بافت", "بردسیر", "کهنوج", "راور", "منوجان", "عنبرآباد", "رودبار جنوب", "فهرج", "قلعه‌گنج", "نرماشیر", "ارزوئیه", "رابر"],
-    "خوزستان": ["اهواز", "دزفول", "آبادان", "خرمشهر", "ماهشهر", "ایذه", "بهبهان", "شوشتر", "مسجدسلیمان", "شوش", "رامهرمز", "شادگان", "سوسنگرد", "بندر امام خمینی", "گتوند", "باغ‌ملک", "هندیجان", "لالی", "اندیکا", "هویزه", "آغاجاری", "حمیدیه"],
-    "قم": ["قم"],
-    "کرمانشاه": ["کرمانشاه", "اسلام‌آباد غرب", "جوانرود", "سرپل ذهاب", "سنقر", "کنگاور", "پاوه", "صحنه", "گیلانغرب", "هرسین", "روانسر", "دالاهو", "ثلاث باباجانی", "قصر شیرین"],
-    "سیستان و بلوچستان": ["زاهدان", "زابل", "ایرانشهر", "چابهار", "خاش", "سراوان", "کنارک", "نیک‌شهر", "سرباز", "راسک", "میرجاوه", "دلگان", "هامون", "نیمروز", "هیرمند", "فنوج", "قصرقند"],
-    "یزد": ["یزد", "میبد", "اردکان", "بافق", "مهریز", "ابرکوه", "اشکذر", "تفت", "هرات", "مروست"],
-    "هرمزگان": ["بندرعباس", "میناب", "قشم", "بندر لنگه", "کیش", "حاجی‌آباد", "رودان", "جاسک", "بستک", "پارسیان", "خمیر", "ابوموسی", "سیریک", "بشاگرد"],
-    "لرستان": ["خرم‌آباد", "بروجرد", "دورود", "الیگودرز", "کوهدشت", "پلدختر", "سلسله", "دلفان", "ازنا", "رومشکان", "چگنی"],
-    "مرکزی": ["اراک", "ساوه", "خمین", "محلات", "دلیجان", "تفرش", "آشتیان", "شازند", "زرندیه", "فراهان", "خنداب", "کمیجان"],
-    "همدان": ["همدان", "ملایر", "نهاوند", "کبودرآهنگ", "رزن", "اسدآباد", "تویسرکان", "بهار", "درگزین", "فامنین"],
-    "کردستان": ["سنندج", "سقز", "مریوان", "بانه", "قروه", "کامیاران", "بیجار", "دیواندره", "دهگلان", "سروآباد"],
-    "سمنان": ["سمنان", "شاهرود", "دامغان", "گرمسار", "مهدی‌شهر", "سرخه", "میامی", "آرادان"],
-    "چهارمحال و بختیاری": ["شهرکرد", "بروجن", "لردگان", "فارسان", "فرخ‌شهر", "هفشجان", "اردل", "کیار", "بن", "سامان"],
-    "خراسان شمالی": ["بجنورد", "شیروان", "اسفراین", "آشخانه", "جاجرم", "فاروج", "راز و جرگلان", "گرمه"],
-    "خراسان جنوبی": ["بیرجند", "قائن", "طبس", "فردوس", "نهبندان", "سرایان", "سربیشه", "بشرویه", "درمیان", "خوسف", "زیرکوه"],
-    "کهگیلویه و بویراحمد": ["یاسوج", "دوگنبدان", "دهدشت", "لیکک", "چرام", "لنده", "باشت", "سی‌سخت"],
-    "بوشهر": ["بوشهر", "برازجان", "بندر کنگان", "خورموج", "گناوه", "دلوار", "دیلم", "عسلویه", "جم", "خارگ", "بردخون"],
-    "زنجان": ["زنجان", "ابهر", "خرمدره", "قیدار", "هیدج", "صایین‌قلعه", "آب‌بر", "سلطانیه", "ماهنشان", "طارم"],
-    "قزوین": ["قزوین", "الوند", "تاکستان", "محمدیه", "آبیک", "بوئین‌زهرا", "آوج", "شال"],
-    "اردبیل": ["اردبیل", "پارس‌آباد", "مشگین‌شهر", "خلخال", "گرمی", "بیله‌سوار", "نمین", "اصلاندوز", "کوثر", "نیر"]
-}
+# راه‌اندازی اولیه پایگاه داده
+init_db()
 
-HANDICRAFT_CATEGORIES = [
-    "فرش و گلیم و دستبافته‌ها",
-    "سفال و سرامیک",
-    "محصولات چوبی و حصیری",
-    "رودوزی‌های سنتی و زیورآلات",
-    "محصولات چرمی دست‌دوز",
-    "شیشه و کریستال سنتی",
-    "سایر رسته‌های صنایع دستی"
-]
-
+# قالب HTML یکپارچه با طراحی مدرن Enterprise B2B و پشتیبانی کامل از زبان فارسی
 HTML_TEMPLATE = """<!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>شبکه هوشمند توسعه تولید و رفع موانع | پلتفرم ملی و بین‌المللی</title>
+    <title>شبکه هوشمند توسعه تولید و رفع موانع</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        brand: { 50: '#f0fdf4', 100: '#dcfce7', 500: '#22c55e', 600: '#16a34a', 700: '#15803d', 900: '#14532d' }
-                    },
-                    fontFamily: { sans: ['Vazirmatn', 'sans-serif'] }
-                }
-            }
-        }
-    </script>
-    <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet" type="text/css" />
-    <style> body { font-family: 'Vazirmatn', sans-serif; background-color: #f8fafc; } </style>
-    <script>
-        const iranDivisions = {{ divisions_json | safe }};
-        function updateCities() {
-            const provinceSelect = document.getElementById('province');
-            const citySelect = document.getElementById('city');
-            const selectedProvince = provinceSelect.value;
-            citySelect.innerHTML = '<option value="">انتخاب شهرستان...</option>';
-            if (selectedProvince && iranDivisions[selectedProvince]) {
-                iranDivisions[selectedProvince].forEach(city => {
-                    const opt = document.createElement('option');
-                    opt.value = city;
-                    opt.textContent = city;
-                    citySelect.appendChild(opt);
-                });
-            }
-        }
-    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Vazirmatn', sans-serif; }
+    </style>
 </head>
-<body class="min-h-screen text-slate-800 flex flex-col justify-between">
-    <header class="bg-slate-900 text-white shadow-xl border-b border-slate-800 sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center py-4">
-                <div class="flex items-center space-x-4 space-x-reverse">
-                    <div class="bg-gradient-to-tr from-brand-600 to-emerald-400 p-2.5 rounded-xl shadow-lg">
-                        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
-                    </div>
-                    <div>
-                        <h1 class="text-xl sm:text-2xl font-black tracking-tight text-white">شبکه هوشمند توسعه تولید و رفع موانع</h1>
-                        <p class="text-xs text-emerald-400 font-medium tracking-wide">پلتفرم تخصصی زنجیره تأمین، تنظیم بازار و اتصال امن صادراتی</p>
-                    </div>
-                </div>
-                <div class="hidden md:flex items-center space-x-2 space-x-reverse bg-slate-800/80 px-4 py-2 rounded-full border border-slate-700">
-                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                    <span class="text-xs font-semibold text-slate-300">موتور تجاری فعال (نسخه ملی)</span>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col">
+    <!-- هدر سامانه -->
+    <header class="bg-slate-800 border-b border-slate-700 shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-3">
+                <div class="bg-emerald-600 p-2.5 rounded-xl shadow-md text-white font-bold text-xl">ص</div>
+                <div>
+                    <h1 class="text-xl font-bold tracking-wide">شبکه هوشمند توسعه تولید</h1>
+                    <p class="text-xs text-slate-400">مرکز ملی ارتباط بازار، ثبت کارگاه‌ها و رفع موانع صنایع دستی و خانگی</p>
                 </div>
             </div>
-            <nav class="flex space-x-2 space-x-reverse overflow-x-auto pb-3 pt-1 border-t border-slate-800">
-                <a href="/?tab=register" class="px-5 py-2.5 rounded-lg text-sm font-bold transition flex items-center space-x-2 space-x-reverse whitespace-nowrap {{ 'bg-brand-600 text-white shadow-md' if current_tab == 'register' else 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">
-                    <span>📝</span><span>ثبت کارگاه و واحد</span>
-                </a>
-                <a href="/?tab=product" class="px-5 py-2.5 rounded-lg text-sm font-bold transition flex items-center space-x-2 space-x-reverse whitespace-nowrap {{ 'bg-brand-600 text-white shadow-md' if current_tab == 'product' else 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">
-                    <span>📦</span><span>ثبت محصول در کاتالوگ</span>
-                </a>
-                <a href="/?tab=market" class="px-5 py-2.5 rounded-lg text-sm font-bold transition flex items-center space-x-2 space-x-reverse whitespace-nowrap {{ 'bg-brand-600 text-white shadow-md' if current_tab == 'market' else 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">
-                    <span>🛒</span><span>بازار عمومی و استعلام (RFQ)</span>
-                </a>
-                <a href="/?tab=admin" class="px-5 py-2.5 rounded-lg text-sm font-bold transition flex items-center space-x-2 space-x-reverse whitespace-nowrap {{ 'bg-brand-600 text-white shadow-md' if current_tab == 'admin' else 'text-slate-300 hover:bg-slate-800 hover:text-white' }}">
-                    <span>⚙️</span><span>پنل مدیریت و سفارش‌ها (مدیر)</span>
-                </a>
+            <nav class="flex items-center gap-3 bg-slate-900/60 p-1.5 rounded-xl border border-slate-700/60">
+                <a href="/" class="px-4 py-2 rounded-lg text-sm font-medium transition {{ 'bg-emerald-600 text-white shadow' if tab == 'home' else 'text-slate-300 hover:bg-slate-800' }}">ثبت کارگاه و واحد</a>
+                <a href="/?tab=catalog" class="px-4 py-2 rounded-lg text-sm font-medium transition {{ 'bg-emerald-600 text-white shadow' if tab == 'catalog' else 'text-slate-300 hover:bg-slate-800' }}">کاتالوگ محصولات</a>
+                <a href="/?tab=admin" class="px-4 py-2 rounded-lg text-sm font-medium transition {{ 'bg-emerald-600 text-white shadow' if tab == 'admin' else 'text-slate-300 hover:bg-slate-800' }}">پنل مدیریت و آمار</a>
             </nav>
         </div>
     </header>
 
-    {% if message %}
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6 w-full">
-        <div class="bg-emerald-50 border-r-4 border-brand-600 p-4 rounded-xl shadow-sm flex items-center justify-between">
-            <div class="flex items-center space-x-3 space-x-reverse">
-                <span class="text-2xl">✨</span>
-                <p class="text-sm font-bold text-emerald-900">{{ message }}</p>
-            </div>
-        </div>
-    </div>
-    {% endif %}
-
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full flex-grow">
-        {% if current_tab == 'register' %}
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center space-x-4 space-x-reverse">
-                <div class="bg-brand-50 p-4 rounded-xl text-brand-600 text-2xl font-bold">🏭</div>
-                <div><p class="text-xs text-slate-500 font-bold uppercase">واحدهای تولیدی ثبت‌شده</p><h3 class="text-2xl font-black text-slate-900 mt-1">{{ total_producers }} واحد</h3></div>
-            </div>
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center space-x-4 space-x-reverse">
-                <div class="bg-indigo-50 p-4 rounded-xl text-indigo-600 text-2xl font-bold">📦</div>
-                <div><p class="text-xs text-slate-500 font-bold uppercase">محصولات موجود در کاتالوگ</p><h3 class="text-2xl font-black text-slate-900 mt-1">{{ total_products }} محصول</h3></div>
-            </div>
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center space-x-4 space-x-reverse">
-                <div class="bg-amber-50 p-4 rounded-xl text-amber-600 text-2xl font-bold">🛒</div>
-                <div><p class="text-xs text-slate-500 font-bold uppercase">استعلامات عمده (RFQ)</p><h3 class="text-2xl font-black text-slate-900 mt-1">{{ total_inquiries }} درخواست</h3></div>
-            </div>
-        </div>
-
+    <!-- محتوای اصلی -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 py-8">
+        
+        <!-- تب اول: ثبت مشخصات کارگاه -->
+        {% if tab == 'home' %}
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div class="lg:col-span-1 bg-white p-6 sm:p-8 rounded-2xl shadow-sm border border-slate-200/80">
-                <div class="border-b border-slate-100 pb-4 mb-6">
-                    <h2 class="text-lg font-black text-slate-900 flex items-center space-x-2 space-x-reverse"><span>📝</span><span>ثبت کارگاه و واحد تولیدی جدید</span></h2>
-                    <p class="text-xs text-slate-500 mt-1">مشخصات هویتی و ظرفیت واحد خود را وارد کنید.</p>
+            <div class="lg:col-span-1 space-y-6">
+                <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700 shadow-xl">
+                    <h2 class="text-lg font-bold text-emerald-400 mb-2">راهنمای ثبت‌نام اولیه</h2>
+                    <p class="text-sm text-slate-300 leading-relaxed">
+                        با ثبت اطلاعات کارگاه یا واحد تولیدی خود در این سامانه، ضمن دسترسی به شبکه سراسری بازار B2B، از تسهیلات توسعه، بازاریابی صادراتی و رفع موانع تولید بهره‌مند شوید.
+                    </p>
+                    <div class="mt-6 p-4 bg-slate-900/60 rounded-xl border border-slate-700/50 space-y-3">
+                        <div class="flex items-center gap-3 text-sm text-slate-300">
+                            <span class="w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-xs">۱</span>
+                            <span>تکمیل مشخصات فنی و استانی</span>
+                        </div>
+                        <div class="flex items-center gap-3 text-sm text-slate-300">
+                            <span class="w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-xs">۲</span>
+                            <span>افزودن محصولات و ظرفیت تولید</span>
+                        </div>
+                        <div class="flex items-center gap-3 text-sm text-slate-300">
+                            <span class="w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-xs">۳</span>
+                            <span>اتصال مستقیم به خریداران عمده (RFQ)</span>
+                        </div>
+                    </div>
                 </div>
-                <form method="POST" action="/add_producer" class="space-y-4">
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 mb-1">نام کارگاه / واحد تولیدی *</label>
-                        <input type="text" name="name" required placeholder="مثال: کارگاه سفال نقش جهان" class="w-full text-sm px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none">
+            </div>
+
+            <div class="lg:col-span-2">
+                <div class="bg-slate-800 p-8 rounded-2xl border border-slate-700 shadow-xl">
+                    <h2 class="text-xl font-bold mb-6 pb-3 border-b border-slate-700 flex items-center gap-2">
+                        <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                        فرم ثبت اطلاعات کارگاه / واحد تولیدی
+                    </h2>
+                    
+                    {% if success_msg %}
+                    <div class="mb-6 p-4 bg-emerald-900/50 border border-emerald-600 text-emerald-200 rounded-xl text-sm flex items-center gap-3">
+                        <svg class="w-5 h-5 text-emerald-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                        <span>{{ success_msg }}</span>
                     </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 mb-1">نام و نام خانوادگی مدیر *</label>
-                        <input type="text" name="manager" required placeholder="مثال: علی رضایی" class="w-full text-sm px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 mb-1">شماره تماس همراه *</label>
-                        <input type="text" name="phone" required placeholder="۰۹۱۲۳۴۵۶۷۸۹" class="w-full text-sm px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none">
-                    </div>
-                    <div class="grid grid-cols-2 gap-3">
+                    {% endif %}
+
+                    <form method="POST" action="/register-workshop" class="grid grid-cols-1 md:grid-cols-2 gap-5">
                         <div>
-                            <label class="block text-xs font-bold text-slate-700 mb-1">استان *</label>
-                            <select id="province" name="province" required onchange="updateCities()" class="w-full text-sm px-3 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none">
+                            <label class="block text-sm font-medium text-slate-300 mb-1.5">نام کارگاه یا واحد تولیدی *</label>
+                            <input type="text" name="workshop_name" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-emerald-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-300 mb-1.5">نام مسئول / مدیر *</label>
+                            <input type="text" name="manager_name" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-emerald-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-300 mb-1.5">استان *</label>
+                            <select name="province" id="province" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-emerald-500">
                                 <option value="">انتخاب استان...</option>
-                                {% for prov in divisions.keys() %}
-                                <option value="{{ prov }}">{{ prov }}</option>
-                                {% endfor %}
+                                <option value="تهران">تهران</option>
+                                <option value="اصفهان">اصفهان</option>
+                                <option value="خراسان رضوی">خراسان رضوی</option>
+                                <option value="فارس">فارس</option>
+                                <option value="آذربایجان شرقی">آذربایجان شرقی</option>
+                                <option value="مازندران">مازندران</option>
+                                <option value="گیلان">گیلان</option>
+                                <option value="یزد">یزد</option>
+                                <option value="کرمان">کرمان</option>
+                                <option value="سایر استان‌ها">سایر استان‌ها</option>
                             </select>
                         </div>
                         <div>
-                            <label class="block text-xs font-bold text-slate-700 mb-1">شهرستان *</label>
-                            <select id="city" name="city" required class="w-full text-sm px-3 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none">
-                                <option value="">ابتدا استان را انتخاب کنید...</option>
+                            <label class="block text-sm font-medium text-slate-300 mb-1.5">شهرستان / منطقه *</label>
+                            <input type="text" name="city" required placeholder="مثلا: کاشان، میبد، شیراز..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-emerald-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-300 mb-1.5">حوزه فعالیت *</label>
+                            <select name="category" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-emerald-500">
+                                <option value="ص صنایع دستی و هنرهای سنتی">صنایع دستی و هنرهای سنتی</option>
+                                <option value="فرش و گلیم دستباف">فرش و گلیم دستباف</option>
+                                <option value="محصولات خانگی و روستایی">محصولات خانگی و روستایی</option>
+                                <option value="تولیدات خرد و کارگاهی">تولیدات خرد و کارگاهی</option>
                             </select>
                         </div>
-                    </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-300 mb-1.5">شماره تماس / موبایل *</label>
+                            <input type="text" name="phone" required placeholder="۰۹۱۲..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-emerald-500">
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-slate-300 mb-1.5">آدرس دقیق پستی</label>
+                            <input type="text" name="address" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-emerald-500">
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-slate-300 mb-1.5">توضیحات و ظرفیت‌ها</label>
+                            <textarea name="description" rows="3" placeholder="توضیح مختصر درباره محصولات، توان تولید ماهانه و نیازمندی‌ها..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-emerald-500"></textarea>
+                        </div>
+                        <div class="md:col-span-2 pt-3">
+                            <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-3 px-6 rounded-xl transition shadow-lg shadow-emerald-900/40">
+                                ثبت اطلاعات کارگاه و ورود به مرحله محصولات
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <!-- تب دوم: کاتالوگ محصولات و ثبت محصول جدید -->
+        {% elif tab == 'catalog' %}
+        <div class="space-y-8">
+            <div class="bg-slate-800 p-8 rounded-2xl border border-slate-700 shadow-xl">
+                <h2 class="text-xl font-bold mb-6 pb-3 border-b border-slate-700 flex items-center gap-2">
+                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                    افزودن محصول جدید به کاتالوگ کارگاه
+                </h2>
+                <form method="POST" action="/add-product" class="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <div>
-                        <label class="block text-xs font-bold text-slate-700 mb-1">رسته صنایع دستی *</label>
-                        <select name="category" required class="w-full text-sm px-3 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none">
-                            <option value="">انتخاب رسته تخصصی...</option>
-                            {% for cat in categories %}
-                            <option value="{{ cat }}">{{ cat }}</option>
+                        <label class="block text-sm font-medium text-slate-300 mb-1.5">انتخاب کارگاه *</label>
+                        <select name="workshop_id" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-emerald-500">
+                            <option value="">انتخاب کنید...</option>
+                            {% for w in workshops %}
+                            <option value="{{ w.id }}">{{ w.workshop_name }} ({{ w.province }})</option>
                             {% endfor %}
                         </select>
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-slate-700 mb-1">ظرفیت تولید تقریبی (ماهانه) *</label>
-                        <input type="text" name="capacity" required placeholder="مثال: ۲۰۰ قطعه در ماه" class="w-full text-sm px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none">
+                        <label class="block text-sm font-medium text-slate-300 mb-1.5">نام محصول *</label>
+                        <input type="text" name="product_name" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-emerald-500">
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-slate-700 mb-1">نوع واحد *</label>
-                        <select name="unit_type" required class="w-full text-sm px-3 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none">
-                            <option value="مشاغل خانگی">مشاغل خانگی</option>
-                            <option value="کارگاه انفرادی">کارگاه انفرادی</option>
-                            <option value="کارگاه گروهی / تعاونی">کارگاه گروهی / تعاونی</option>
-                            <option value="واحد صنعتی کوچک">واحد صنعتی کوچک</option>
-                        </select>
+                        <label class="block text-sm font-medium text-slate-300 mb-1.5">قیمت تقریبی (تومان)</label>
+                        <input type="text" name="price" placeholder="مثلا: ۵۰۰,۰۰۰" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-emerald-500">
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-slate-700 mb-1">آدرس دقیق پستی / روستا</label>
-                        <textarea name="address" rows="2" placeholder="آدرس پستی محل کارگاه..." class="w-full text-sm px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none"></textarea>
+                        <label class="block text-sm font-medium text-slate-300 mb-1.5">ظرفیت تولید ماهانه</label>
+                        <input type="text" name="capacity" placeholder="مثلا: ۲۰۰ عدد" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-emerald-500">
                     </div>
-                    <button type="submit" class="w-full bg-brand-600 hover:bg-brand-700 text-white font-black py-3.5 px-4 rounded-xl shadow-lg shadow-brand-500/30 transition">🚀 ثبت نهایی واحد تولیدی در سامانه</button>
+                    <div class="md:col-span-4 pt-2">
+                        <button type="submit" class="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-2.5 px-6 rounded-xl transition text-sm">
+                            ثبت محصول در کاتالوگ
+                        </button>
+                    </div>
                 </form>
             </div>
 
-            <div class="lg:col-span-2 space-y-4">
-                <div class="bg-white p-6 sm:p-8 rounded-2xl shadow-sm border border-slate-200/80">
-                    <h2 class="text-lg font-black text-slate-900 mb-6 flex items-center space-x-2 space-x-reverse"><span>📋</span><span>بانک جامع واحدهای تولیدی ثبت‌شده ({{ producers|length }})</span></h2>
-                    {% if producers|length == 0 %}
-                    <div class="text-center py-12 bg-slate-50 rounded-2xl border border-dashed border-slate-200"><p class="text-slate-400 font-medium text-sm">هنوز هیچ واحد تولیدی ثبت نشده است.</p></div>
-                    {% else %}
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {% for p in producers %}
-                        <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200/70 hover:shadow-md transition flex flex-col justify-between">
-                            <div>
-                                <div class="flex justify-between items-start mb-2">
-                                    <h3 class="font-black text-base text-slate-900">{{ p.name }}</h3>
-                                    <span class="bg-brand-100 text-brand-800 text-xs font-extrabold px-2.5 py-1 rounded-lg">{{ p.unit_type }}</span>
+            <div>
+                <h2 class="text-xl font-bold mb-6 flex items-center gap-2">
+                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                    کاتالوگ محصولات ثبت شده و استعلام بازار (RFQ)
+                </h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {% for p in products %}
+                    <div class="bg-slate-800 border border-slate-700 rounded-2xl overflow-hidden shadow-xl flex flex-col justify-between">
+                        <div class="p-6 space-y-4">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <span class="inline-block px-2.5 py-1 bg-emerald-900/60 text-emerald-300 text-xs rounded-lg mb-2">{{ p.province }} - {{ p.city }}</span>
+                                    <h3 class="font-bold text-lg text-white">{{ p.product_name }}</h3>
                                 </div>
-                                <p class="text-xs font-bold text-brand-700 mb-3">{{ p.category }}</p>
-                                <div class="space-y-1.5 text-xs text-slate-600">
-                                    <p>👤 مدیر: <span class="text-slate-900 font-bold">{{ p.manager }}</span></p>
-                                    <p>📍 مکان: <span class="text-slate-900 font-bold">{{ p.province }} - {{ p.city }}</span></p>
-                                    <p>⚙️ ظرفیت ماهانه: <span class="text-slate-900 font-bold">{{ p.capacity }}</span></p>
-                                    {% if p.address %}<p>🏠 آدرس: <span class="truncate">{{ p.address }}</span></p>{% endif %}
-                                </div>
+                                <span class="text-xs text-slate-400 bg-slate-900 px-2.5 py-1 rounded-lg">کارگاه: {{ p.workshop_name }}</span>
                             </div>
-                            <div class="mt-4 pt-3 border-t border-slate-200/60 flex justify-between items-center text-xs text-slate-400">
-                                <span>شناسه: #{{ p.id }}</span>
-                                <span class="bg-emerald-50 text-emerald-700 font-bold px-2 py-0.5 rounded">تایید شده</span>
+                            <div class="space-y-1.5 text-sm text-slate-300 pt-2 border-t border-slate-700/60">
+                                <div class="flex justify-between">
+                                    <span class="text-slate-400">قیمت:</span>
+                                    <span class="font-semibold text-emerald-400">{{ p.price if p.price else 'توافقی' }}</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-slate-400">ظرفیت تولید:</span>
+                                    <span>{{ p.capacity if p.capacity else 'مشخص نشده' }}</span>
+                                </div>
                             </div>
                         </div>
-                        {% endfor %}
+                        <div class="bg-slate-900/80 p-4 border-t border-slate-700">
+                            <form method="POST" action="/send-inquiry" class="space-y-3">
+                                <input type="hidden" name="product_id" value="{{ p.id }}">
+                                <input type="text" name="buyer_name" required placeholder="نام خریدار / شرکت" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-emerald-500">
+                                <input type="text" name="buyer_contact" required placeholder="شماره تماس یا ایمیل" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-emerald-500">
+                                <button type="submit" class="w-full bg-slate-700 hover:bg-emerald-600 text-slate-200 hover:text-white font-medium py-2 rounded-lg transition text-xs">
+                                    ارسال استعلام خرید (RFQ)
+                                </button>
+                            </form>
+                        </div>
                     </div>
-                    {% endif %}
+                    {% else %}
+                    <div class="col-span-full bg-slate-800 p-8 rounded-2xl border border-slate-700 text-center text-slate-400">
+                        هنوز محصولی در سامانه ثبت نشده است. از فرم بالا برای ثبت محصول استفاده کنید.
+                    </div>
+                    {% endfor %}
                 </div>
             </div>
         </div>
-
-        {% elif current_tab == 'product' %}
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div class="lg:col-span-1 bg-white p-6 sm:p-8 rounded-2xl shadow-sm border border-slate-200/80">
-                <div class="border-b border-slate-100 pb-4 mb-6">
-                    <h2 class="text-lg font-black text-slate-900 flex items-center space-x-2 space-x-reverse"><span>📦</span><span>ثبت محصول جدید در کاتالوگ</span></h2>
-                    <p class="text-xs text-slate-500 mt-1">محصول تولیدی را به کارگاه مربوطه متصل کنید.</p>
+        
+        <!-- تب سوم: پنل مدیریت و آمار -->
+        {% elif tab == 'admin' %}
+        <div class="space-y-8">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700 shadow-xl flex items-center gap-4">
+                    <div class="p-4 bg-emerald-600/20 text-emerald-400 rounded-xl">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+                    </div>
+                    <div>
+                        <div class="text-2xl font-bold">{{ stats.workshops_count }}</div>
+                        <div class="text-xs text-slate-400">کارگاه‌های ثبت‌شده</div>
+                    </div>
                 </div>
-                {% if producers|length == 0 %}
-                <div class="bg-amber-50 p-4 rounded-xl text-amber-800 text-xs font-bold">⚠️ ابتدا باید حداقل یک «واحد تولیدی» ثبت کنید.</div>
-                {% else %}
-                <form method="POST" action="/add_product" class="space-y-4">
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 mb-1">انتخاب واحد تولیدی *</label>
-                        <select name="producer_id" required class="w-full text-sm px-3 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none">
-                            <option value="">انتخاب واحد تولیدی...</option>
-                            {% for p in producers %}<option value="{{ p.id }}">{{ p.name }} (مدیر: {{ p.manager }})</option>{% endfor %}
-                        </select>
+                <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700 shadow-xl flex items-center gap-4">
+                    <div class="p-4 bg-blue-600/20 text-blue-400 rounded-xl">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-slate-700 mb-1">نام محصول *</label>
-                        <input type="text" name="prod_name" required placeholder="مثال: گیوه سنتی اعلا" class="w-full text-sm px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none">
+                        <div class="text-2xl font-bold">{{ stats.products_count }}</div>
+                        <div class="text-xs text-slate-400">محصولات کاتالوگ</div>
+                    </div>
+                </div>
+                <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700 shadow-xl flex items-center gap-4">
+                    <div class="p-4 bg-amber-600/20 text-amber-400 rounded-xl">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path></svg>
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-slate-700 mb-1">توضیحات و مشخصات فنی</label>
-                        <textarea name="prod_desc" rows="3" placeholder="جنس، کیفیت، ابعاد..." class="w-full text-sm px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none"></textarea>
+                        <div class="text-2xl font-bold">{{ stats.inquiries_count }}</div>
+                        <div class="text-xs text-slate-400">استعلام‌های دریافتی (RFQ)</div>
                     </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 mb-1">حداقل مقدار سفارش (MOQ)</label>
-                        <input type="text" name="min_order" placeholder="مثال: ۵۰ جفت" class="w-full text-sm px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 mb-1">محدوده قیمت</label>
-                        <input type="text" name="price_range" placeholder="مثال: توافقی" class="w-full text-sm px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none">
-                    </div>
-                    <button type="submit" class="w-full bg-brand-600 hover:bg-brand-700 text-white font-black py-3.5 px-4 rounded-xl shadow-lg transition">📦 افزودن محصول به کاتالوگ</button>
-                </form>
-                {% endif %}
+                </div>
             </div>
 
-            <div class="lg:col-span-2">
-                <div class="bg-white p-6 sm:p-8 rounded-2xl shadow-sm border border-slate-200/80">
-                    <h2 class="text-lg font-black text-slate-900 mb-6 flex items-center space-x-2 space-x-reverse"><span>📋</span><span>کاتالوگ فعال محصولات ({{ products|length }})</span></h2>
-                    {% if products|length == 0 %}
-                    <div class="text-center py-12 bg-slate-50 rounded-2xl border border-dashed border-slate-200"><p class="text-slate-400 font-medium text-sm">هیچ محصولی ثبت نشده است.</p></div>
-                    {% else %}
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {% for pr in products %}
-                        <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200/70 hover:shadow-md transition flex flex-col justify-between">
-                            <div>
-                                <div class="flex justify-between items-start mb-2">
-                                    <h3 class="font-black text-base text-slate-900">{{ pr.prod_name }}</h3>
-                                    <span class="bg-indigo-100 text-indigo-800 text-xs font-extrabold px-2.5 py-1 rounded-lg">{{ pr.price_range or 'توافقی' }}</span>
-                                </div>
-                                <p class="text-xs font-bold text-slate-600 mb-3">کارگاه: <span class="text-brand-700">{{ pr.producer_name }}</span> ({{ pr.province }} - {{ pr.city }})</p>
-                                {% if pr.prod_desc %}<p class="text-xs text-slate-600 mb-3 bg-white p-3 rounded-xl border border-slate-200/50">{{ pr.prod_desc }}</p>{% endif %}
-                                <div class="text-xs text-slate-500"><p>📦 حداقل سفارش: <span class="font-bold text-slate-800">{{ pr.min_order or 'نامشخص' }}</span></p></div>
-                            </div>
-                            <div class="mt-4 pt-3 border-t border-slate-200/60 flex justify-between items-center text-xs">
-                                <span class="text-slate-400">شناسه: #{{ pr.id }}</span>
-                                <a href="/?tab=market" class="text-brand-600 font-bold hover:underline">بازار عمومی &larr;</a>
-                            </div>
-                        </div>
-                        {% endfor %}
-                    </div>
-                    {% endif %}
+            <div class="bg-slate-800 rounded-2xl border border-slate-700 overflow-hidden shadow-xl">
+                <div class="p-6 border-b border-slate-700">
+                    <h2 class="text-lg font-bold text-white">آخرین استعلام‌ها و ارتباطات تجاری بازار</h2>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-right text-sm">
+                        <thead class="bg-slate-900 text-slate-400 border-b border-slate-700">
+                            <tr>
+                                <th class="p-4">خریدار / متقاضی</th>
+                                <th class="p-4">راه ارتباطی</th>
+                                <th class="p-4">محصول مورد نظر</th>
+                                <th class="p-4">تاریخ ثبت</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-700/60">
+                            {% for inq in inquiries %}
+                            <tr>
+                                <td class="p-4 font-medium text-white">{{ inq.buyer_name }}</td>
+                                <td class="p-4 text-emerald-400">{{ inq.buyer_contact }}</td>
+                                <td class="p-4 text-slate-300">{{ inq.product_name }}</td>
+                                <td class="p-4 text-slate-400 text-xs">{{ inq.created_at }}</td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="4" class="p-8 text-center text-slate-400">هنوز استعلامی ثبت نشده است.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
+        {% endif %}
 
-        {% elif current_tab == 'market' %}
-        <div class="space-y-6">
-            <div class="bg-gradient-to-r from-slate-900 to-slate-800 text-white p-8 rounded-3xl shadow-xl flex flex-col md:flex-row justify-between items-center">
-                <div class="space-y-2 mb-4 md:mb-0">
-                    <h2 class="text-2xl font-black">بازار عمومی و ارتباط امن تجاری (White-Label / RFQ)</h2>
-                    <p class="text-sm text-slate-300">خریداران محترم عمده می‌توانند درخواست خرید خود را ثبت نمایند. ارتباطات صرفاً از طریق شبکه مدیریت می‌شود.</p>
-                </div>
-                <div class="bg-brand-600 text-white px-6 py-3 rounded-2xl font-black text-sm shadow-lg">🛒 {{ products|length }} محصول آماده عرضه</div>
-            </div>
+    </main>
 
-            {% if products|length == 0 %}
-            <div class="text-center py-16 bg-white rounded-3xl border border-slate-200"><p class="text-slate-400 font-bold">محصولی برای عرضه ثبت نشده است.</p></div>
-            {% else %}
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {% for pr in products %}
-                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 hover:shadow-lg transition flex flex-col justify-between overflow-hidden">
-                    <div class="p-6">
-                        <div class="flex justify-between items-start mb-3">
-                            <h3 class="font-black text-lg text-slate-900">{{ pr.prod_name }}</h3>
-                            <span class="bg-brand-50 text-brand-700 text-xs font-black px-3 py-1 rounded-full">{{ pr.price_range or 'توافقی' }}</span>
-                        </div>
-                        <p class="text-xs font-bold text-slate-500 mb-4">📍 تولیدکننده: <span class="text-slate-900">{{ pr.province }} - {{ pr.city }} (تایید شده)</span></p>
-                        {% if pr.prod_desc %}<p class="text-xs text-slate-600 bg-slate-50 p-3.5 rounded-xl mb-4 leading-relaxed">{{ pr.prod_desc }}</p>{% endif %}
-                        <div class="text-xs text-slate-600 space-y-1 mb-4">
-                            <p>📦 حداقل مقدار سفارش: <span class="font-bold text-slate-900">{{ pr.min_order or 'توافقی' }}</span></p>
-                            <p class="text-emerald-600 font-bold">🛡️ تضمین کیفیت و ارسال از طریق شبکه هوشمند</p>
+    <!-- فوتر -->
+    <footer class="bg-slate-800 border-t border-slate-700 py-6 mt-12 text-center text-xs text-slate-400">
+        <p>شبکه هوشمند توسعه تولید و رفع موانع | سامانه جامع مدیریت و اتصال زنجیره تامین صنایع خرد و خانگی</p>
+    </footer>
+</body>
+</html>
+"""
+
+
+@app.route("/")
+def index():
+  tab = request.args.get("tab", "home")
+  success_msg = request.args.get("success", "")
+  db = get_db()
+
+  workshops = db.execute("SELECT * FROM workshops ORDER BY id DESC").fetchall()
+  products = db.execute("""
+        SELECT products.*, workshops.workshop_name, workshops.province, workshops.city 
+        FROM products 
+        JOIN workshops ON products.workshop_id = workshops.id 
+        ORDER BY products.id DESC
+    """).fetchall()
+
+  inquiries = db.execute("""
+        SELECT inquiries.*, products.product_name 
+        FROM inquiries 
+        JOIN products ON inquiries.product_id = products.id 
+        ORDER BY inquiries.id DESC
+    """).fetchall()
+
+  stats = {
+      "workshops_count": db.execute(
+          "SELECT COUNT(*) FROM workshops"
+      ).fetchone()[0],
+      "products_count": db.execute(
+          "SELECT COUNT(*) FROM products"
+      ).fetchone()[0],
+      "inquiries_count": db.execute(
+          "SELECT COUNT(*) FROM inquiries"
+      ).fetchone()[0],
+  }
+
+  return render_template_string(
+      HTML_TEMPLATE,
+      tab=tab,
+      success_msg=success_msg,
+      workshops=workshops,
+      products=products,
+      inquiries=inquiries,
+      stats=stats,
+  )
+
+
+@app.route("/register-workshop", methods=["POST"])
+def register_workshop():
+  workshop_name = request.form.get("workshop_name")
+  manager_name = request.form.get("manager_name")
+  province = request.form.get("province")
+  city = request.form.get("city")
+  category = request.form.get("category")
+  phone = request.form.get("phone")
+  address = request.form.get("address")
+  description = request.form.get("description")
+
+  db = get_db()
+  db.execute(
+      """
+        INSERT INTO workshops (workshop_name, manager_name, province, city, category, phone, address, description)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    """,
+      (
+          workshop_name,
+          manager_name,
+          province,
+          city,
+          category,
+          phone,
+          address,
+          description,
+      ),
+  )
+  db.commit()
+
+  return redirect(
+      url_for(
+          "index",
+          tab="catalog",
+          success="کارگاه شما با موفقیت ثبت شد. اکنون می‌توانید محصولات خود را به کاتالوگ اضافه کنید.",
+      )
+  )
+
+
+@app.route("/add-product", methods=["POST"])
+def add_product():
+  workshop_id = request.form.get("workshop_id")
+  product_name = request.form.get("product_name")
+  price = request.form.get("price")
+  capacity = request.form.get("capacity")
+
+  db = get_db()
+  db.execute(
+      """
+        INSERT INTO products (workshop_id, product_name, price, capacity)
+        VALUES (?, ?, ?, ?)
+    """,
+      (workshop_id, product_name, price, capacity),
+  )
+  db.commit()
+
+  return redirect(
+      url_for(
+          "index",
+          tab="catalog",
+          success="محصول جدید با موفقیت به کاتالوگ اضافه شد.",
+      )
+  )
+
+
+@app.route("/send-inquiry", methods=["POST"])
+def send_inquiry():
+  product_id = request.form.get("product_id")
+  buyer_name = request.form.get("buyer_name")
+  buyer_contact = request.form.get("buyer_contact")
+
+  db = get_db()
+  db.execute(
+      """
+        INSERT INTO inquiries (product_id, buyer_name, buyer_contact)
+        VALUES (?, ?, ?)
+    """,
+      (product_id, buyer_name, buyer_contact),
+  )
+  db.commit()
+
+  return redirect(
+      url_for(
+          "index",
+          tab="catalog",
+          success="استعلام خرید (RFQ) شما با موفقیت ثبت و به مدیر واحد ارسال شد.",
+      )
+  )
+
+
+if __name__ == "__main__":
+  port = int(os.environ.get("PORT", 5000))
+  app.run(host="0.0.0.0", port=port)
