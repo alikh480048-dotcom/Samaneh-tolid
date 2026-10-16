@@ -1,123 +1,150 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="fa" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ثبت واحد تولیدی و چک‌لیست موانع</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet">
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <style>body { font-family: Vazirmatn, sans-serif; }</style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#09090b">
+  <title>ثبت واحد تولیدی | شبکه تولید</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { theme: { extend: {
+      fontFamily: { vazir: ['Vazirmatn','Tahoma','sans-serif'] },
+      colors: { zinc: { 950: '#09090b' } },
+      boxShadow: { glass: '0 18px 55px rgba(0,0,0,.34)' }
+    }}}
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: Vazirmatn, Tahoma, sans-serif; background: #09090b; }
+    .glass { background: rgba(24,24,27,.72); border: 1px solid rgba(161,161,170,.16); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); }
+    .field { width:100%; min-height:48px; border-radius: .85rem; border:1px solid #3f3f46; background:rgba(9,9,11,.72); color:#f4f4f5; padding:.7rem .9rem; outline:none; transition:.2s; }
+    .field:focus { border-color:#a78bfa; box-shadow:0 0 0 3px rgba(139,92,246,.18); }
+    .field::placeholder { color:#71717a; }
+    select.field { cursor:pointer; }
+    select.field option { background:#18181b; color:#f4f4f5; }
+    .check { accent-color:#8b5cf6; width:1.1rem; height:1.1rem; flex:none; }
+    label { color:#d4d4d8; }
+  </style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen py-8 px-4 pb-24">
-    <div class="max-w-2xl mx-auto bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl space-y-6">
-        
-        <div class="text-center space-y-2 border-b border-slate-800 pb-5">
-            <h2 class="text-xl font-bold text-white flex items-center justify-center gap-2">
-                <i data-lucide="clipboard-check" class="text-emerald-400"></i>
-                ثبت اطلاعات و شناسنامه واحد تولیدی
-            </h2>
-            <p class="text-xs text-slate-400">اطلاعات کارگاه یا کارخانه خود را جهت ورود به زنجیره تأمین و صادرات ثبت کنید.</p>
+<body class="min-h-screen bg-zinc-950 text-zinc-100">
+  <main class="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-10">
+    <header class="mb-8 flex items-center gap-4">
+      <div class="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-violet-600/20 text-violet-300 ring-1 ring-violet-400/25"><i data-lucide="factory" class="h-7 w-7"></i></div>
+      <div><p class="mb-1 text-sm font-medium text-violet-300">شبکه ملی هم‌رسانی تولید</p><h1 class="text-2xl font-extrabold tracking-tight sm:text-3xl">ثبت واحد تولیدی</h1><p class="mt-1 text-sm text-zinc-400">اطلاعات واحد خود را برای شناسایی ظرفیت‌ها و رفع موانع ثبت کنید.</p></div>
+    </header>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}<div class="mb-6 space-y-2">{% for category, message in messages %}<div class="glass rounded-2xl p-4 text-sm text-emerald-300">{{ message }}</div>{% endfor %}</div>{% endif %}
+    {% endwith %}
+
+    {% set fd = form_data|default({}) %}
+    <form id="registerForm" action="{{ url_for('register') }}" method="POST" enctype="multipart/form-data" class="space-y-6">
+      <section class="glass rounded-3xl p-5 shadow-glass sm:p-7">
+        <div class="mb-6 flex items-center gap-3"><i data-lucide="building-2" class="text-violet-400"></i><div><h2 class="text-lg font-bold">مشخصات پایه واحد</h2><p class="text-xs text-zinc-500">موارد ستاره‌دار الزامی هستند.</p></div></div>
+        <div class="grid gap-5 sm:grid-cols-2">
+          <div class="sm:col-span-2"><label for="title" class="mb-2 block text-sm">نام واحد تولیدی / کارگاه / شرکت <span class="text-rose-400">*</span></label><input id="title" name="title" required class="field" value="{{ fd.get('title','') }}" placeholder="مثلاً: کارگاه تولید مبلمان نوین"></div>
+          <div><label for="owner_name" class="mb-2 block text-sm">نام مدیر / مسئول <span class="text-rose-400">*</span></label><input id="owner_name" name="owner_name" required class="field" value="{{ fd.get('owner_name','') }}"></div>
+          <div><label for="phone" class="mb-2 block text-sm">شماره تماس موبایل <span class="text-rose-400">*</span></label><input id="phone" name="phone" type="tel" inputmode="tel" pattern="09[0-9۰-۹]{9}" required class="field" value="{{ fd.get('phone','') }}" placeholder="۰۹۱۲۱۲۳۴۵۶۷"></div>
+          <div><label for="province" class="mb-2 block text-sm">استان <span class="text-rose-400">*</span></label><select id="province" name="province" required class="field"><option value="">انتخاب استان</option></select></div>
+          <div><label for="county" class="mb-2 block text-sm">شهرستان</label><select id="county" name="county" class="field" disabled><option value="">ابتدا استان را انتخاب کنید</option></select></div>
+          <div class="sm:col-span-2"><label for="address" class="mb-2 block text-sm">آدرس دقیق پستی</label><textarea id="address" name="address" rows="3" class="field">{{ fd.get('address','') }}</textarea></div>
+          <div><label for="postal_code" class="mb-2 block text-sm">کد پستی</label><input id="postal_code" name="postal_code" inputmode="numeric" class="field" value="{{ fd.get('postal_code','') }}" maxlength="10"></div>
         </div>
+      </section>
 
-        <form action="/register" method="POST" enctype="multipart/form-data" class="space-y-5">
-            
-            <!-- نام واحد و مالک -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                    <label class="block text-xs font-bold text-slate-300 mb-1.5">نام واحد تولیدی / کارخانه *</label>
-                    <input type="text" name="title" required placeholder="مثال: قطعه‌سازی پیشگام یا کارگاه سفالگری" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm focus:border-emerald-500 outline-none text-white">
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-300 mb-1.5">نام مدیر / مسئول واحد *</label>
-                    <input type="text" name="owner_name" required placeholder="نام و نام‌خانوادگی" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm focus:border-emerald-500 outline-none text-white">
-                </div>
-            </div>
+      <section class="glass rounded-3xl p-5 shadow-glass sm:p-7">
+        <div class="mb-6 flex items-center gap-3"><i data-lucide="layers-3" class="text-cyan-400"></i><h2 class="text-lg font-bold">حوزه فعالیت و محصول</h2></div>
+        <div class="grid gap-5 sm:grid-cols-2">
+          <div><label for="industry_group" class="mb-2 block text-sm">گروه اصلی صنایع تولیدی <span class="text-rose-400">*</span></label><select id="industry_group" name="industry_group" required class="field"><option value="">انتخاب گروه</option>{% for group in industry_groups|default([]) %}<option value="{{ group }}"{% if fd.get('industry_group') == group %} selected{% endif %}>{{ group }}</option>{% endfor %}</select></div>
+          <div><label for="sub_group" class="mb-2 block text-sm">زیرگروه تخصصی</label><select id="sub_group" name="sub_group" class="field" disabled><option value="">ابتدا گروه اصلی را انتخاب کنید</option></select></div>
+          <div class="sm:col-span-2"><label for="product_name" class="mb-2 block text-sm">نوع محصول / خدمت نهایی</label><input id="product_name" name="product_name" class="field" value="{{ fd.get('product_name','') }}" placeholder="نام محصول یا خدمت اصلی"></div>
+          <div><label for="activity_status" class="mb-2 block text-sm">وضعیت فعالیت واحد</label><select id="activity_status" name="activity_status" class="field">{% for x in ['فعال','نیمه‌فعال','راه‌اندازی','توسعه'] %}<option{% if fd.get('activity_status') == x %} selected{% endif %}>{{ x }}</option>{% endfor %}</select></div>
+          <div><label for="ownership_type" class="mb-2 block text-sm">نوع مالکیت</label><select id="ownership_type" name="ownership_type" class="field">{% for x in ['حقیقی/خرد','تعاونی','شرکتی/حقوقی','کارگاهی'] %}<option{% if fd.get('ownership_type') == x %} selected{% endif %}>{{ x }}</option>{% endfor %}</select></div>
+          <div><label for="production_season" class="mb-2 block text-sm">فصل تولید</label><select id="production_season" name="production_season" class="field">{% for x in ['تمام فصول','فصلی','سفارشی'] %}<option{% if fd.get('production_season') == x %} selected{% endif %}>{{ x }}</option>{% endfor %}</select></div>
+          <div><label for="licenses" class="mb-2 block text-sm">مجوزهای اخذشده</label><input id="licenses" name="licenses" class="field" value="{{ fd.get('licenses','') }}" placeholder="مثلاً جواز تأسیس، پروانه بهره‌برداری"></div>
+        </div>
+      </section>
 
-            <!-- تماس و رسته -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                    <label class="block text-xs font-bold text-slate-300 mb-1.5">شماره تماس (محفوظ در دبیرخانه) *</label>
-                    <input type="tel" name="phone" required placeholder="۰۹۱۲۳۴۵۶۷۸۹" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm focus:border-emerald-500 outline-none text-white text-left font-mono">
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-300 mb-1.5">رسته و حوزه تولید *</label>
-                    <select name="industry_group" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm focus:border-emerald-500 outline-none text-white">
-                        {% for group in industry_groups %}
-                        <option value="{{ group }}">{{ group }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-            </div>
+      <section class="glass rounded-3xl p-5 shadow-glass sm:p-7">
+        <div class="mb-6 flex items-center gap-3"><i data-lucide="chart-no-axes-combined" class="text-emerald-400"></i><h2 class="text-lg font-bold">ظرفیت، منابع و بازار</h2></div>
+        <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <div><label for="capacity" class="mb-2 block text-sm">ظرفیت ماهانه اسمی</label><input id="capacity" name="capacity" type="number" min="0" step="any" class="field" value="{{ fd.get('capacity','') }}"></div>
+          <div><label for="unit" class="mb-2 block text-sm">واحد سنجش</label><select id="unit" name="unit" class="field">{% for x in ['عدد در ماه','تن','کیلوگرم','متر','لیتر','دستگاه','سرویس','سایر'] %}<option{% if fd.get('unit','عدد در ماه') == x %} selected{% endif %}>{{ x }}</option>{% endfor %}</select></div>
+          <div><label for="current_capacity" class="mb-2 block text-sm">ظرفیت فعلی / تولید واقعی ماهانه</label><input id="current_capacity" name="current_capacity" type="number" min="0" step="any" class="field" value="{{ fd.get('current_capacity','') }}"></div>
+          <div><label for="employees" class="mb-2 block text-sm">تعداد نیروی کار شاغل</label><input id="employees" name="employees" type="number" min="0" step="1" class="field" value="{{ fd.get('employees','') }}"></div>
+          <div><label for="price" class="mb-2 block text-sm">قیمت تخمینی واحد محصول</label><input id="price" name="price" type="number" min="0" step="any" class="field" value="{{ fd.get('price','') }}"></div>
+          <div><label for="price_currency" class="mb-2 block text-sm">واحد پول</label><select id="price_currency" name="price_currency" class="field"><option{% if fd.get('price_currency','تومان') == 'تومان' %} selected{% endif %}>تومان</option><option{% if fd.get('price_currency') == 'ریال' %} selected{% endif %}>ریال</option></select></div>
+          <div><label for="target_market" class="mb-2 block text-sm">بازار هدف</label><select id="target_market" name="target_market" class="field">{% for x in ['داخلی منطقه‌ای','ملی','صادراتی'] %}<option{% if fd.get('target_market') == x %} selected{% endif %}>{{ x }}</option>{% endfor %}</select></div>
+          <div><label for="export_status" class="mb-2 block text-sm">وضعیت صادرات</label><select id="export_status" name="export_status" class="field">{% for x in ['ندارد','دارد','علاقه‌مند به صادرات'] %}<option{% if fd.get('export_status') == x %} selected{% endif %}>{{ x }}</option>{% endfor %}</select></div>
+          <div><label for="landline" class="mb-2 block text-sm">شماره تلفن ثابت</label><input id="landline" name="landline" type="tel" class="field" value="{{ fd.get('landline','') }}"></div>
+          <div class="sm:col-span-2"><label for="email" class="mb-2 block text-sm">ایمیل</label><input id="email" name="email" type="email" dir="ltr" class="field text-left" value="{{ fd.get('email','') }}"></div>
+        </div>
+      </section>
 
-            <!-- استان و شهرستان -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                    <label class="block text-xs font-bold text-slate-300 mb-1.5">استان *</label>
-                    <input type="text" name="province" required placeholder="مثال: تهران، اصفهان، فارس..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm focus:border-emerald-500 outline-none text-white">
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-300 mb-1.5">شهرستان / شهرک صنعتی</label>
-                    <input type="text" name="county" placeholder="مثال: شهرک صنعتی شمس‌آباد" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm focus:border-emerald-500 outline-none text-white">
-                </div>
-            </div>
+      <section class="glass rounded-3xl p-5 shadow-glass sm:p-7">
+        <div class="mb-6 flex items-center gap-3"><i data-lucide="triangle-alert" class="text-amber-400"></i><div><h2 class="text-lg font-bold">موانع و گلوگاه‌های تولید</h2><p class="text-xs text-zinc-500">مواردی را که در مسیر تولید با آن مواجه هستید انتخاب کنید.</p></div></div>
+        <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {% set barriers = ['تأمین مواد اولیه','تسهیلات و نقدینگی بانکی','بازار فروش داخلی','بازار و صادرات خارجی','گمرک و استاندارد','حامل‌های انرژی (آب، برق، گاز)','ماشین‌آلات و تجهیزات','مجوزها و بروکراسی اداری','نیروی انسانی متخصص','حمل‌ونقل و لجستیک','فناوری و نوآوری','بیمه و مالیات'] %}
+          {% for barrier in barriers %}<label class="flex cursor-pointer items-center gap-3 rounded-xl border border-zinc-800 bg-zinc-950/50 p-3 text-sm transition hover:border-violet-500/60"><input class="check" type="checkbox" name="barriers" value="{{ barrier }}"{% if barrier in fd.get('barriers',[]) %} checked{% endif %}> <span>{{ barrier }}</span></label>{% endfor %}
+        </div>
+        <div class="mt-5"><label for="other_barrier" class="mb-2 block text-sm">سایر موانع متفرقه</label><input id="other_barrier" name="other_barrier" class="field" value="{{ fd.get('other_barrier','') }}"></div>
+        <div class="mt-5"><label for="notes" class="mb-2 block text-sm">توضیحات تکمیلی مدیر</label><textarea id="notes" name="notes" rows="4" class="field">{{ fd.get('notes','') }}</textarea></div>
+      </section>
 
-            <!-- ظرفیت و واحد سنجش -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                    <label class="block text-xs font-bold text-slate-300 mb-1.5">ظرفیت ماهانه اسمی (عدد)</label>
-                    <input type="number" name="capacity" placeholder="مثال: ۵۰۰۰" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm focus:border-emerald-500 outline-none text-white">
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-300 mb-1.5">واحد سنجش ظرفیت</label>
-                    <input type="text" name="unit" placeholder="مثال: عدد، تن، تخته، مترمربع" value="عدد در ماه" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm focus:border-emerald-500 outline-none text-white">
-                </div>
-            </div>
+      <section class="glass rounded-3xl p-5 shadow-glass sm:p-7">
+        <div class="mb-5 flex items-center gap-3"><i data-lucide="images" class="text-pink-400"></i><div><h2 class="text-lg font-bold">تصاویر محصولات و توانمندی</h2><p class="text-xs text-zinc-500">فرمت‌های مجاز: JPG، JPEG، PNG و WEBP (حداکثر مجموع ۱۶ مگابایت)</p></div></div>
+        <label for="product_images" class="flex min-h-32 cursor-pointer flex-col items-center justify-center rounded-2xl border border-dashed border-zinc-700 bg-zinc-950/45 p-5 text-center hover:border-violet-400"><i data-lucide="upload-cloud" class="mb-2 text-zinc-400"></i><span class="text-sm text-zinc-300">برای انتخاب چند تصویر ضربه بزنید</span><span id="fileNames" class="mt-2 text-xs text-violet-300"></span></label>
+        <input id="product_images" name="product_images" type="file" accept=".png,.jpg,.jpeg,.webp,image/png,image/jpeg,image/webp" multiple class="sr-only">
+      </section>
 
-            <!-- چک‌لیست موانع و گلوگاه‌های تولید -->
-            <div class="bg-slate-950/70 border border-slate-800 rounded-2xl p-4 space-y-3">
-                <label class="block text-xs font-bold text-amber-400 flex items-center gap-1.5">
-                    <i data-lucide="alert-triangle" class="w-4 h-4"></i>
-                    چک‌لیست موانع و نیازهای اولویت‌دار واحد:
-                </label>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs text-slate-300">
-                    <label class="flex items-center gap-2 p-2 bg-slate-900 rounded-lg cursor-pointer hover:bg-slate-850">
-                        <input type="checkbox" name="barriers" value="تأمین مواد اولیه با نرخ مصوب" class="rounded text-emerald-500 focus:ring-0">
-                        <span>تأمین مواد اولیه با نرخ مصوب</span>
-                    </label>
-                    <label class="flex items-center gap-2 p-2 bg-slate-900 rounded-lg cursor-pointer hover:bg-slate-850">
-                        <input type="checkbox" name="barriers" value="سرمایه در گردش و تسهیلات بانکی" class="rounded text-emerald-500 focus:ring-0">
-                        <span>سرمایه در گردش و تسهیلات بانکی</span>
-                    </label>
-                    <label class="flex items-center gap-2 p-2 bg-slate-900 rounded-lg cursor-pointer hover:bg-slate-850">
-                        <input type="checkbox" name="barriers" value="بازاریابی، فروش و اتصال به صادرات" class="rounded text-emerald-500 focus:ring-0">
-                        <span>بازاریابی، فروش و اتصال به صادرات</span>
-                    </label>
-                    <label class="flex items-center gap-2 p-2 bg-slate-900 rounded-lg cursor-pointer hover:bg-slate-850">
-                        <input type="checkbox" name="barriers" value="بسته‌بندی استاندارد و گمرک" class="rounded text-emerald-500 focus:ring-0">
-                        <span>بسته‌بندی استاندارد و گمرک</span>
-                    </label>
-                </div>
-                <input type="text" name="other_barrier" placeholder="سایر موانع اختصاصی اگر وجود دارد بنویسید..." class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-xs focus:border-amber-400 outline-none text-white mt-2">
-            </div>
+      <div class="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end"><a href="{{ url_for('index') }}" class="flex min-h-12 items-center justify-center rounded-xl border border-zinc-700 px-6 text-sm text-zinc-300 hover:bg-zinc-800">انصراف</a><button id="submitBtn" type="submit" class="flex min-h-12 items-center justify-center gap-2 rounded-xl bg-violet-600 px-8 font-bold text-white shadow-lg shadow-violet-900/30 transition hover:bg-violet-500 disabled:cursor-not-allowed disabled:opacity-70"><i data-lucide="send" class="h-5 w-5"></i><span>ثبت اطلاعات واحد</span></button></div>
+    </form>
+  </main>
 
-            <!-- آپلود تصاویر محصولات -->
-            <div>
-                <label class="block text-xs font-bold text-slate-300 mb-1.5 flex items-center gap-1.5">
-                    <i data-lucide="images" class="w-4 h-4 text-emerald-400"></i>
-                    تصاویر محصولات و توانمندی واحد (امکان انتخاب همزمان چند عکس)
-                </label>
-                <input type="file" name="product_images" multiple accept="image/*" class="w-full text-xs text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-emerald-600 file:text-white hover:file:bg-emerald-500 cursor-pointer bg-slate-950 border border-slate-800 rounded-xl p-2">
-            </div>
+  <script>
+    const provinces = {{ (provinces_by_county|default({}))|tojson|safe }};
+    const catalog = {{ (industry_catalog|default({}))|tojson|safe }};
+    const oldProvince = {{ fd.get('province','')|tojson|safe }};
+    const oldCounty = {{ fd.get('county','')|tojson|safe }};
+    const oldSubGroup = {{ fd.get('sub_group','')|tojson|safe }};
+    const provinceEl = document.getElementById('province');
+    const countyEl = document.getElementById('county');
+    const groupEl = document.getElementById('industry_group');
+    const subEl = document.getElementById('sub_group');
 
-            <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-emerald-950 transition flex items-center justify-center gap-2 text-sm">
-                <i data-lucide="check-circle-2" class="w-5 h-5"></i>
-                ثبت نهایی و ورود به شبکه تولید
-            </button>
-            <a href="/" class="block text-center text-xs text-slate-400 hover:text-white mt-2">انصراف و بازگشت</a>
-        </form>
-    </div>
+    function fillCounties(province, selected='') {
+      countyEl.innerHTML = '<option value="">انتخاب شهرستان</option>';
+      const items = provinces[province] || [];
+      items.forEach(item => { const option = new Option(item, item); if (item === selected) option.selected = true; countyEl.add(option); });
+      countyEl.disabled = items.length === 0;
+    }
+    function fillSubgroups(group, selected='') {
+      subEl.innerHTML = '<option value="">انتخاب زیرگروه تخصصی</option>';
+      const items = Array.isArray(catalog[group]) ? catalog[group] : [];
+      items.forEach(item => { const option = new Option(item, item); if (item === selected) option.selected = true; subEl.add(option); });
+      subEl.disabled = items.length === 0;
+    }
+    Object.keys(provinces).sort((a,b) => a.localeCompare(b,'fa')).forEach(province => { const o = new Option(province, province); if (province === oldProvince) o.selected = true; provinceEl.add(o); });
+    provinceEl.addEventListener('change', () => fillCounties(provinceEl.value));
+    groupEl.addEventListener('change', () => fillSubgroups(groupEl.value));
+    if (oldProvince) fillCounties(oldProvince, oldCounty);
+    if (groupEl.value) fillSubgroups(groupEl.value, oldSubGroup);
 
-    <script>lucide.createIcons();</script>
+    document.getElementById('product_images').addEventListener('change', function() {
+      const names = Array.from(this.files).map(file => file.name);
+      document.getElementById('fileNames').textContent = names.length ? names.join('، ') : '';
+    });
+    document.getElementById('registerForm').addEventListener('submit', function(event) {
+      const button = document.getElementById('submitBtn');
+      if (button.disabled) { event.preventDefault(); return; }
+      button.disabled = true;
+      button.innerHTML = '<span class="h-5 w-5 animate-spin rounded-full border-2 border-white/30 border-t-white"></span><span>در حال ارسال اطلاعات...</span>';
+    });
+    lucide.createIcons();
+  </script>
 </body>
 </html>
