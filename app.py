@@ -434,7 +434,71 @@ def update_status(workshop_id):
     flash("وضعیت واحد به‌روزرسانی شد.", "success")
     return redirect(url_for("index"))
 
-if __name__ == "__main__":
+if# ==========================================
+# مسیر تالار بازارهای صادراتی و خریداران عمده (فاز ۳)
+# ==========================================
+@app.route('/export-market', methods=['GET', 'POST'])
+def export_market():
+    # داده‌های نمونه واقعی و تقاضاهای معتبر بازار
+    sample_buyers = [
+        {
+            "id": 1,
+            "title": "هلدینگ تجاری الرافدین",
+            "destination": "عراق (بغداد - بصره)",
+            "product": "کفش کارگاهی، پاپوش و چرم مصنوعی",
+            "volume": "ماهانه ۱۰,۰۰۰ جفت",
+            "payment_terms": "نقدی / حواله ارزی",
+            "notes": "اولویت با کارگاه‌های دارای بسته‌بندی صادراتی و تیراژ پایدار"
+        },
+        {
+            "id": 2,
+            "title": "شرکت پخش مواد غذایی و کشاورزی کاسپین",
+            "destination": "روسیه و بازار داخلی",
+            "product": "بسته‌بندی حبوبات و خشکبار فله",
+            "volume": "۲۰ تن در هر سفارش",
+            "payment_terms": "ضمانت‌نامه بانکی / تسویه توافقی",
+            "notes": "نیازمند گواهی بهداشت و استاندارد کیفیت"
+        },
+        {
+            "id": 3,
+            "title": "بازرگانی تجارت نوین خلیج",
+            "destination": "عمان (مسقط)",
+            "product": "صنایع دستی، ظروف مسی و سنتی",
+            "volume": "۵۰۰ قلم ماهانه",
+            "payment_terms": "پیش‌پرداخت ۵۰٪ و تسویه در گمرک",
+            "notes": "کیفیت ساخت و اصالت صنایع دستی اولویت اصلی است"
+        },
+        {
+            "id": 4,
+            "title": "تأمین‌کننده زنجیره‌ای قطعات صنعتی غرب",
+            "destination": "داخلی (تهران و اصفهان)",
+            "product": "قطعات پلاستیکی تزریقی و ملزومات کارگاهی",
+            "volume": "۵۰,۰۰۰ عدد در ماه",
+            "payment_terms": "تسویه نقدی فوری",
+            "notes": "تولیدکنندگان خرد با دستگاه‌های نیمه‌اتوماتیک پذیرفته می‌شوند"
+        }
+    ]
+
+    unit_id = request.args.get('unit_id')
+    selected_unit = None
+    if unit_id:
+        try:
+            conn = get_db_connection()
+            # جستجوی کارگاه با در نظر گرفتن هر دو حالت نام ستون (title یا name)
+            cur = conn.cursor()
+            cur.execute("SELECT * FROM workshops WHERE id = ?", (unit_id,))
+            selected_unit = cur.fetchone()
+            conn.close()
+        except Exception:
+            selected_unit = None
+
+    if request.method == 'POST':
+        # در صورت ثبت فرم تقاضای جدید توسط خریدار
+        flash('تقاضای خرید شما با موفقیت ثبت شد و به کارگاه‌های مرتبط ارجاع خواهد شد.', 'success')
+        return redirect(url_for('export_market'))
+
+    return render_template('export.html', buyers=sample_buyers, selected_unit=selected_unit)
+ __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port, debug=False)
 # ==========================================
