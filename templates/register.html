@@ -68,7 +68,7 @@
     </div>
 
     <!-- Form -->
-    <form action="/register" method="POST" class="glass-card rounded-2xl p-5 sm:p-8 shadow-2xl space-y-8">
+    <form action="/register" method="POST" enctype="multipart/form-data" class="glass-card rounded-2xl p-5 sm:p-8 shadow-2xl space-y-8">
 
       <!-- 1) Identity -->
       <section>
@@ -163,7 +163,6 @@
             <select id="city" name="city" required class="form-input w-full rounded-xl px-3.5 py-2.5 text-sm">
               <option value="">ابتدا استان را انتخاب کنید...</option>
             </select>
-            <p class="text-[11px] text-slate-400 mt-1">اگر شهر شما نبود، گزینه «سایر» را بزنید و پایین‌تر دقیق بنویسید.</p>
           </div>
 
           <div class="sm:col-span-2">
@@ -171,16 +170,10 @@
             <input name="address" class="form-input w-full rounded-xl px-3.5 py-2.5 text-sm"
                    placeholder="محله/خیابان/پلاک (برای هماهنگی و ارسال)" />
           </div>
-
-          <div class="sm:col-span-2">
-            <label class="block text-xs text-slate-300 mb-1.5 font-medium">اگر «سایر» انتخاب شد، شهر/روستا را اینجا دقیق بنویسید</label>
-            <input name="city_other" class="form-input w-full rounded-xl px-3.5 py-2.5 text-sm"
-                   placeholder="مثال: روستای ... / بخش ..." />
-          </div>
         </div>
       </section>
 
-      <!-- 3) Industry -->
+      <!-- 3) Industry & Product -->
       <section class="pt-6 border-t border-slate-700/50">
         <div class="flex items-center gap-2 mb-4">
           <span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span>
@@ -189,70 +182,50 @@
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label class="block text-xs text-slate-300 mb-1.5 font-medium">رسته اصلی <span class="req">*</span></label>
-            <select name="category_main" required class="form-input w-full rounded-xl px-3.5 py-2.5 text-sm">
-              <option value="">انتخاب کنید...</option>
-              <option value="صنایع دستی">صنایع دستی</option>
-              <option value="پوشاک و نساجی">پوشاک و نساجی</option>
-              <option value="غذا و کشاورزی">غذا و کشاورزی</option>
-              <option value="چوب و دکور">چوب و دکور</option>
-              <option value="فلز و زیورآلات">فلز و زیورآلات</option>
-              <option value="سنگ و سرامیک">سنگ و سرامیک</option>
-              <option value="چرم و کیف و کفش">چرم و کیف و کفش</option>
-              <option value="کودک و اسباب/هدیه">کودک، هدیه و سوغات</option>
-              <option value="خدمات تولید">خدمات مرتبط با تولید (بسته‌بندی/طراحی/دیجیتال)</option>
-              <option value="سایر">سایر</option>
+            <label class="block text-xs text-slate-300 mb-1.5 font-medium">رسته اصلی صنعت <span class="req">*</span></label>
+            <select id="category" name="category" required class="form-input w-full rounded-xl px-3.5 py-2.5 text-sm">
+              <option value="">انتخاب رسته...</option>
+              {% for cat in industry_categories.keys() %}
+              <option value="{{ cat }}">{{ cat }}</option>
+              {% endfor %}
             </select>
           </div>
 
           <div>
-            <label class="block text-xs text-slate-300 mb-1.5 font-medium">زیرگروه (اختیاری)</label>
-            <input name="category_sub" class="form-input w-full rounded-xl px-3.5 py-2.5 text-sm"
-                   placeholder="مثال: گلیم، سفال، ترمه، بسته‌بندی خشکبار..." />
+            <label class="block text-xs text-slate-300 mb-1.5 font-medium">زیرگروه تخصصی <span class="req">*</span></label>
+            <select id="subcategory" name="subcategory" required class="form-input w-full rounded-xl px-3.5 py-2.5 text-sm">
+              <option value="">ابتدا رسته اصلی را انتخاب کنید...</option>
+            </select>
           </div>
 
           <div class="sm:col-span-2">
-            <label class="block text-xs text-slate-300 mb-1.5 font-medium">محصولات/خدمات اصلی <span class="req">*</span></label>
-            <textarea name="products" required rows="3"
-                      class="form-input w-full rounded-xl px-3.5 py-2.5 text-sm"
-                      placeholder="مثال: گلیم ۲×۳، کیف چرم دست‌دوز، ادویه ترکیبی، شیرینی محلی..."></textarea>
+            <label class="block text-xs text-slate-300 mb-1.5 font-medium">نام محصول / خدمات اصلی <span class="req">*</span></label>
+            <input name="product_name" required class="form-input w-full rounded-xl px-3.5 py-2.5 text-sm"
+                   placeholder="مثال: گلیم پشمی دست‌باف ۲×۳ متر" />
           </div>
 
           <div>
-            <label class="block text-xs text-slate-300 mb-1.5 font-medium">ظرفیت تولید (تقریبی)</label>
-            <input name="capacity" class="form-input w-full rounded-xl px-3.5 py-2.5 text-sm"
-                   placeholder="مثال: ۳۰ عدد در ماه / ۵۰ کیلو در هفته" />
+            <label class="block text-xs text-slate-300 mb-1.5 font-medium">ظرفیت تولید اسمی</label>
+            <input name="nominal_capacity" class="form-input w-full rounded-xl px-3.5 py-2.5 text-sm"
+                   placeholder="مثال: ۵۰" />
           </div>
 
           <div>
-            <label class="block text-xs text-slate-300 mb-1.5 font-medium">تعداد نیرو (اختیاری)</label>
-            <input name="workers" type="number" min="0"
-                   class="form-input w-full rounded-xl px-3.5 py-2.5 text-sm"
-                   placeholder="مثال: ۳" />
-          </div>
-
-          <div>
-            <label class="block text-xs text-slate-300 mb-1.5 font-medium">وضعیت مجوز/نشان (اختیاری)</label>
-            <select name="licenses" class="form-input w-full rounded-xl px-3.5 py-2.5 text-sm">
-              <option value="">انتخاب کنید...</option>
-              <option value="بدون مجوز">بدون مجوز</option>
-              <option value="مجوز مشاغل خانگی">مجوز مشاغل خانگی</option>
-              <option value="پروانه کسب">پروانه کسب</option>
-              <option value="پروانه بهره‌برداری">پروانه بهره‌برداری</option>
-              <option value="نشان ملی/استاندارد">نشان ملی/استاندارد</option>
-              <option value="سایر">سایر</option>
+            <label class="block text-xs text-slate-300 mb-1.5 font-medium">واحد ظرفیت</label>
+            <select name="capacity_unit" class="form-input w-full rounded-xl px-3.5 py-2.5 text-sm">
+              <option value="عدد در ماه">عدد در ماه</option>
+              <option value="کیلوگرم در ماه">کیلوگرم در ماه</option>
+              <option value="تن در ماه">تن در ماه</option>
+              <option value="متر مربع در ماه">متر مربع در ماه</option>
             </select>
           </div>
 
-          <div>
-            <label class="block text-xs text-slate-300 mb-1.5 font-medium">سطح آمادگی فروش <span class="req">*</span></label>
-            <select name="market_ready" required class="form-input w-full rounded-xl px-3.5 py-2.5 text-sm">
-              <option value="">انتخاب کنید...</option>
-              <option value="شروع">تازه شروع کرده‌ام</option>
-              <option value="فعال داخلی">فروش داخلی فعال دارم</option>
-              <option value="آماده صادرات">برای صادرات آماده‌ام</option>
-              <option value="نیازمند بسته‌بندی/استاندارد">نیازمند استاندارد/بسته‌بندی</option>
-            </select>
+          <!-- آپلود عکس محصول -->
+          <div class="sm:col-span-2 bg-slate-900/60 p-4 rounded-xl border border-slate-700">
+            <label class="block text-xs text-sky-300 mb-1.5 font-medium">تصویر محصول یا کارگاه (اختیاری - حداکثر ۵ مگابایت)</label>
+            <input type="file" name="product_image" accept="image/jpeg,image/png,image/webp"
+                   class="w-full text-xs text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-sky-600 file:text-white hover:file:bg-sky-500 cursor-pointer" />
+            <p class="text-[11px] text-slate-400 mt-1">فرمت‌های مجاز: JPG یا PNG</p>
           </div>
         </div>
       </section>
@@ -264,84 +237,10 @@
           <h2 class="text-base sm:text-lg font-semibold text-rose-300">۴) عارضه‌یابی و رفع موانع تولید</h2>
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div class="sm:col-span-2">
-            <label class="block text-xs text-slate-300 mb-2 font-medium">موانع اصلی (چند مورد قابل انتخاب)</label>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              <label class="flex items-center gap-2 text-sm text-slate-200">
-                <input type="checkbox" name="obstacles" value="سرمایه در گردش/نقدینگی" class="accent-sky-400">
-                سرمایه در گردش / نقدینگی
-              </label>
-              <label class="flex items-center gap-2 text-sm text-slate-200">
-                <input type="checkbox" name="obstacles" value="مواد اولیه" class="accent-sky-400">
-                مواد اولیه
-              </label>
-              <label class="flex items-center gap-2 text-sm text-slate-200">
-                <input type="checkbox" name="obstacles" value="بازاریابی و فروش" class="accent-sky-400">
-                بازاریابی و فروش
-              </label>
-              <label class="flex items-center gap-2 text-sm text-slate-200">
-                <input type="checkbox" name="obstacles" value="بسته‌بندی/برندسازی" class="accent-sky-400">
-                بسته‌بندی / برندسازی
-              </label>
-              <label class="flex items-center gap-2 text-sm text-slate-200">
-                <input type="checkbox" name="obstacles" value="مجوز/اداری" class="accent-sky-400">
-                مجوز / مسائل اداری
-              </label>
-              <label class="flex items-center gap-2 text-sm text-slate-200">
-                <input type="checkbox" name="obstacles" value="تجهیزات/ماشین‌آلات" class="accent-sky-400">
-                تجهیزات / ماشین‌آلات
-              </label>
-              <label class="flex items-center gap-2 text-sm text-slate-200">
-                <input type="checkbox" name="obstacles" value="استاندارد/کیفیت" class="accent-sky-400">
-                استاندارد / کیفیت
-              </label>
-              <label class="flex items-center gap-2 text-sm text-slate-200">
-                <input type="checkbox" name="obstacles" value="لجستیک/ارسال" class="accent-sky-400">
-                لجستیک / ارسال
-              </label>
-              <label class="flex items-center gap-2 text-sm text-slate-200">
-                <input type="checkbox" name="obstacles" value="صادرات/گمرک" class="accent-sky-400">
-                صادرات / گمرک
-              </label>
-              <label class="flex items-center gap-2 text-sm text-slate-200">
-                <input type="checkbox" name="obstacles" value="نیروی انسانی/آموزش" class="accent-sky-400">
-                نیروی انسانی / آموزش
-              </label>
-            </div>
-            <p class="text-[11px] text-slate-400 mt-2">اگر چند مانع دارید انتخاب کنید؛ در توضیحات پایین جزئیات را بنویسید.</p>
-          </div>
-
-          <div class="sm:col-span-2">
-            <label class="block text-xs text-slate-300 mb-1.5 font-medium">شرح دقیق مشکل (مهم) <span class="req">*</span></label>
-            <textarea name="obstacle_details" required rows="4"
-                      class="form-input w-full rounded-xl px-3.5 py-2.5 text-sm"
-                      placeholder="مثال: مواد اولیه با قیمت بالا تهیه می‌شود / بسته‌بندی نداریم / فروش آنلاین بلد نیستیم / برای صادرات استاندارد نیاز است..."></textarea>
-          </div>
-
-          <div>
-            <label class="block text-xs text-slate-300 mb-1.5 font-medium">اولویت پیگیری <span class="req">*</span></label>
-            <select name="priority" required class="form-input w-full rounded-xl px-3.5 py-2.5 text-sm">
-              <option value="">انتخاب کنید...</option>
-              <option value="فوری">فوری (۷ روز)</option>
-              <option value="متوسط">متوسط (۳۰ روز)</option>
-              <option value="عادی">عادی (۹۰ روز)</option>
-            </select>
-          </div>
-
-          <div>
-            <label class="block text-xs text-slate-300 mb-1.5 font-medium">نوع حمایت مورد نیاز</label>
-            <select name="support_type" class="form-input w-full rounded-xl px-3.5 py-2.5 text-sm">
-              <option value="">انتخاب کنید...</option>
-              <option value="مشاوره">مشاوره تخصصی</option>
-              <option value="بازار و فروش">بازار و فروش</option>
-              <option value="تامین مواد">تامین مواد اولیه</option>
-              <option value="تسهیلات">تسهیلات/وام</option>
-              <option value="تجهیزات">تجهیزات/ماشین‌آلات</option>
-              <option value="آموزش">آموزش</option>
-              <option value="صادرات">مسیر صادرات</option>
-            </select>
-          </div>
+        <div>
+          <label class="block text-xs text-slate-300 mb-1.5 font-medium">شرح مانع یا مشکل اصلی</label>
+          <textarea name="obstacles" rows="3" class="form-input w-full rounded-xl px-3.5 py-2.5 text-sm"
+                    placeholder="مثال: نیاز به سرمایه در گردش، مشکل تأمین مواد اولیه مرغوب، یا توسعه بازار فروش..."></textarea>
         </div>
       </section>
 
@@ -349,11 +248,11 @@
       <section class="pt-6 border-t border-slate-700/50">
         <div class="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
           <p class="text-xs text-slate-400 leading-6">
-            با ثبت این فرم، اطلاعات شما وارد سامانه می‌شود و برای پیگیری با شما تماس گرفته خواهد شد.
+            با ثبت این فرم، اطلاعات شما مستقیماً در سامانه ملی ثبت و ویترین واحدها به‌روز می‌شود.
           </p>
           <button type="submit"
                   class="w-full sm:w-auto px-6 py-3 rounded-xl font-semibold text-sm bg-sky-500 hover:bg-sky-400 text-slate-950 transition shadow-lg shadow-sky-500/20">
-            ثبت اطلاعات واحد
+            ثبت نهایی اطلاعات واحد
           </button>
         </div>
       </section>
@@ -361,12 +260,71 @@
     </form>
 
     <p class="text-center text-[11px] text-slate-500 mt-5">
-      © سامانه هوشمند توسعه تولید و رفع موانع — نسخه فرم: v1.0
+      © سامانه هوشمند توسعه تولید و رفع موانع — نسخه فرم: v2.0
     </p>
   </div>
 
   <script>
-    // لیست شهرستان‌ها (قابل توسعه)
+    // زیرگروه‌های صنایع (منطبق با بک‌اند)
+    const subCategories = {
+      "صنایع دستی و هنرهای سنتی": [
+        "فرش دست‌باف، گلیم و جاجیم",
+        "سفال و سرامیک هنری",
+        "قلم‌زنی و صنایع فلزی هنری",
+        "خاتم، معرق و منبت",
+        "حصیربافی و صنایع الیافی",
+        "رودوزی و سوزن‌دوزی سنتی",
+        "زیورآلات دست‌ساز"
+      ],
+      "مواد غذایی و صنایع تبدیلی خانگی": [
+        "خشکبار و میوه خشک",
+        "ترشی، شور، مربا و فرآورده‌های میوه",
+        "نان، شیرینی و محصولات آردی",
+        "ادویه و چاشنی",
+        "بسته‌بندی محصولات کشاورزی",
+        "فرآوری و بسته‌بندی عسل"
+      ],
+      "نساجی، پوشاک و کالای خواب": [
+        "پوشاک زنانه و مردانه",
+        "لباس کار و فرم",
+        "بافت و تریکو",
+        "کالای خواب و منسوجات منزل"
+      ],
+      "چرم، کیف و کفش": [
+        "کیف و محصولات چرمی",
+        "کفش و پاپوش دست‌دوز"
+      ],
+      "چوب، مبلمان و دکوراسیون": [
+        "مبلمان و مصنوعات چوبی",
+        "لوازم دکوراسیون و اسباب‌بازی چوبی"
+      ],
+      "گیاهان دارویی و محصولات ارگانیک": [
+        "گیاهان دارویی خشک و بسته‌بندی",
+        "عرقیات و گلاب"
+      ],
+      "تولیدات سبک صنعتی و کارگاهی": [
+        "قطعات و مصنوعات فلزی سبک",
+        "قطعات پلیمری و لوازم کارگاهی"
+      ]
+    };
+
+    const categoryEl = document.getElementById("category");
+    const subcategoryEl = document.getElementById("subcategory");
+
+    categoryEl.addEventListener("change", (e) => {
+      const cat = e.target.value;
+      subcategoryEl.innerHTML = '<option value="">انتخاب زیرگروه...</option>';
+      if(subCategories[cat]){
+        subCategories[cat].forEach(sub => {
+          const opt = document.createElement("option");
+          opt.value = sub;
+          opt.textContent = sub;
+          subcategoryEl.appendChild(opt);
+        });
+      }
+    });
+
+    // لیست شهرستان‌ها
     const citiesByProvince = {
       "آذربایجان شرقی": ["تبریز","مراغه","مرند","میانه","اهر","شبستر","سراب","بناب","جلفا","اسکو","سایر"],
       "آذربایجان غربی": ["ارومیه","خوی","مهاباد","بوکان","میاندوآب","سلماس","پیرانشهر","نقده","سردشت","تکاب","سایر"],
@@ -404,31 +362,17 @@
     const provinceEl = document.getElementById("province");
     const cityEl = document.getElementById("city");
 
-    function resetCity(){
-      cityEl.innerHTML = '<option value="">ابتدا استان را انتخاب کنید...</option>';
-    }
-
-    function populateCities(province){
-      const list = citiesByProvince[province] || [];
-      cityEl.innerHTML = '<option value="">انتخاب شهر/شهرستان...</option>';
-      list.forEach(c => {
-        const opt = document.createElement("option");
-        opt.value = c;
-        opt.textContent = c;
-        cityEl.appendChild(opt);
-      });
-    }
-
     provinceEl.addEventListener("change", (e) => {
       const province = e.target.value;
-      if(!province){ resetCity(); return; }
-      populateCities(province);
-    });
-
-    // اگر مرورگر مقدار را حفظ کرد (Back/Forward)
-    window.addEventListener("DOMContentLoaded", () => {
-      const p = provinceEl.value;
-      if (p) populateCities(p);
+      cityEl.innerHTML = '<option value="">انتخاب شهر/شهرستان...</option>';
+      if(citiesByProvince[province]){
+        citiesByProvince[province].forEach(c => {
+          const opt = document.createElement("option");
+          opt.value = c;
+          opt.textContent = c;
+          cityEl.appendChild(opt);
+        });
+      }
     });
   </script>
 </body>
