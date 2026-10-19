@@ -1,19 +1,13 @@
 import os
 import json
-import hmac
-import secrets
-import tempfile
 from pathlib import Path
 from threading import RLock
-from datetime import datetime, timezone
-from functools import wraps
+from datetime import datetime
 from uuid import uuid4
-from decimal import Decimal, InvalidOperation
-from collections import defaultdict
-
 from flask import (
     Flask,
     render_template,
+    render_template_string,
     request,
     redirect,
     url_for,
@@ -21,8 +15,6 @@ from flask import (
     session,
     send_from_directory,
 )
-from werkzeug.exceptions import RequestEntityTooLarge
-from werkzeug.security import check_password_hash
 
 BASE_DIR = Path(__file__).resolve().parent
 DATA_DIR = BASE_DIR
@@ -39,8 +31,9 @@ DATA_LOCK = RLock()
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "samaneh-secret-key-1403")
 
+# نام کاربری و رمز عبور پیش‌فرض مدیر
 ADMIN_USERNAME = os.environ.get("ADMIN_USERNAME", "admin").strip()
-ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "").strip()
+ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "admin123").strip()
 
 INDUSTRY_CATEGORIES = {
     "صنایع دستی و هنرهای سنتی": [
@@ -109,16 +102,12 @@ def load_market_requests():
     return read_records(DEMANDS_FILE)
 
 def normalized_phone(value):
-    value = "".join(c for c in str(value or "") if c.isdigit() or c == "+")
-    return value
-
-def valid_phone(value):
-    return len(value) >= 10
+    return "".join(c for c in str(value or "") if c.isdigit() or c == "+")
 
 def save_product_image():
     uploaded = request.files.get("product_image") or request.files.get("image")
     if not uploaded or not uploaded.filename:
-        return "", ""
+        return ""
     
     content = uploaded.stream.read(MAX_IMAGE_BYTES + 1)
     if len(content) > MAX_IMAGE_BYTES:
@@ -136,7 +125,7 @@ def save_product_image():
     filename = f"{uuid4().hex}{ext}"
     path = UPLOAD_DIR / filename
     path.write_bytes(content)
-    return filename, url_for("uploaded_file", filename=filename)
+    return filename
 
 @app.route("/uploads/<path:filename>")
 def uploaded_file(filename):
@@ -152,7 +141,12 @@ def inject_globals():
 @app.route("/")
 def index():
     units = load_data()
-    total_capacity = sum(float(u.get("nominal_capacity", 0)) for u in units if str(u.get("nominal_capacity", 0)).replace('.','',1).isdigit())
+    total_capacity = 0
+    for u in units:
+        try:
+            total_capacity += float(str(u.get("nominal_capacity", 0)).strip() or 0)
+        except Exception:
+            pass
     return render_template(
         "index.html",
         units=units,
@@ -173,7 +167,7 @@ def register():
             return render_template("register.html")
             
         try:
-            image_url, _ = save_product_image()
+            image_filename = save_product_image()
         except ValueError as e:
             flash(str(e), "error")
             return render_template("register.html")
@@ -191,7 +185,7 @@ def register():
             "nominal_capacity": request.form.get("nominal_capacity", "0").strip(),
             "capacity_unit": request.form.get("capacity_unit", "عدد در ماه").strip(),
             "obstacles": request.form.get("obstacles", "").strip(),
-            "image_url": image_url,
+            "image_url": image_filename,
             "created_at": datetime.now().strftime("%Y/%m/%d %H:%M")
         }
         
@@ -213,8 +207,8 @@ def export_market():
     demands = load_market_requests()
     
     if request.method == "POST":
-        title = request.form.get("title") or request.form.get("product_name") or "درخواست خرید"
-        buyer = request.form.get("buyer") or request.form.get("company_name") or "خریدار عمده"
+        title = request.form.get("title") or request.form.get("product_name") or "درخواست خرید عمده"
+        buyer = request.form.get("buyer") or request.form.get("company_name") or "خریدار تجاری"
         
         new_demand = {
             "id": int(datetime.now().timestamp()),
@@ -225,14 +219,14 @@ def export_market():
             "delivery_days": request.form.get("delivery_days", "۳۰ روزه"),
             "description": request.form.get("description", ""),
             "badge": "سفارش جدید",
-            "created_at": datetime.now().strftime("%Y/%m/%d")
+            "created_at": datetime.now().strftime("%Y/%m/%d %H:%M")
         }
         
-        demands.append(new_demand)
+        demands.insert(0, new_demand)
         with DATA_LOCK:
             write_records(DEMANDS_FILE, demands)
             
-        flash("درخواست شما با موفقیت ثبت شد.", "success")
+        flash("درخواست خرید با موفقیت در تالار بازار ثبت شد.", "success")
         return redirect(url_for("export_market"))
         
     return render_template(
@@ -245,13 +239,63 @@ def export_market():
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
+    if session.get("is_admin"):
+        return redirect(url_for("admin"))
+
     if request.method == "POST":
-        if request.form.get("username") == ADMIN_USERNAME and request.form.get("password") == ADMIN_PASSWORD:
+        u = request.form.get("username", "").strip()
+        p = request.form.get("password", "").strip()
+        if u == ADMIN_USERNAME and p == ADMIN_PASSWORD:
             session["is_admin"] = True
-            flash("خوش آمدید مدیر عزیز.", "success")
+            flash("خوش آمدید مدیر گرامی.", "success")
             return redirect(url_for("admin"))
-        flash("نام کاربری یا رمز عبور اشتباه است.", "error")
-    return render_template("login.html")
+        else:
+            flash("نام کاربری یا رمز عبور اشتباه است.", "error")
+
+    # اگر قالب login.html بود باز کن، در غیر این صورت فرم زیبا را مستقیم رندر کن
+    try:
+        return render_template("login.html")
+    except Exception:
+        pass
+
+    login_html = """
+    <!DOCTYPE html>
+    <html lang="fa" dir="rtl">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>ورود مدیریت | سامانه توسعه تولید</title>
+      <script src="https://cdn.tailwindcss.com"></script>
+    </head>
+    <body class="bg-slate-900 text-slate-100 min-h-screen flex items-center justify-center p-4 font-sans">
+      <div class="w-full max-w-md bg-slate-800 border border-slate-700 rounded-2xl p-6 shadow-2xl">
+        <h2 class="text-xl font-bold text-center text-emerald-400 mb-6">ورود به پنل مدیریت سامانه</h2>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for cat, msg in messages %}
+              <div class="mb-4 p-3 rounded-lg text-sm {{ 'bg-rose-900/60 text-rose-200 border border-rose-700' if cat == 'error' else 'bg-emerald-900/60 text-emerald-200 border border-emerald-700' }}">{{ msg }}</div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+        <form method="POST" class="space-y-4">
+          <div>
+            <label class="block text-xs text-slate-400 mb-1">نام کاربری</label>
+            <input type="text" name="username" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-white focus:outline-none focus:border-emerald-500">
+          </div>
+          <div>
+            <label class="block text-xs text-slate-400 mb-1">رمز عبور</label>
+            <input type="password" name="password" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-white focus:outline-none focus:border-emerald-500">
+          </div>
+          <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 rounded-xl transition">ورود به سامانه</button>
+        </form>
+        <div class="text-center mt-4">
+          <a href="{{ url_for('index') }}" class="text-xs text-slate-400 hover:text-slate-200">بازگشت به صفحه اصلی</a>
+        </div>
+      </div>
+    </body>
+    </html>
+    """
+    return render_template_string(login_html)
 
 @app.route("/admin")
 def admin():
@@ -259,11 +303,97 @@ def admin():
         return redirect(url_for("login"))
     units = load_data()
     demands = load_market_requests()
-    return render_template("admin.html", units=units, demands=demands)
+
+    try:
+        return render_template("admin.html", units=units, demands=demands)
+    except Exception:
+        pass
+
+    admin_html = """
+    <!DOCTYPE html>
+    <html lang="fa" dir="rtl">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>پنل مدیریت | سامانه ملی توسعه تولید</title>
+      <script src="https://cdn.tailwindcss.com"></script>
+    </head>
+    <body class="bg-slate-950 text-slate-100 min-h-screen p-4 md:p-8 font-sans">
+      <div class="max-w-6xl mx-auto space-y-8">
+        <div class="flex items-center justify-between bg-slate-900 border border-slate-800 p-4 rounded-2xl">
+          <div>
+            <h1 class="text-lg md:text-xl font-bold text-emerald-400">پنل مدیریت سامانه هوشمند تولید</h1>
+            <p class="text-xs text-slate-400 mt-1">مشاهده واحدها و درخواست‌های تالار صادرات</p>
+          </div>
+          <div class="flex gap-2">
+            <a href="{{ url_for('index') }}" class="text-xs bg-slate-800 hover:bg-slate-700 text-white px-3 py-2 rounded-xl">صفحه اصلی</a>
+            <a href="{{ url_for('logout') }}" class="text-xs bg-rose-900/80 hover:bg-rose-800 text-rose-200 px-3 py-2 rounded-xl">خروج</a>
+          </div>
+        </div>
+
+        <!-- بخش درخواست‌های بازار -->
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 md:p-6">
+          <h2 class="text-md font-bold text-amber-400 mb-4 flex items-center gap-2">
+            <span>درخواست‌های خرید و صادرات ثبت‌شده ({{ demands|length }})</span>
+          </h2>
+          {% if demands %}
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {% for d in demands %}
+            <div class="bg-slate-800/80 border border-slate-700 rounded-xl p-4 space-y-2">
+              <div class="flex justify-between items-start">
+                <span class="font-bold text-white text-sm">{{ d.title }}</span>
+                <span class="text-[10px] bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded-full border border-amber-500/30">{{ d.badge }}</span>
+              </div>
+              <p class="text-xs text-slate-300"><strong>خریدار:</strong> {{ d.buyer }}</p>
+              <p class="text-xs text-slate-300"><strong>مقصد / حجم:</strong> {{ d.target_country }} | {{ d.volume }}</p>
+              {% if d.description %}
+              <p class="text-xs text-slate-400 bg-slate-900/60 p-2 rounded-lg">{{ d.description }}</p>
+              {% endif %}
+              <p class="text-[10px] text-slate-500 text-left">{{ d.created_at }}</p>
+            </div>
+            {% endfor %}
+          </div>
+          {% else %}
+          <p class="text-xs text-slate-500 text-center py-6">هنوز هیچ درخواست بازاری ثبت نشده است.</p>
+          {% endif %}
+        </div>
+
+        <!-- بخش واحدهای ثبت‌شده -->
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 md:p-6">
+          <h2 class="text-md font-bold text-emerald-400 mb-4">واحدهای تولیدی ثبت‌شده ({{ units|length }})</h2>
+          {% if units %}
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {% for u in units %}
+            <div class="bg-slate-800/80 border border-slate-700 rounded-xl p-4 space-y-2">
+              <div class="flex justify-between items-center">
+                <span class="font-bold text-white text-sm">{{ u.unit_name }}</span>
+                <span class="text-[10px] bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded-full">{{ u.province }}</span>
+              </div>
+              <p class="text-xs text-slate-300"><strong>مدیر / تماس:</strong> {{ u.manager_name }} ({{ u.phone }})</p>
+              <p class="text-xs text-slate-300"><strong>محصول:</strong> {{ u.product_name or 'ثبت نشده' }}</p>
+              <p class="text-xs text-slate-300"><strong>ظرفیت ماهانه:</strong> {{ u.nominal_capacity }} {{ u.capacity_unit }}</p>
+              {% if u.obstacles %}
+              <div class="text-xs text-rose-300 bg-rose-950/40 border border-rose-900/50 p-2 rounded-lg mt-2">
+                <strong>مانع ثبت‌شده:</strong> {{ u.obstacles }}
+              </div>
+              {% endif %}
+            </div>
+            {% endfor %}
+          </div>
+          {% else %}
+          <p class="text-xs text-slate-500 text-center py-6">هنوز واحدی ثبت نشده است.</p>
+          {% endif %}
+        </div>
+      </div>
+    </body>
+    </html>
+    """
+    return render_template_string(admin_html, units=units, demands=demands)
 
 @app.route("/logout")
 def logout():
     session.clear()
+    flash("با موفقیت خارج شدید.", "info")
     return redirect(url_for("index"))
 
 if __name__ == "__main__":
