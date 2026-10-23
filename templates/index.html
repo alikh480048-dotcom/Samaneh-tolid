@@ -3,238 +3,98 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>شبکه ملی توسعه تولید و رفع موانع</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/fonts/webfonts/font-face.css" rel="stylesheet" type="text/css" />
+    <title>شبکه هوشمند توسعه تولید و رفع موانع</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body { font-family: 'Vazirmatn', sans-serif; }
+        body { background-color: #f4f6f9; font-family: Tahoma, sans-serif; }
+        .hero-section { background: linear-gradient(135deg, #0d6efd, #0dcaf0); color: white; border-radius: 0 0 30px 30px; padding: 50px 0; }
+        .card { border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: none; }
+        .stat-card { background: white; border-radius: 15px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
     </style>
 </head>
-<body class="bg-[#0b132b] text-slate-100 antialiased min-h-screen flex flex-col justify-between selection:bg-emerald-500 selection:text-white">
-
-    <!-- نوار هدر با استایل نسخه اصلی موبایل -->
-    <header class="bg-[#1c2541]/90 backdrop-blur-md border-b border-slate-700/60 sticky top-0 z-50">
-        <div class="max-w-xl mx-auto px-4 py-3 flex items-center justify-between">
-            <div class="flex items-center gap-2">
-                <span class="text-2xl">🇮🇷</span>
-                <div>
-                    <h1 class="text-sm font-extrabold text-white tracking-tight">شبکه ملی توسعه تولید</h1>
-                    <p class="text-[10px] text-emerald-400 font-medium">پلتفرم زنجیره ارزش و رفع موانع</p>
-                </div>
-            </div>
-
-            <!-- دکمه‌های ناوبری اصلی دقیقاً مانند قبل -->
-            <div class="flex items-center gap-1.5">
-                <a href="#modules" class="bg-slate-800/80 hover:bg-slate-700 text-slate-300 text-[11px] font-semibold px-2.5 py-1.5 rounded-lg border border-slate-600/50 transition">
-                    معماری ماژولار
-                </a>
-                <a href="/register" class="bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-bold px-3 py-1.5 rounded-lg shadow-md shadow-emerald-900/40 transition active:scale-95">
-                    ثبت واحد تولیدی
-                </a>
-                {% if is_admin %}
-                <a href="/admin" class="bg-indigo-600 hover:bg-indigo-500 text-white text-[11px] font-bold px-2.5 py-1.5 rounded-lg transition">
-                    مدیریت
-                </a>
-                {% else %}
-                <a href="/login" class="bg-slate-700 hover:bg-slate-600 text-slate-200 text-[11px] font-medium px-2.5 py-1.5 rounded-lg transition">
-                    ورود
-                </a>
-                {% endif %}
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="{{ url_for('index') }}"><i class="fas fa-network-wired me-2"></i>سامانه هوشمند توسعه تولید</a>
+            <div class="d-flex gap-2">
+                <a href="{{ url_for('export_market') }}" class="btn btn-outline-info btn-sm"><i class="fas fa-chart-line me-1"></i>بازار</a>
+                <a href="{{ url_for('login') }}" class="btn btn-outline-light btn-sm"><i class="fas fa-lock me-1"></i>ورود مدیر</a>
             </div>
         </div>
-    </header>
+    </nav>
 
-    <!-- پیام‌های تایید سیستم -->
-    {% with messages = get_flashed_messages(with_categories=true) %}
-      {% if messages %}
-        <div class="max-w-xl mx-auto px-4 mt-3 w-full">
-          {% for category, message in messages %}
-            <div class="p-3 rounded-xl text-xs font-semibold shadow-md {% if category == 'danger' or category == 'error' %}bg-rose-900/60 border border-rose-600 text-rose-200{% else %}bg-emerald-900/60 border border-emerald-500 text-emerald-200{% endif %}">
-              {{ message }}
+    <div class="hero-section text-center">
+        <div class="container">
+            <h1 class="fw-bold mb-3">شبکه هوشمند توسعه تولید و رفع موانع</h1>
+            <p class="lead mb-4">اتصال صنایع دستی خرد و خانگی به بازارهای ملی و جهانی و زنجیره ارزش</p>
+            <div class="d-flex justify-content-center gap-3 flex-wrap">
+                <a href="{{ url_for('register') }}" class="btn btn-light btn-lg text-primary fw-bold px-4"><i class="fas fa-plus-circle me-2"></i>ثبت واحد تولیدی جدید</a>
             </div>
-          {% endfor %}
         </div>
-      {% endif %}
-    {% endwith %}
+    </div>
 
-    <main class="max-w-xl mx-auto px-4 py-4 w-full space-y-6">
+    <div class="container my-5">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+              </div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
 
-        <!-- کارت‌های آمار و پایش (دقیقاً با استایل عکس اصلی) -->
-        <section class="grid grid-cols-2 gap-3">
-            <!-- واحدهای فعال -->
-            <div class="bg-[#1c2541] rounded-2xl p-3.5 border border-slate-700/70 shadow-lg relative overflow-hidden">
-                <div class="flex items-center justify-between mb-1">
-                    <span class="text-[11px] text-slate-400 font-medium">واحدهای فعال</span>
-                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                </div>
-                <div class="flex items-baseline gap-1">
-                    <span class="text-2xl font-black text-white">
-                        {% if workshops is defined %}{{ workshops|length }}{% else %}1{% endif %}
-                    </span>
-                    <span class="text-[11px] text-emerald-400 font-bold">واحد</span>
-                </div>
-                <p class="text-[10px] text-slate-400 mt-1">پایش و ثبت‌شده</p>
-            </div>
-
-            <!-- ظرفیت کل ثبت‌شده -->
-            <div class="bg-[#1c2541] rounded-2xl p-3.5 border border-slate-700/70 shadow-lg">
-                <span class="text-[11px] text-slate-400 font-medium block mb-1">ظرفیت کل ثبت‌شده</span>
-                <div class="flex items-baseline gap-1">
-                    <span class="text-2xl font-black text-white">۳</span>
-                    <span class="text-[11px] text-emerald-400 font-bold">تن در ماه</span>
-                </div>
-                <p class="text-[10px] text-slate-400 mt-1">مقیاس تولید هم‌رسانی</p>
-            </div>
-
-            <!-- موانع در حال پیگیری -->
-            <div class="bg-[#1c2541] rounded-2xl p-3.5 border border-slate-700/70 shadow-lg">
-                <span class="text-[11px] text-slate-400 font-medium block mb-1">موانع در حال پیگیری</span>
-                <div class="flex items-baseline gap-1">
-                    <span class="text-2xl font-black text-amber-400">۰</span>
-                    <span class="text-[11px] text-amber-300 font-bold">مورد</span>
-                </div>
-                <p class="text-[10px] text-slate-400 mt-1">در فرآیند رفع موانع</p>
-            </div>
-
-            <!-- موانع رفع‌شده -->
-            <div class="bg-[#1c2541] rounded-2xl p-3.5 border border-slate-700/70 shadow-lg">
-                <span class="text-[11px] text-slate-400 font-medium block mb-1">موانع رفع‌شده</span>
-                <div class="flex items-baseline gap-1">
-                    <span class="text-2xl font-black text-cyan-400">۰</span>
-                    <span class="text-[11px] text-cyan-300 font-bold">مورد</span>
-                </div>
-                <p class="text-[10px] text-slate-400 mt-1">رفع کامل موانع</p>
-            </div>
-        </section>
-
-        <!-- ماژول‌های اکوسیستم هوشمند تولید -->
-        <section id="modules" class="space-y-3">
-            <div class="border-b border-slate-800 pb-2">
-                <h2 class="text-sm font-extrabold text-white">ماژول‌های اکوسیستم هوشمند تولید</h2>
-                <p class="text-[10px] text-slate-400">درگاه یکپارچه خدمات تخصصی و زنجیره ارزش</p>
-            </div>
-
-            <!-- کارت ماژول ۱: ویترین واحدها -->
-            <div class="bg-[#1c2541] rounded-2xl p-4 border border-slate-700/60 shadow-md space-y-2">
-                <div class="flex items-center justify-between">
-                    <span class="text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2 py-0.5 rounded-md font-bold">فعال و در حال بهره‌برداری</span>
-                    <span class="text-xs text-slate-400">فاز ۱</span>
-                </div>
-                <h3 class="text-sm font-bold text-white">ویترین واحدها و شناسنامه تولید</h3>
-                <p class="text-xs text-slate-300 leading-relaxed">
-                    نمایش توانمندی‌ها، ظرفیت ماهانه و کاتالوگ محصولات تولیدکنندگان خرد و کارگاهی سراسر کشور.
-                </p>
-                <div class="pt-1">
-                    <a href="#workshops-catalog" class="inline-flex items-center text-xs font-bold text-emerald-400 hover:text-emerald-300">
-                        مشاهده ویترین واحدها ↓
-                    </a>
+        <div class="row text-center mb-5">
+            <div class="col-md-6 mb-3">
+                <div class="stat-card">
+                    <h3 class="text-primary fw-bold display-5">{{ total_units }}</h3>
+                    <p class="text-muted mb-0 fw-bold">کل واحدهای تولیدی ثبت‌شده</p>
                 </div>
             </div>
-
-            <!-- کارت ماژول ۲: عارضه‌یابی و رفع موانع -->
-            <div class="bg-[#1c2541] rounded-2xl p-4 border border-slate-700/60 shadow-md space-y-2">
-                <div class="flex items-center justify-between">
-                    <span class="text-[10px] bg-amber-500/20 text-amber-300 border border-amber-500/30 px-2 py-0.5 rounded-md font-bold">فعال و در حال پذیرش</span>
-                    <span class="text-xs text-slate-400">فاز ۲</span>
-                </div>
-                <h3 class="text-sm font-bold text-white">ثبت موانع و عارضه‌یابی تخصصی</h3>
-                <p class="text-xs text-slate-300 leading-relaxed">
-                    ثبت مسائل بیمه، تسهیلات، مالیات، مواد اولیه و ارجاع پرونده‌ها به مراجع تصمیم‌گیر.
-                </p>
-                <div class="pt-1">
-                    <a href="/register" class="inline-flex items-center text-xs font-bold text-amber-400 hover:text-amber-300">
-                        ثبت عارضه و مانع ←
-                    </a>
+            <div class="col-md-6 mb-3">
+                <div class="stat-card">
+                    <h3 class="text-success fw-bold display-5">{{ total_export }}</h3>
+                    <p class="text-muted mb-0 fw-bold">آماده صادرات و تامین عمده</p>
                 </div>
             </div>
+        </div>
 
-            <!-- کارت ماژول ۳: اتصال به بازارهای صادراتی و عمده -->
-            <div class="bg-gradient-to-br from-[#1e293b] to-[#0f172a] rounded-2xl p-4 border border-indigo-500/40 shadow-lg space-y-2">
-                <div class="flex items-center justify-between">
-                    <span class="text-[10px] bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 px-2 py-0.5 rounded-md font-bold">جدید • هوشمند</span>
-                    <span class="text-xs text-indigo-400">فاز ۳</span>
-                </div>
-                <h3 class="text-sm font-bold text-white">اتصال به بازارهای صادراتی و عمده</h3>
-                <p class="text-xs text-slate-300 leading-relaxed">
-                    هم‌رسانی هوشمند محصولات کارگاه‌ها با تجار و مشتریان عمده داخلی و صادراتی.
-                </p>
-                <div class="pt-2">
-                    <a href="/export-market" class="block text-center w-full bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold py-2.5 rounded-xl shadow-md transition active:scale-95">
-                        ورود به تالار مشتریان و صادرات ←
-                    </a>
-                </div>
+        <div class="row">
+            <div class="col-12 mb-4">
+                <h3 class="fw-bold text-dark"><i class="fas fa-clock me-2"></i>آخرین واحدهای تولیدی ثبت‌شده در شبکه</h3>
             </div>
-        </section>
-
-        <!-- کاتالوگ واحدهای ثبت‌شده -->
-        <section id="workshops-catalog" class="space-y-4">
-            <div class="flex items-center justify-between border-b border-slate-800 pb-2">
-                <h2 class="text-sm font-extrabold text-white">واحدهای ثبت‌شده در چرخه</h2>
-                <span class="text-[11px] text-slate-400">نمایش پایش زنده</span>
-            </div>
-
-            <div class="space-y-4">
-                {% if workshops %}
-                    {% for w in workshops %}
-                    <div class="bg-[#1c2541] rounded-2xl border border-slate-700/70 overflow-hidden shadow-lg">
-                        <div class="h-44 bg-slate-900 relative">
-                            {% if w.image_path %}
-                                <img src="{{ url_for('static', filename=w.image_path) }}" alt="{{ w.name }}" class="w-full h-full object-cover">
-                            {% elif w.image %}
-                                <img src="{{ url_for('static', filename=w.image) }}" alt="{{ w.name }}" class="w-full h-full object-cover">
-                            {% else %}
-                                <div class="w-full h-full flex flex-col items-center justify-center text-slate-500">
-                                    <span class="text-4xl mb-1">🏭</span>
-                                    <span class="text-xs">تصویر واحد ثبت‌شده</span>
-                                </div>
-                            {% endif %}
-                            <span class="absolute top-3 right-3 bg-black/60 backdrop-blur-md text-emerald-400 border border-emerald-500/30 text-[10px] font-bold px-2.5 py-1 rounded-lg">
-                                {{ w.province if w.province else 'ایران' }}
-                            </span>
+            {% if recent_units %}
+                {% for unit in recent_units %}
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100 p-3">
+                        {% if unit.image_filename %}
+                            <img src="{{ url_for('uploaded_file', filename=unit.image_filename) }}" class="card-img-top rounded-3 mb-3" style="height: 180px; object-fit: cover;" alt="تصویر محصول">
+                        {% else %}
+                            <div class="bg-light rounded-3 mb-3 d-flex align-items-center justify-content-center text-muted" style="height: 180px;">
+                                <i class="fas fa-image fa-3x"></i>
+                            </div>
+                        {% endif %}
+                        <div class="card-body p-0">
+                            <span class="badge bg-primary mb-2">{{ unit.craft_type }}</span>
+                            <h5 class="card-title fw-bold text-dark">{{ unit.unit_name }}</h5>
+                            <p class="text-muted small mb-2"><i class="fas fa-map-marker-alt me-1"></i> {{ unit.province }}، {{ unit.county }} {% if unit.district %} - {{ unit.district }} {% endif %}</p>
+                            <p class="card-text small text-secondary">{{ unit.products_desc[:90] }}...</p>
                         </div>
-                        <div class="p-4 space-y-3">
-                            <div>
-                                <h3 class="text-base font-bold text-white">{{ w.name }}</h3>
-                                <p class="text-xs text-slate-400 mt-0.5">مدیریت: {{ w.manager if w.manager else 'تولیدکننده' }}</p>
-                            </div>
-
-                            <div class="bg-slate-900/60 rounded-xl p-2.5 border border-slate-800 text-xs space-y-1.5">
-                                <div class="flex justify-between items-center">
-                                    <span class="text-slate-400">رسته فعالیت:</span>
-                                    <span class="text-slate-200 font-semibold">{{ w.category if w.category else 'صنایع تولیدی' }}</span>
-                                </div>
-                                <div class="flex justify-between items-center">
-                                    <span class="text-slate-400">ظرفیت اعلامی:</span>
-                                    <span class="text-emerald-400 font-bold">{{ w.capacity if w.capacity else 'ظرفیت خرد و کارگاهی' }}</span>
-                                </div>
-                                {% if w.phone %}
-                                <div class="flex justify-between items-center">
-                                    <span class="text-slate-400">ارتباط:</span>
-                                    <span class="text-slate-300 font-mono">{{ w.phone }}</span>
-                                </div>
-                                {% endif %}
-                            </div>
-
-                            <a href="/export-market" class="block w-full text-center bg-slate-800 hover:bg-slate-700 text-indigo-300 font-bold text-xs py-2.5 rounded-xl border border-slate-600/40 transition">
-                                استعلام خریداران هوشمند این واحد ←
-                            </a>
+                        <div class="card-footer bg-white border-0 pt-0">
+                            <span class="text-muted small"><i class="fas fa-user me-1"></i> مسئول: {{ unit.manager_name }}</span>
                         </div>
                     </div>
-                    {% endfor %}
-                {% else %}
-                    <!-- کارت پیش‌فرض در صورت نبود واحد -->
-                    <div class="bg-[#1c2541] rounded-2xl border border-slate-700/70 p-4 text-center">
-                        <p class="text-xs text-slate-400">هنوز واحدی ثبت نشده یا در حال بارگذاری است.</p>
-                    </div>
-                {% endif %}
-            </div>
-        </section>
-
-    </main>
-
-    <footer class="bg-[#0b132b] border-t border-slate-800/80 py-4 text-center text-[11px] text-slate-500">
-        سامانه ملی توسعه تولید و پایش زنجیره ارزش &copy; ۱۴۰۵
-    </footer>
-
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="col-12 text-center py-5">
+                    <p class="text-muted">هنوز واحد تولیدی در سامانه ثبت نشده است.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
