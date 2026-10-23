@@ -3,24 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ثبت واحد تولیدی | سامانه هوشمند توسعه تولید</title>
+    <title>ثبت واحد تولیدی | سامانه هوشمند</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body { background-color: #f8f9fa; font-family: Tahoma, sans-serif; }
-        .card { border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
-        .btn-primary { background-color: #0d6efd; border-radius: 10px; padding: 12px; font-weight: bold; }
-        .form-control, .form-select { border-radius: 10px; padding: 10px 15px; }
+        body { background-color: #f4f6f9; font-family: Tahoma, sans-serif; }
+        .card { border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); border: none; }
     </style>
 </head>
 <body>
-    <div class="container my-5">
-        <div class="row justify-content_center">
+    <nav class="navbar navbar-dark bg-dark mb-4">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="{{ url_for('index') }}"><i class="fas fa-arrow-right me-2"></i>بازگشت به صفحه اصلی</a>
+        </div>
+    </nav>
+
+    <div class="container my-4">
+        <div class="row justify-content-center">
             <div class="col-lg-8">
-                <div class="card p-4 p-md-5 border-0">
+                <div class="card p-4 p-md-5">
                     <div class="text-center mb-4">
-                        <h2 class="fw-bold text-primary"><i class="fas fa-industry me-2"></i>ثبت واحد تولیدی خرد و خانگی</h2>
-                        <p class="text-muted">اطلاعات واحد خود را برای اتصال به شبکه ملی و بازارهای صادراتی وارد کنید</p>
+                        <h2 class="fw-bold text-primary"><i class="fas fa-plus-circle me-2"></i>ثبت واحد تولیدی صنایع دستی خرد و خانگی</h2>
+                        <p class="text-muted small">لطفاً مشخصات واحد تولیدی، موقعیت مکانی و محصولات خود را وارد کنید.</p>
                     </div>
 
                     {% with messages = get_flashed_messages(with_categories=true) %}
@@ -35,77 +39,83 @@
                     {% endwith %}
 
                     <form method="POST" enctype="multipart/form-data">
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">نام واحد تولیدی / کارگاه <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" name="unit_name" required placeholder="مثلاً: کارگاه سفالگری باران">
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label fw-bold">نام مدیر / مسئول <span class="text-danger">*</span></label>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">نام واحد تولیدی / کارگاه <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" name="unit_name" required placeholder="مثال: کارگاه میناکاری پارسی">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">نام مسئول / سرپرست <span class="text-danger">*</span></label>
                                 <input type="text" class="form-control" name="manager_name" required placeholder="نام و نام خانوادگی">
                             </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label fw-bold">شماره تماس (موبایل) <span class="text-danger">*</span></label>
-                                <input type="tel" class="form-control" name="phone" required placeholder="09xxxxxxxxx">
-                            </div>
-                        </div>
 
-                        <!-- ساختار مکانی سه‌سطحی -->
-                        <div class="row">
-                            <div class="col-md-4 mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">شماره تماس (تلفن همراه) <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" name="phone" required placeholder="09123456789">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">نوع صنایع دستی / حوزه فعالیت <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" name="craft_type" required placeholder="مثال: فرش بافی، سفال، گلیم...">
+                            </div>
+
+                            <!-- موقعیت مکانی: سه سطح -->
+                            <div class="col-md-4">
                                 <label class="form-label fw-bold">استان <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" name="province" id="province" required placeholder="مثلاً: مازندران">
+                                <select class="form-select" id="province" name="province" required onchange="updateCounties()">
+                                    <option value="">انتخاب استان...</option>
+                                    <option value="تهران">تهران</option>
+                                    <option value="اصفهان">اصفهان</option>
+                                    <option value="فارس">فارس</option>
+                                    <option value="خراسان رضوی">خراسان رضوی</option>
+                                    <option value="آذربایجان شرقی">آذربایجان شرقی</option>
+                                    <option value="گیلان">گیلان</option>
+                                    <option value="مازندران">مازندران</option>
+                                    <option value="یزد">یزد</option>
+                                    <option value="کرمان">کرمان</option>
+                                    <option value="خوزستان">خوزستان</option>
+                                    <option value="سایر">سایر استان‌ها</option>
+                                </select>
                             </div>
-                            <div class="col-md-4 mb-3">
+                            <div class="col-md-4">
                                 <label class="form-label fw-bold">شهرستان <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" name="county" id="county" required placeholder="مثلاً: بابل">
+                                <input type="text" class="form-control" name="county" required placeholder="نام شهرستان">
                             </div>
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label fw-bold">بخش / منطقه</label>
-                                <input type="text" class="form-control" name="district" id="district" placeholder="مثلاً: بندپی غربی">
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold">بخش / شهر / منطقه</label>
+                                <input type="text" class="form-control" name="district" placeholder="بخش یا دهستان (اختیاری)">
                             </div>
-                        </div>
 
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">نوع صنایع دستی / هنر <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" name="craft_type" required placeholder="مثلاً: سفال و سرامیک، گلیم‌بافی، معرق چوب">
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">توضیحات محصولات و ظرفیت تولید <span class="text-danger">*</span></label>
-                            <textarea class="form-control" name="products_desc" rows="3" required placeholder="توضیح مختصر درباره محصولات تولیدی و توان ماهانه..."></textarea>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
+                            <div class="col-md-6">
                                 <label class="form-label fw-bold">ظرفیت تولید ماهانه</label>
-                                <input type="text" class="form-control" name="capacity" placeholder="مثلاً: ۲۰۰ عدد در ماه">
+                                <input type="text" class="form-control" name="monthly_capacity" placeholder="مثال: ۵۰ تخته / ۱۰۰ عدد">
                             </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label fw-bold">آمادگی صادرات / ارسال عمده؟</label>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">آمادگی صادرات و تامین عمده؟</label>
                                 <select class="form-select" name="export_ready">
-                                    <option value="no">خیر / فعلاً خرده‌فروشی</option>
+                                    <option value="no">خیر (فعلاً بازار داخلی)</option>
                                     <option value="yes">بله، آماده صادرات و تامین عمده</option>
                                 </select>
                             </div>
-                        </div>
 
-                        <div class="mb-4">
-                            <label class="form-label fw-bold">تصویر نمونه محصول یا کارگاه (اختیاری)</label>
-                            <input type="file" class="form-control" name="image" accept="image/png, image/jpeg, image/webp">
-                            <div class="form-text">فرمت‌های مجاز: PNG, JPG, WEBP (حداکثر ۵ مگابایت)</div>
-                        </div>
+                            <div class="col-12">
+                                <label class="form-label fw-bold">توضیحات محصولات و قابلیت‌ها <span class="text-danger">*</span></label>
+                                <textarea class="form-control" name="products_desc" rows="3" required placeholder="توضیحی درباره کیفیت، مواد اولیه و نوع محصولات تولیدی..."></textarea>
+                            </div>
 
-                        <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-primary btn-lg"><i class="fas fa-check-circle me-2"></i>ثبت نهایی واحد تولیدی</button>
-                            <a href="{{ url_for('index') }}" class="btn btn-light text-muted">بازگشت به صفحه اصلی</a>
+                            <div class="col-12">
+                                <label class="form-label fw-bold">تصویر محصول یا کارگاه (اختیاری - حداکثر ۵ مگابایت)</label>
+                                <input type="file" class="form-control" name="image" accept="image/png, image/jpeg, image/webp">
+                            </div>
+
+                            <div class="col-12 mt-4">
+                                <button type="submit" class="btn btn-primary btn-lg w-100 fw-bold"><i class="fas fa-check-circle me-2"></i>ثبت نهایی واحد تولیدی</button>
+                            </div>
                         </div>
                     </form>
                 </div>
             </div>
         </div>
     </div>
-    <script src="https://cdn.jsdelivr.5npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
