@@ -429,8 +429,9 @@ def update_status(workshop_id):
 # ==========================================
 # ماژول هوشمند تطبیق بازار و صادرات
 # ==========================================
-@app.route("/export-market")
-def export_market():
+@app.route("/export")
+@app.route("/export-market", endpoint="export_market")
+def export():
     conn = get_db()
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM workshops ORDER BY id DESC")
