@@ -1,255 +1,209 @@
 import os
-from pathlib import Path
+from flask import Flask, render_template, request, redirect, url_for, flash, session, send_from_directory
+from flask_sqlalchemy import SQLAlchemy
+from werkzeug.utils import secure_filename
 from datetime import datetime
-from uuid import uuid4
-from flask import (
-    Flask,
-    render_template,
-    render_template_string,
-    request,
-    redirect,
-    url_for,
-    flash,
-    session,
-    send_from_directory,
-)
-from sqlalchemy import (
-    create_engine,
-    Column,
-    Integer,
-    String,
-    Text,
-    DateTime,
-    Index,
-    desc,
-    func,
-)
-from sqlalchemy.orm import declarative_base, sessionmaker, scoped_session
-
-BASE_DIR = Path(__file__).resolve().parent
-
-# مسیر ذخیره سازی فایل‌های آپلودی (پشتیبانی از Render Persistent Disk یا محلی)
-UPLOAD_DIR = Path(os.environ.get("PERSIST_DIR", BASE_DIR / "uploads"))
-UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
 app = Flask(__name__)
-app.secret_key = os.environ.get("SECRET_KEY", "samaneh-tolid-secure-key-2026")
-app.config["UPLOAD_FOLDER"] = str(UPLOAD_DIR)
-app.config["MAX_CONTENT_LENGTH"] = 5 * 1024 * 1024  # محدودیت ۵ مگابایت برای تصویر
+app.config['SECRET_KEY'] = 'saman-smart-secret-key-1405'
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///tolid.db')
+if app.config['SQLALCHEMY_DATABASE_URI'].startswith("postgres://"):
+    app.config['SQLALCHEMY_DATABASE_URI'] = app.config['SQLALCHEMY_DATABASE_URI'].replace("postgres://", "postgresql://", 1)
 
-ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "webp"}
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['UPLOAD_FOLDER'] = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'uploads')
+app.config['MAX_CONTENT_LENGTH'] = 5 * 1024 * 1024  # حداکثر ۵ مگابایت
 
-def allowed_file(filename):
-    return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
+os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+os.makedirs(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates'), exist_ok=True)
 
-# ----------------- دیتابیس (PostgreSQL / SQLite) -----------------
-DATABASE_URL = os.environ.get("DATABASE_URL", f"sqlite:///{BASE_DIR / 'database.db'}")
-if DATABASE_URL.startswith("postgres://"):
-    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
+db = SQLAlchemy(app)
 
-engine = create_engine(DATABASE_URL, pool_pre_ping=True)
-db_session = scoped_session(sessionmaker(autocommit=False, autoflush=False, bind=engine))
-Base = declarative_base()
-Base.query = db_session.query_property()
-
-# مدل واحدهای تولیدی با ساختار مکانی سه‌سطحی (استان، شهرستان، بخش)
-class ProductionUnit(Base):
-    __tablename__ = "production_units"
-    
-    id = Column(Integer, primary_key=True)
-    unit_name = Column(String(150), nullable=False)
-    manager_name = Column(String(100), nullable=False)
-    phone = Column(String(20), nullable=False)
-    
-    # مکان جغرافیایی سه‌سطحی
-    province = Column(String(50), nullable=False, index=True)
-    county = Column(String(50), nullable=False, index=True)      # شهرستان
-    district = Column(String(50), nullable=True, index=True)    # بخش / دهستان / منطقه
-    
-    craft_type = Column(String(100), nullable=False, index=True)
-    products_desc = Column(Text, nullable=False)
-    capacity = Column(String(100), nullable=True)
-    export_ready = Column(String(10), nullable=False, default="no")
-    image_filename = Column(String(255), nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow, index=True)
-
-    __table_args__ = (
-        Index('idx_location_search', 'province', 'county', 'district'),
-    )
+# مدل پایگاه داده واحدها
+class ProductionUnit(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    unit_name = db.Column(db.String(120), nullable=False)
+    manager_name = db.Column(db.String(100), nullable=False)
+    phone = db.Column(db.String(20), nullable=False)
+    province = db.Column(db.String(50), nullable=False, index=True)
+    county = db.Column(db.String(50), nullable=False)
+    district = db.Column(db.String(50), nullable=True)
+    craft_type = db.Column(db.String(100), nullable=False)
+    products_desc = db.Column(db.Text, nullable=False)
+    monthly_capacity = db.Column(db.String(100), nullable=True)
+    export_ready = db.Column(db.String(10), default='no')
+    image_filename = db.Column(db.String(255), nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 # مدل تقاضای بازار
-class MarketDemand(Base):
-    __tablename__ = "market_demands"
-    
-    id = Column(Integer, primary_key=True)
-    buyer_name = Column(String(150), nullable=False)
-    target_craft = Column(String(100), nullable=False)
-    quantity_needed = Column(String(100), nullable=False)
-    contact_info = Column(String(150), nullable=False)
-    created_at = Column(DateTime, default=datetime.utcnow)
+class MarketDemand(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    buyer_name = db.Column(db.String(120), nullable=False)
+    buyer_phone = db.Column(db.String(20), nullable=False)
+    requested_item = db.Column(db.String(150), nullable=False)
+    required_quantity = db.Column(db.String(100), nullable=False)
+    target_market = db.Column(db.String(100), nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-Base.metadata.create_all(bind=engine)
+with app.app_context():
+    db.create_all()
 
-@app.teardown_appcontext
-def shutdown_session(exception=None):
-    db_session.remove()
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'webp'}
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-# ----------------- روت‌ها و صفحات -----------------
-
-@app.route("/")
+@app.route('/')
 def index():
-    total_units = db_session.query(func.count(ProductionUnit.id)).scalar() or 0
-    total_export = db_session.query(func.count(ProductionUnit.id)).filter(ProductionUnit.export_ready == 'yes').scalar() or 0
-    recent_units = db_session.query(ProductionUnit).order_by(desc(ProductionUnit.created_at)).limit(6).all()
-    return render_template("index.html", total_units=total_units, total_export=total_export, recent_units=recent_units)
+    total_units = ProductionUnit.query.count()
+    total_export = ProductionUnit.query.filter_by(export_ready='yes').count()
+    recent_units = ProductionUnit.query.order_by(ProductionUnit.created_at.desc()).limit(6).all()
+    return render_template('index.html', total_units=total_units, total_export=total_export, recent_units=recent_units)
 
-@app.route("/register", methods=["GET", "POST"])
+@app.route('/register', methods=['GET', 'POST'])
 def register():
-    if request.method == "POST":
-        try:
-            unit_name = request.form.get("unit_name", "").strip()
-            manager_name = request.form.get("manager_name", "").strip()
-            phone = request.form.get("phone", "").strip()
-            province = request.form.get("province", "").strip()
-            county = request.form.get("county", "").strip()
-            district = request.form.get("district", "").strip()
-            craft_type = request.form.get("craft_type", "").strip()
-            products_desc = request.form.get("products_desc", "").strip()
-            capacity = request.form.get("capacity", "").strip()
-            export_ready = request.form.get("export_ready", "no")
+    if request.method == 'POST':
+        unit_name = request.form.get('unit_name', '').strip()
+        manager_name = request.form.get('manager_name', '').strip()
+        phone = request.form.get('phone', '').strip()
+        province = request.form.get('province', '').strip()
+        county = request.form.get('county', '').strip()
+        district = request.form.get('district', '').strip()
+        craft_type = request.form.get('craft_type', '').strip()
+        products_desc = request.form.get('products_desc', '').strip()
+        monthly_capacity = request.form.get('monthly_capacity', '').strip()
+        export_ready = request.form.get('export_ready', 'no')
 
-            if not all([unit_name, manager_name, phone, province, county, craft_type, products_desc]):
-                flash("لطفاً تمامی فیلدهای ستاره‌دار را به دقت تکمیل نمایید.", "danger")
-                return redirect(url_for("register"))
+        if not unit_name or not manager_name or not phone or not province or not county or not craft_type:
+            flash('لطفاً تمامی فیلدهای ستاره‌دار و موقعیت مکانی را کامل پر کنید.', 'danger')
+            return redirect(url_for('register'))
 
-            # مدیریت آپلود تصویر واحد
-            image_filename = None
-            file = request.files.get("image")
-            if file and file.filename != "":
-                if allowed_file(file.filename):
-                    ext = file.filename.rsplit(".", 1)[1].lower()
-                    image_filename = f"{uuid4().hex}.{ext}"
-                    file.save(os.path.join(app.config["UPLOAD_FOLDER"], image_filename))
-                else:
-                    flash("فرمت تصویر مجاز نیست (فقط png, jpg, jpeg, webp).", "warning")
-                    return redirect(url_for("register"))
+        filename = None
+        file = request.files.get('image')
+        if file and file.filename != '':
+            if allowed_file(file.filename):
+                filename = secure_filename(f"{datetime.utcnow().strftime('%Y%m%d%H%M%S')}_{file.filename}")
+                file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            else:
+                flash('فرمت تصویر مجاز نیست (فقط PNG, JPG, WEBP).', 'warning')
+                return redirect(url_for('register'))
 
-            new_unit = ProductionUnit(
-                unit_name=unit_name,
-                manager_name=manager_name,
-                phone=phone,
-                province=province,
-                county=county,
-                district=district,
-                craft_type=craft_type,
-                products_desc=products_desc,
-                capacity=capacity,
-                export_ready=export_ready,
-                image_filename=image_filename
-            )
-            db_session.add(new_unit)
-            db_session.commit()
-            
-            flash("واحد تولیدی شما با موفقیت در شبکه هوشمند ثبت شد!", "success")
-            return redirect(url_for("index"))
-        except Exception as e:
-            db_session.rollback()
-            flash(f"خطا در ثبت اطلاعات: {str(e)}", "danger")
-            return redirect(url_for("register"))
-
-    return render_template("register.html")
-
-@app.route("/export-market", methods=["GET", "POST"])
-def export_market():
-    if request.method == "POST":
-        buyer_name = request.form.get("buyer_name")
-        target_craft = request.form.get("target_craft")
-        quantity_needed = request.form.get("quantity_needed")
-        contact_info = request.form.get("contact_info")
-        
-        if buyer_name and target_craft and contact_info:
-            demand = MarketDemand(
-                buyer_name=buyer_name,
-                target_craft=target_craft,
-                quantity_needed=quantity_needed,
-                contact_info=contact_info
-            )
-            db_session.add(demand)
-            db_session.commit()
-            flash("نیازمندی بازار و صادرات ثبت شد.", "success")
-            return redirect(url_for("export_market"))
-            
-    demands = db_session.query(MarketDemand).order_by(desc(MarketDemand.created_at)).all()
-    return render_template("export_market.html", demands=demands)
-
-@app.route("/login", methods=["GET", "POST"])
-def login():
-    if request.method == "POST":
-        username = request.form.get("username")
-        password = request.form.get("password")
-        # دسترسی ادمین امن
-        if username == os.environ.get("ADMIN_USER", "admin") and password == os.environ.get("ADMIN_PASS", "saman1405"):
-            session["logged_in"] = True
-            flash("با موفقیت وارد پنل مدیریت شدید.", "success")
-            return redirect(url_for("admin_panel"))
-        else:
-            flash("نام کاربری یا رمز عبور اشتباه است.", "danger")
-    return render_template("login.html")
-
-@app.route("/admin")
-def admin_panel():
-    if not session.get("logged_in"):
-        return redirect(url_for("login"))
-    
-    page = request.args.get("page", 1, type=int)
-    per_page = 20
-    
-    province_filter = request.args.get("province", "").strip()
-    county_filter = request.args.get("county", "").strip()
-    search_query = request.args.get("q", "").strip()
-    
-    query = db_session.query(ProductionUnit)
-    
-    if province_filter:
-        query = query.filter(ProductionUnit.province == province_filter)
-    if county_filter:
-        query = query.filter(ProductionUnit.county == county_filter)
-    if search_query:
-        search_term = f"%{search_query}%"
-        query = query.filter(
-            (ProductionUnit.unit_name.ilike(search_term)) |
-            (ProductionUnit.manager_name.ilike(search_term)) |
-            (ProductionUnit.craft_type.ilike(search_term)) |
-            (ProductionUnit.phone.ilike(search_term))
+        new_unit = ProductionUnit(
+            unit_name=unit_name, manager_name=manager_name, phone=phone,
+            province=province, county=county, district=district,
+            craft_type=craft_type, products_desc=products_desc,
+            monthly_capacity=monthly_capacity, export_ready=export_ready,
+            image_filename=filename
         )
-        
-    total_count = query.count()
-    units = query.order_by(desc(ProductionUnit.created_at)).offset((page - 1) * per_page).limit(per_page).all()
-    
-    provinces = [p[0] for p in db_session.query(ProductionUnit.province.distinct()).all() if p[0]]
-    
-    return render_template(
-        "admin.html",
-        units=units,
-        total_count=total_count,
-        page=page,
-        per_page=per_page,
-        provinces=provinces,
-        selected_province=province_filter,
-        selected_county=county_filter,
-        search_query=search_query
-    )
+        db.session.add(new_unit)
+        db.session.commit()
+        flash('واحد تولیدی شما با موفقیت در شبکه هوشمند ثبت شد.', 'success')
+        return redirect(url_for('index'))
 
-@app.route("/logout")
+    return render_template('register.html')
+
+@app.route('/export-market', methods=['GET', 'POST'])
+def export_market():
+    if request.method == 'POST':
+        buyer_name = request.form.get('buyer_name', '').strip()
+        buyer_phone = request.form.get('buyer_phone', '').strip()
+        requested_item = request.form.get('requested_item', '').strip()
+        required_quantity = request.form.get('required_quantity', '').strip()
+        target_market = request.form.get('target_market', '').strip()
+
+        if not buyer_name or not buyer_phone or not requested_item:
+            flash('لطفاً فیلدهای ضروری تقاضای بازار را پر کنید.', 'danger')
+            return redirect(url_for('export_market'))
+
+        demand = MarketDemand(
+            buyer_name=buyer_name, buyer_phone=buyer_phone,
+            requested_item=requested_item, required_quantity=required_quantity,
+            target_market=target_market
+        )
+        db.session.add(demand)
+        db.session.commit()
+        flash('تقاضای بازار و صادرات شما با موفقیت ثبت شد.', 'success')
+        return redirect(url_for('export_market'))
+
+    demands = MarketDemand.query.order_by(MarketDemand.created_at.desc()).all()
+    return render_template('export.html', demands=demands)
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+        if username == 'admin' and password == 'saman1405':
+            session['admin_logged'] = True
+            flash('با موفقیت وارد پنل مدیریت شدید.', 'success')
+            return redirect(url_for('admin_panel'))
+        else:
+            flash('نام کاربری یا رمز عبور اشتباه است.', 'danger')
+    return render_template_string('''
+    <!DOCTYPE html>
+    <html lang="fa" dir="rtl">
+    <head>
+        <meta charset="UTF-8">
+        <title>ورود مدیر</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    </head>
+    <body class="bg-light d-flex align-items-center justify-content-center" style="height: 100vh;">
+        <div class="card p-4 shadow" style="width: 380px;">
+            <h4 class="text-center mb-3 text-primary">ورود مدیریت سامانه</h4>
+            {% with messages = get_flashed_messages(with_categories=true) %}
+              {% if messages %}{% for cat, msg in messages %}
+                <div class="alert alert-{{ cat }} py-2 small">{{ msg }}</div>
+              {% endfor %}{% endif %}
+            {% endwith %}
+            <form method="POST">
+                <div class="mb-3">
+                    <label class="form-label small fw-bold">نام کاربری</label>
+                    <input type="text" name="username" class="form-control" required value="admin">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label small fw-bold">رمز عبور</label>
+                    <input type="password" name="password" class="form-control" required placeholder="رمز عبور">
+                </div>
+                <button type="submit" class="btn btn-primary w-100">ورود</button>
+            </form>
+            <div class="text-center mt-3"><a href="{{ url_for('index') }}" class="small text-muted">بازگشت به سایت</a></div>
+        </div>
+    </body>
+    </html>
+    ''')
+
+@app.route('/admin')
+def admin_panel():
+    if not session.get('admin_logged'):
+        return redirect(url_for('login'))
+    
+    q = request.args.get('q', '').strip()
+    province_filter = request.args.get('province', '').strip()
+
+    query = ProductionUnit.query
+    if q:
+        query = query.filter(db.or_(
+            ProductionUnit.unit_name.contains(q),
+            ProductionUnit.manager_name.contains(q),
+            ProductionUnit.phone.contains(q)
+        ))
+    if province_filter:
+        query = query.filter_by(province=province_filter)
+
+    units = query.order_by(ProductionUnit.created_at.desc()).all()
+    total_count = ProductionUnit.query.count()
+    provinces = [r[0] for r in db.session.query(ProductionUnit.province.distinct()).all()]
+
+    return render_template('admin.html', units=units, total_count=total_count, provinces=provinces, search_query=q, selected_province=province_filter)
+
+@app.route('/logout')
 def logout():
-    session.pop("logged_in", None)
-    flash("از پنل مدیریت خارج شدید.", "info")
-    return redirect(url_for("index"))
+    session.pop('admin_logged', None)
+    flash('از پنل مدیریت خارج شدید.', 'info')
+    return redirect(url_for('index'))
 
-@app.route("/uploads/<filename>")
+@app.route('/uploads/<filename>')
 def uploaded_file(filename):
-    return send_from_directory(app.config["UPLOAD_FOLDER"], filename)
+    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port, debug=False)
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000, debug=True)
