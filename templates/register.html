@@ -1,379 +1,111 @@
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ثبت واحد تولیدی | سامانه هوشمند توسعه تولید و رفع موانع</title>
-
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet" type="text/css" />
-
-  <style>
-    body{
-      font-family:'Vazirmatn',sans-serif;
-      background: radial-gradient(circle at top right, #1c2541, #0b132b, #050814);
-      color:#f8fafc; min-height:100vh;
-    }
-    .glass-card{
-      background: rgba(28, 37, 65, 0.72);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-    }
-    .form-input{
-      background: rgba(11, 19, 43, 0.88);
-      border: 1px solid rgba(255, 255, 255, 0.16);
-      color:#fff;
-      transition: all .2s ease-in-out;
-    }
-    .form-input:focus{
-      border-color:#38bdf8;
-      outline:none;
-      box-shadow:0 0 0 3px rgba(56,189,248,.2);
-    }
-    select.form-input option{
-      background-color:#0b132b;
-      color:#fff;
-    }
-    .badge{
-      display:inline-flex; align-items:center; gap:.4rem;
-      padding:.25rem .6rem; border-radius:999px;
-      background: rgba(56,189,248,.12);
-      border:1px solid rgba(56,189,248,.25);
-      color:#bae6fd;
-      font-size:.75rem;
-    }
-    .req{ color:#fb7185; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ثبت واحد تولیدی | سامانه هوشمند توسعه تولید</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { background-color: #f8f9fa; font-family: Tahoma, sans-serif; }
+        .card { border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        .btn-primary { background-color: #0d6efd; border-radius: 10px; padding: 12px; font-weight: bold; }
+        .form-control, .form-select { border-radius: 10px; padding: 10px 15px; }
+    </style>
 </head>
+<body>
+    <div class="container my-5">
+        <div class="row justify-content_center">
+            <div class="col-lg-8">
+                <div class="card p-4 p-md-5 border-0">
+                    <div class="text-center mb-4">
+                        <h2 class="fw-bold text-primary"><i class="fas fa-industry me-2"></i>ثبت واحد تولیدی خرد و خانگی</h2>
+                        <p class="text-muted">اطلاعات واحد خود را برای اتصال به شبکه ملی و بازارهای صادراتی وارد کنید</p>
+                    </div>
 
-<body class="py-6 px-3 sm:px-6">
-  <div class="max-w-4xl mx-auto">
-    <!-- Header -->
-    <div class="flex items-start justify-between mb-6 pb-4 border-b border-slate-700/60">
-      <div>
-        <h1 class="text-xl sm:text-2xl font-bold text-sky-400">فرم ثبت واحد تولیدی</h1>
-        <p class="text-xs sm:text-sm text-slate-400 mt-1">
-          اطلاعات دقیق‌تر = اتصال سریع‌تر به بازار، پشتیبانی و مسیر رفع موانع
-        </p>
-        <div class="mt-2 flex flex-wrap gap-2">
-          <span class="badge">موبایل‌محور</span>
-          <span class="badge">استان + شهرستان کشویی</span>
-          <span class="badge">بخش رفع موانع</span>
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                      {% if messages %}
+                        {% for category, message in messages %}
+                          <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                          </div>
+                        {% endfor %}
+                      {% endif %}
+                    {% endwith %}
+
+                    <form method="POST" enctype="multipart/form-data">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">نام واحد تولیدی / کارگاه <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" name="unit_name" required placeholder="مثلاً: کارگاه سفالگری باران">
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">نام مدیر / مسئول <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" name="manager_name" required placeholder="نام و نام خانوادگی">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">شماره تماس (موبایل) <span class="text-danger">*</span></label>
+                                <input type="tel" class="form-control" name="phone" required placeholder="09xxxxxxxxx">
+                            </div>
+                        </div>
+
+                        <!-- ساختار مکانی سه‌سطحی -->
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label fw-bold">استان <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" name="province" id="province" required placeholder="مثلاً: مازندران">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label fw-bold">شهرستان <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" name="county" id="county" required placeholder="مثلاً: بابل">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label fw-bold">بخش / منطقه</label>
+                                <input type="text" class="form-control" name="district" id="district" placeholder="مثلاً: بندپی غربی">
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">نوع صنایع دستی / هنر <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" name="craft_type" required placeholder="مثلاً: سفال و سرامیک، گلیم‌بافی، معرق چوب">
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">توضیحات محصولات و ظرفیت تولید <span class="text-danger">*</span></label>
+                            <textarea class="form-control" name="products_desc" rows="3" required placeholder="توضیح مختصر درباره محصولات تولیدی و توان ماهانه..."></textarea>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">ظرفیت تولید ماهانه</label>
+                                <input type="text" class="form-control" name="capacity" placeholder="مثلاً: ۲۰۰ عدد در ماه">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">آمادگی صادرات / ارسال عمده؟</label>
+                                <select class="form-select" name="export_ready">
+                                    <option value="no">خیر / فعلاً خرده‌فروشی</option>
+                                    <option value="yes">بله، آماده صادرات و تامین عمده</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">تصویر نمونه محصول یا کارگاه (اختیاری)</label>
+                            <input type="file" class="form-control" name="image" accept="image/png, image/jpeg, image/webp">
+                            <div class="form-text">فرمت‌های مجاز: PNG, JPG, WEBP (حداکثر ۵ مگابایت)</div>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg"><i class="fas fa-check-circle me-2"></i>ثبت نهایی واحد تولیدی</button>
+                            <a href="{{ url_for('index') }}" class="btn btn-light text-muted">بازگشت به صفحه اصلی</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
         </div>
-      </div>
-      <a href="/" class="px-3 py-1.5 rounded-lg text-xs sm:text-sm bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition">
-        بازگشت ←
-      </a>
     </div>
-
-    <!-- Form -->
-    <form action="/register" method="POST" enctype="multipart/form-data" class="glass-card rounded-2xl p-5 sm:p-8 shadow-2xl space-y-8">
-
-      <!-- 1) Identity -->
-      <section>
-        <div class="flex items-center gap-2 mb-4">
-          <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
-          <h2 class="text-base sm:text-lg font-semibold text-emerald-300">۱) مشخصات واحد و مدیر</h2>
-        </div>
-
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label class="block text-xs text-slate-300 mb-1.5 font-medium">نام واحد / کارگاه <span class="req">*</span></label>
-            <input name="unit_name" required class="form-input w-full rounded-xl px-3.5 py-2.5 text-sm"
-                   placeholder="مثال: کارگاه گلیم‌بافی آریا" />
-          </div>
-
-          <div>
-            <label class="block text-xs text-slate-300 mb-1.5 font-medium">نام و نام خانوادگی مدیر <span class="req">*</span></label>
-            <input name="manager_name" required class="form-input w-full rounded-xl px-3.5 py-2.5 text-sm"
-                   placeholder="نام مسئول/مالک" />
-          </div>
-
-          <div>
-            <label class="block text-xs text-slate-300 mb-1.5 font-medium">شماره موبایل <span class="req">*</span></label>
-            <input name="phone" type="tel" required dir="ltr"
-                   class="form-input w-full rounded-xl px-3.5 py-2.5 text-sm text-right"
-                   placeholder="09123456789" />
-            <p class="text-[11px] text-slate-400 mt-1">فقط برای هماهنگی و پیگیری؛ نمایش عمومی ندارد.</p>
-          </div>
-
-          <div>
-            <label class="block text-xs text-slate-300 mb-1.5 font-medium">نوع فعالیت <span class="req">*</span></label>
-            <select name="business_type" required class="form-input w-full rounded-xl px-3.5 py-2.5 text-sm">
-              <option value="">انتخاب کنید...</option>
-              <option value="خانگی">تولید خانگی (خرد)</option>
-              <option value="کارگاهی">کارگاه کوچک/متوسط</option>
-              <option value="تعاونی">تعاونی</option>
-              <option value="کارخانه">واحد صنعتی/کارخانه</option>
-              <option value="خدمات وابسته">خدمات وابسته به تولید (بسته‌بندی/طراحی/حمل)</option>
-            </select>
-          </div>
-        </div>
-      </section>
-
-      <!-- 2) Location -->
-      <section class="pt-6 border-t border-slate-700/50">
-        <div class="flex items-center gap-2 mb-4">
-          <span class="w-2.5 h-2.5 rounded-full bg-sky-400"></span>
-          <h2 class="text-base sm:text-lg font-semibold text-sky-300">۲) موقعیت جغرافیایی</h2>
-        </div>
-
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label class="block text-xs text-slate-300 mb-1.5 font-medium">استان <span class="req">*</span></label>
-            <select id="province" name="province" required class="form-input w-full rounded-xl px-3.5 py-2.5 text-sm">
-              <option value="">انتخاب استان...</option>
-              <option value="آذربایجان شرقی">آذربایجان شرقی</option>
-              <option value="آذربایجان غربی">آذربایجان غربی</option>
-              <option value="اردبیل">اردبیل</option>
-              <option value="اصفهان">اصفهان</option>
-              <option value="البرز">البرز</option>
-              <option value="ایلام">ایلام</option>
-              <option value="بوشهر">بوشهر</option>
-              <option value="تهران">تهران</option>
-              <option value="چهارمحال و بختیاری">چهارمحال و بختیاری</option>
-              <option value="خراسان جنوبی">خراسان جنوبی</option>
-              <option value="خراسان رضوی">خراسان رضوی</option>
-              <option value="خراسان شمالی">خراسان شمالی</option>
-              <option value="خوزستان">خوزستان</option>
-              <option value="زنجان">زنجان</option>
-              <option value="سمنان">سمنان</option>
-              <option value="سیستان و بلوچستان">سیستان و بلوچستان</option>
-              <option value="فارس">فارس</option>
-              <option value="قزوین">قزوین</option>
-              <option value="قم">قم</option>
-              <option value="کردستان">کردستان</option>
-              <option value="کرمان">کرمان</option>
-              <option value="کرمانشاه">کرمانشاه</option>
-              <option value="کهگیلویه و بویراحمد">کهگیلویه و بویراحمد</option>
-              <option value="گلستان">گلستان</option>
-              <option value="گیلان">گیلان</option>
-              <option value="لرستان">لرستان</option>
-              <option value="مازندران">مازندران</option>
-              <option value="مرکزی">مرکزی</option>
-              <option value="هرمزگان">هرمزگان</option>
-              <option value="همدان">همدان</option>
-              <option value="یزد">یزد</option>
-            </select>
-          </div>
-
-          <div>
-            <label class="block text-xs text-slate-300 mb-1.5 font-medium">شهرستان / شهر <span class="req">*</span></label>
-            <select id="city" name="city" required class="form-input w-full rounded-xl px-3.5 py-2.5 text-sm">
-              <option value="">ابتدا استان را انتخاب کنید...</option>
-            </select>
-          </div>
-
-          <div class="sm:col-span-2">
-            <label class="block text-xs text-slate-300 mb-1.5 font-medium">آدرس/نشانی (اختیاری)</label>
-            <input name="address" class="form-input w-full rounded-xl px-3.5 py-2.5 text-sm"
-                   placeholder="محله/خیابان/پلاک (برای هماهنگی و ارسال)" />
-          </div>
-        </div>
-      </section>
-
-      <!-- 3) Industry & Product -->
-      <section class="pt-6 border-t border-slate-700/50">
-        <div class="flex items-center gap-2 mb-4">
-          <span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span>
-          <h2 class="text-base sm:text-lg font-semibold text-amber-300">۳) رسته/صنعت و محصول</h2>
-        </div>
-
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label class="block text-xs text-slate-300 mb-1.5 font-medium">رسته اصلی صنعت <span class="req">*</span></label>
-            <select id="category" name="category" required class="form-input w-full rounded-xl px-3.5 py-2.5 text-sm">
-              <option value="">انتخاب رسته...</option>
-              {% for cat in industry_categories.keys() %}
-              <option value="{{ cat }}">{{ cat }}</option>
-              {% endfor %}
-            </select>
-          </div>
-
-          <div>
-            <label class="block text-xs text-slate-300 mb-1.5 font-medium">زیرگروه تخصصی <span class="req">*</span></label>
-            <select id="subcategory" name="subcategory" required class="form-input w-full rounded-xl px-3.5 py-2.5 text-sm">
-              <option value="">ابتدا رسته اصلی را انتخاب کنید...</option>
-            </select>
-          </div>
-
-          <div class="sm:col-span-2">
-            <label class="block text-xs text-slate-300 mb-1.5 font-medium">نام محصول / خدمات اصلی <span class="req">*</span></label>
-            <input name="product_name" required class="form-input w-full rounded-xl px-3.5 py-2.5 text-sm"
-                   placeholder="مثال: گلیم پشمی دست‌باف ۲×۳ متر" />
-          </div>
-
-          <div>
-            <label class="block text-xs text-slate-300 mb-1.5 font-medium">ظرفیت تولید اسمی</label>
-            <input name="nominal_capacity" class="form-input w-full rounded-xl px-3.5 py-2.5 text-sm"
-                   placeholder="مثال: ۵۰" />
-          </div>
-
-          <div>
-            <label class="block text-xs text-slate-300 mb-1.5 font-medium">واحد ظرفیت</label>
-            <select name="capacity_unit" class="form-input w-full rounded-xl px-3.5 py-2.5 text-sm">
-              <option value="عدد در ماه">عدد در ماه</option>
-              <option value="کیلوگرم در ماه">کیلوگرم در ماه</option>
-              <option value="تن در ماه">تن در ماه</option>
-              <option value="متر مربع در ماه">متر مربع در ماه</option>
-            </select>
-          </div>
-
-          <!-- آپلود عکس محصول -->
-          <div class="sm:col-span-2 bg-slate-900/60 p-4 rounded-xl border border-slate-700">
-            <label class="block text-xs text-sky-300 mb-1.5 font-medium">تصویر محصول یا کارگاه (اختیاری - حداکثر ۵ مگابایت)</label>
-            <input type="file" name="product_image" accept="image/jpeg,image/png,image/webp"
-                   class="w-full text-xs text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-sky-600 file:text-white hover:file:bg-sky-500 cursor-pointer" />
-            <p class="text-[11px] text-slate-400 mt-1">فرمت‌های مجاز: JPG یا PNG</p>
-          </div>
-        </div>
-      </section>
-
-      <!-- 4) Obstacles -->
-      <section class="pt-6 border-t border-slate-700/50">
-        <div class="flex items-center gap-2 mb-4">
-          <span class="w-2.5 h-2.5 rounded-full bg-rose-400"></span>
-          <h2 class="text-base sm:text-lg font-semibold text-rose-300">۴) عارضه‌یابی و رفع موانع تولید</h2>
-        </div>
-
-        <div>
-          <label class="block text-xs text-slate-300 mb-1.5 font-medium">شرح مانع یا مشکل اصلی</label>
-          <textarea name="obstacles" rows="3" class="form-input w-full rounded-xl px-3.5 py-2.5 text-sm"
-                    placeholder="مثال: نیاز به سرمایه در گردش، مشکل تأمین مواد اولیه مرغوب، یا توسعه بازار فروش..."></textarea>
-        </div>
-      </section>
-
-      <!-- Submit -->
-      <section class="pt-6 border-t border-slate-700/50">
-        <div class="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
-          <p class="text-xs text-slate-400 leading-6">
-            با ثبت این فرم، اطلاعات شما مستقیماً در سامانه ملی ثبت و ویترین واحدها به‌روز می‌شود.
-          </p>
-          <button type="submit"
-                  class="w-full sm:w-auto px-6 py-3 rounded-xl font-semibold text-sm bg-sky-500 hover:bg-sky-400 text-slate-950 transition shadow-lg shadow-sky-500/20">
-            ثبت نهایی اطلاعات واحد
-          </button>
-        </div>
-      </section>
-
-    </form>
-
-    <p class="text-center text-[11px] text-slate-500 mt-5">
-      © سامانه هوشمند توسعه تولید و رفع موانع — نسخه فرم: v2.0
-    </p>
-  </div>
-
-  <script>
-    // زیرگروه‌های صنایع (منطبق با بک‌اند)
-    const subCategories = {
-      "صنایع دستی و هنرهای سنتی": [
-        "فرش دست‌باف، گلیم و جاجیم",
-        "سفال و سرامیک هنری",
-        "قلم‌زنی و صنایع فلزی هنری",
-        "خاتم، معرق و منبت",
-        "حصیربافی و صنایع الیافی",
-        "رودوزی و سوزن‌دوزی سنتی",
-        "زیورآلات دست‌ساز"
-      ],
-      "مواد غذایی و صنایع تبدیلی خانگی": [
-        "خشکبار و میوه خشک",
-        "ترشی، شور، مربا و فرآورده‌های میوه",
-        "نان، شیرینی و محصولات آردی",
-        "ادویه و چاشنی",
-        "بسته‌بندی محصولات کشاورزی",
-        "فرآوری و بسته‌بندی عسل"
-      ],
-      "نساجی، پوشاک و کالای خواب": [
-        "پوشاک زنانه و مردانه",
-        "لباس کار و فرم",
-        "بافت و تریکو",
-        "کالای خواب و منسوجات منزل"
-      ],
-      "چرم، کیف و کفش": [
-        "کیف و محصولات چرمی",
-        "کفش و پاپوش دست‌دوز"
-      ],
-      "چوب، مبلمان و دکوراسیون": [
-        "مبلمان و مصنوعات چوبی",
-        "لوازم دکوراسیون و اسباب‌بازی چوبی"
-      ],
-      "گیاهان دارویی و محصولات ارگانیک": [
-        "گیاهان دارویی خشک و بسته‌بندی",
-        "عرقیات و گلاب"
-      ],
-      "تولیدات سبک صنعتی و کارگاهی": [
-        "قطعات و مصنوعات فلزی سبک",
-        "قطعات پلیمری و لوازم کارگاهی"
-      ]
-    };
-
-    const categoryEl = document.getElementById("category");
-    const subcategoryEl = document.getElementById("subcategory");
-
-    categoryEl.addEventListener("change", (e) => {
-      const cat = e.target.value;
-      subcategoryEl.innerHTML = '<option value="">انتخاب زیرگروه...</option>';
-      if(subCategories[cat]){
-        subCategories[cat].forEach(sub => {
-          const opt = document.createElement("option");
-          opt.value = sub;
-          opt.textContent = sub;
-          subcategoryEl.appendChild(opt);
-        });
-      }
-    });
-
-    // لیست شهرستان‌ها
-    const citiesByProvince = {
-      "آذربایجان شرقی": ["تبریز","مراغه","مرند","میانه","اهر","شبستر","سراب","بناب","جلفا","اسکو","سایر"],
-      "آذربایجان غربی": ["ارومیه","خوی","مهاباد","بوکان","میاندوآب","سلماس","پیرانشهر","نقده","سردشت","تکاب","سایر"],
-      "اردبیل": ["اردبیل","مشگین‌شهر","پارس‌آباد","خلخال","نمین","بیله‌سوار","گرمی","کوثر","نیر","سایر"],
-      "اصفهان": ["اصفهان","کاشان","خمینی‌شهر","نجف‌آباد","شاهین‌شهر","فلاورجان","زرین‌شهر","مبارکه","نطنز","گلپایگان","سایر"],
-      "البرز": ["کرج","فردیس","نظرآباد","هشتگرد","اشتهارد","طالقان","محمدشهر","ماهدشت","سایر"],
-      "ایلام": ["ایلام","دهلران","آبدانان","مهران","دره‌شهر","ایوان","سرابله","سایر"],
-      "بوشهر": ["بوشهر","برازجان","گناوه","کنگان","جم","دیر","دیلم","عسلویه","سایر"],
-      "تهران": ["تهران","ری","شمیرانات","اسلامشهر","ملارد","قدس","ورامین","پاکدشت","دماوند","فیروزکوه","رباط‌کریم","سایر"],
-      "چهارمحال و بختیاری": ["شهرکرد","بروجن","فارسان","لردگان","کوهرنگ","اردل","سامان","بن","سایر"],
-      "خراسان جنوبی": ["بیرجند","قائن","طبس","فردوس","نهبندان","سربیشه","سرایان","سایر"],
-      "خراسان رضوی": ["مشهد","نیشابور","سبزوار","تربت‌حیدریه","کاشمر","تایباد","قوچان","چناران","طرقبه‌شاندیز","گناباد","سایر"],
-      "خراسان شمالی": ["بجنورد","شیروان","اسفراین","جاجرم","گرمه","فاروج","راز و جرگلان","سایر"],
-      "خوزستان": ["اهواز","آبادان","خرمشهر","دزفول","اندیمشک","بهبهان","ماهشهر","شوشتر","ایذه","شوش","رامهرمز","سایر"],
-      "زنجان": ["زنجان","ابهر","خرمدره","قیدار","طارم","ماه‌نشان","ایجرود","سایر"],
-      "سمنان": ["سمنان","شاهرود","دامغان","گرمسار","مهدی‌شهر","سرخه","آرادان","سایر"],
-      "سیستان و بلوچستان": ["زاهدان","چابهار","ایرانشهر","زابل","خاش","سراوان","کنارک","نیک‌شهر","سرباز","سایر"],
-      "فارس": ["شیراز","مرودشت","کازرون","لار","جهرم","فسا","داراب","فیروزآباد","آباده","ممسنی","سایر"],
-      "قزوین": ["قزوین","البرز","تاکستان","بوئین‌زهرا","آبیک","سایر"],
-      "قم": ["قم","سلفچگان","کهک","جعفرآباد","سایر"],
-      "کردستان": ["سنندج","سقز","مریوان","بانه","قروه","بیجار","کامیاران","دیواندره","سایر"],
-      "کرمان": ["کرمان","رفسنجان","سیرجان","بم","جیرفت","زرند","کهنوج","شهربابک","انار","بردسیر","سایر"],
-      "کرمانشاه": ["کرمانشاه","اسلام‌آباد غرب","هرسین","کنگاور","سنقر","جوانرود","پاوه","سرپل‌ذهاب","قصرشیرین","سایر"],
-      "کهگیلویه و بویراحمد": ["یاسوج","گچساران","دهدشت","سی‌سخت","باشت","لنده","چرام","سایر"],
-      "گلستان": ["گرگان","گنبدکاووس","علی‌آباد کتول","آق‌قلا","بندرترکمن","مینودشت","کردکوی","کلاله","سایر"],
-      "گیلان": ["رشت","بندرانزلی","لاهیجان","لنگرود","رودسر","آستارا","صومعه‌سرا","تالش","فومن","رودبار","سایر"],
-      "لرستان": ["خرم‌آباد","بروجرد","دورود","الیگودرز","کوهدشت","نورآباد","ازنا","پلدختر","سایر"],
-      "مازندران": ["ساری","بابل","آمل","قائم‌شهر","تنکابن","نوشهر","چالوس","بهشهر","نکا","رامسر","سایر"],
-      "مرکزی": ["اراک","ساوه","خمین","محلات","دلیجان","تفرش","شازند","زرندیه","سایر"],
-      "هرمزگان": ["بندرعباس","قشم","کیش","میناب","بندر لنگه","حاجی‌آباد","جاسک","رودان","سایر"],
-      "همدان": ["همدان","ملایر","نهاوند","تویسرکان","اسدآباد","کبودرآهنگ","بهار","رزن","سایر"],
-      "یزد": ["یزد","میبد","اردکان","ابرکوه","بافق","تفت","مهریز","اشکذر","سایر"]
-    };
-
-    const provinceEl = document.getElementById("province");
-    const cityEl = document.getElementById("city");
-
-    provinceEl.addEventListener("change", (e) => {
-      const province = e.target.value;
-      cityEl.innerHTML = '<option value="">انتخاب شهر/شهرستان...</option>';
-      if(citiesByProvince[province]){
-        citiesByProvince[province].forEach(c => {
-          const opt = document.createElement("option");
-          opt.value = c;
-          opt.textContent = c;
-          cityEl.appendChild(opt);
-        });
-      }
-    });
-  </script>
+    <script src="https://cdn.jsdelivr.5npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
