@@ -385,7 +385,9 @@ def register():
 def download_file(filename):
     return send_from_directory(app.config["UPLOAD_FOLDER"], filename, as_attachment=True)
 
+# روت ورود مدیران با هر دو نام login و admin جهت تطابق ۱۰۰٪ با قالب‌ها
 @app.route("/login", methods=["GET", "POST"])
+@app.route("/admin", methods=["GET", "POST"], endpoint="admin")
 def login():
     if request.method == "POST":
         username = request.form.get("username", "").strip()
