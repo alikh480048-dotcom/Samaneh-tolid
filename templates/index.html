@@ -3,98 +3,134 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>شبکه هوشمند توسعه تولید و رفع موانع</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    <title>سامانه هوشمند توسعه تولید و رفع موانع</title>
+    <!-- Bootstrap 5 RTL CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/rtl.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body { background-color: #f4f6f9; font-family: Tahoma, sans-serif; }
-        .hero-section { background: linear-gradient(135deg, #0d6efd, #0dcaf0); color: white; border-radius: 0 0 30px 30px; padding: 50px 0; }
-        .card { border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: none; }
-        .stat-card { background: white; border-radius: 15px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        body {
+            font-family: Tahoma, sans-serif;
+            background-color: #f8f9fa;
+        }
+        .hero-section {
+            background: linear-gradient(135deg, #0d6efd, #0dcaf0);
+            color: white;
+            padding: 3rem 1.5rem;
+            border-radius: 0 0 1.5rem 1.5rem;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+        .stat-card {
+            background: white;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.05);
+            text-align: center;
+            transition: transform 0.3s;
+        }
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+        .btn-custom {
+            border-radius: 50rem;
+            padding: 0.6rem 2rem;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
         <div class="container">
-            <a class="navbar-brand fw-bold" href="{{ url_for('index') }}"><i class="fas fa-network-wired me-2"></i>سامانه هوشمند توسعه تولید</a>
-            <div class="d-flex gap-2">
-                <a href="{{ url_for('export_market') }}" class="btn btn-outline-info btn-sm"><i class="fas fa-chart-line me-1"></i>بازار</a>
-                <a href="{{ url_for('login') }}" class="btn btn-outline-light btn-sm"><i class="fas fa-lock me-1"></i>ورود مدیر</a>
+            <a class="navbar-brand fw-bold" href="{{ url_for('index') }}">
+                <i class="fa fa-network-wired text-info ms-2"></i>سامانه هوشمند توسعه تولید
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="{{ url_for('index') }}">صفحه اصلی</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('register') }}">ثبت واحد تولیدی</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('export') }}">بازار و صادرات</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('admin') }}">ورود مدیران</a>
+                    </li>
+                </ul>
             </div>
         </div>
     </nav>
 
-    <div class="hero-section text-center">
-        <div class="container">
-            <h1 class="fw-bold mb-3">شبکه هوشمند توسعه تولید و رفع موانع</h1>
-            <p class="lead mb-4">اتصال صنایع دستی خرد و خانگی به بازارهای ملی و جهانی و زنجیره ارزش</p>
-            <div class="d-flex justify-content-center gap-3 flex-wrap">
-                <a href="{{ url_for('register') }}" class="btn btn-light btn-lg text-primary fw-bold px-4"><i class="fas fa-plus-circle me-2"></i>ثبت واحد تولیدی جدید</a>
-            </div>
+    <!-- Hero Section -->
+    <div class="hero-section shadow">
+        <h1 class="display-5 fw-bold mb-3">شبکه هوشمند توسعه تولید و رفع موانع</h1>
+        <p class="lead mb-4">اتصال صنایع دستی خرد و خانگی به بازارهای ملی و جهانی و زنجیره ارزش</p>
+        <div>
+            <a href="{{ url_for('register') }}" class="btn btn-light btn-custom text-primary m-1 shadow-sm">
+                <i class="fa fa-plus-circle ms-1"></i>ثبت واحد جدید
+            </a>
+            <a href="{{ url_for('export') }}" class="btn btn-outline-light btn-custom m-1">
+                <i class="fa fa-globe ms-1"></i>سامانه بازار و صادرات
+            </a>
         </div>
     </div>
 
-    <div class="container my-5">
-        {% with messages = get_flashed_messages(with_categories=true) %}
-          {% if messages %}
-            {% for category, message in messages %}
-              <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-                {{ message }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-              </div>
-            {% endfor %}
-          {% endif %}
-        {% endwith %}
-
-        <div class="row text-center mb-5">
-            <div class="col-md-6 mb-3">
-                <div class="stat-card">
-                    <h3 class="text-primary fw-bold display-5">{{ total_units }}</h3>
-                    <p class="text-muted mb-0 fw-bold">کل واحدهای تولیدی ثبت‌شده</p>
+    <!-- Statistics Section -->
+    <div class="container">
+        <div class="row g-4 mb-5">
+            <div class="col-md-4">
+                <div class="stat-card border-top border-primary border-4">
+                    <i class="fa fa-industry fa-2x text-primary mb-3"></i>
+                    <h3 class="fw-bold text-dark">{{ units_count }}</h3>
+                    <p class="text-muted mb-0">کل واحدهای تولیدی ثبت‌شده</p>
                 </div>
             </div>
-            <div class="col-md-6 mb-3">
-                <div class="stat-card">
-                    <h3 class="text-success fw-bold display-5">{{ total_export }}</h3>
-                    <p class="text-muted mb-0 fw-bold">آماده صادرات و تامین عمده</p>
+            <div class="col-md-4">
+                <div class="stat-card border-top border-success border-4">
+                    <i class="fa fa-box-open fa-2x text-success mb-3"></i>
+                    <h3 class="fw-bold text-dark">{{ export_count }}</h3>
+                    <p class="text-muted mb-0">آماده صادرات و تامین عمده</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-card border-top border-warning border-4">
+                    <i class="fa fa-tools fa-2x text-warning mb-3"></i>
+                    <h3 class="fw-bold text-dark">{{ bottlenecks_count }}</h3>
+                    <p class="text-muted mb-0">پرونده‌های رفع موانع</p>
                 </div>
             </div>
         </div>
 
-        <div class="row">
-            <div class="col-12 mb-4">
-                <h3 class="fw-bold text-dark"><i class="fas fa-clock me-2"></i>آخرین واحدهای تولیدی ثبت‌شده در شبکه</h3>
-            </div>
-            {% if recent_units %}
-                {% for unit in recent_units %}
-                <div class="col-md-4 mb-4">
-                    <div class="card h-100 p-3">
-                        {% if unit.image_filename %}
-                            <img src="{{ url_for('uploaded_file', filename=unit.image_filename) }}" class="card-img-top rounded-3 mb-3" style="height: 180px; object-fit: cover;" alt="تصویر محصول">
-                        {% else %}
-                            <div class="bg-light rounded-3 mb-3 d-flex align-items-center justify-content-center text-muted" style="height: 180px;">
-                                <i class="fas fa-image fa-3x"></i>
-                            </div>
-                        {% endif %}
-                        <div class="card-body p-0">
-                            <span class="badge bg-primary mb-2">{{ unit.craft_type }}</span>
-                            <h5 class="card-title fw-bold text-dark">{{ unit.unit_name }}</h5>
-                            <p class="text-muted small mb-2"><i class="fas fa-map-marker-alt me-1"></i> {{ unit.province }}، {{ unit.county }} {% if unit.district %} - {{ unit.district }} {% endif %}</p>
-                            <p class="card-text small text-secondary">{{ unit.products_desc[:90] }}...</p>
-                        </div>
-                        <div class="card-footer bg-white border-0 pt-0">
-                            <span class="text-muted small"><i class="fas fa-user me-1"></i> مسئول: {{ unit.manager_name }}</span>
-                        </div>
-                    </div>
+        <!-- Recent Units Section -->
+        <div class="card shadow-sm border-0 rounded-4 p-4 mb-5">
+            <h4 class="fw-bold mb-3 text-secondary border-bottom pb-2">
+                <i class="fa fa-list-alt ms-2 text-primary"></i>آخرین واحدهای تولیدی ثبت‌شده در شبکه
+            </h4>
+            {% if units_count == 0 %}
+                <div class="alert alert-light text-center py-4 text-muted border">
+                    هنوز واحد تولیدی در سامانه ثبت نشده است. از منوی بالا برای ثبت اولین واحد اقدام کنید.
                 </div>
-                {% endfor %}
             {% else %}
-                <div class="col-12 text-center py-5">
-                    <p class="text-muted">هنوز واحد تولیدی در سامانه ثبت نشده است.</p>
+                <div class="text-center py-2">
+                    <a href="{{ url_for('register') }}" class="btn btn-primary btn-sm">مشاهده لیست کامل واحدها</a>
                 </div>
             {% endif %}
         </div>
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white text-center py-3 mt-auto">
+        <p class="mb-0 small">سامانه هوشمند توسعه تولید و رفع موانع | طراحی شده برای توسعه اقتصاد خرد و خانگی</p>
+    </footer>
+
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
