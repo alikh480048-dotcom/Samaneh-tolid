@@ -3,148 +3,111 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تالار معاملات عمده و بازارهای صادراتی | شبکه ملی توسعه تولید</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/fonts/webfonts/font-face.css" rel="stylesheet" type="text/css" />
+    <title>تقاضای بازار و صادرات | سامانه هوشمند</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body { font-family: 'Vazirmatn', sans-serif; }
+        body { background-color: #f4f6f9; font-family: Tahoma, sans-serif; }
+        .card { border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); border: none; }
     </style>
 </head>
-<body class="bg-[#0b132b] text-slate-100 antialiased min-h-screen flex flex-col justify-between selection:bg-emerald-500 selection:text-slate-900">
-
-    <!-- نوار ناوبری بالا -->
-    <header class="border-b border-slate-800/80 bg-[#0e1a38]/80 backdrop-blur-md sticky top-0 z-50">
-        <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-            <div class="flex items-center gap-3">
-                <span class="text-2xl">🌍</span>
-                <div>
-                    <h1 class="font-bold text-base md:text-lg text-emerald-400">تالار خریداران و بازارهای صادراتی</h1>
-                    <p class="text-xs text-slate-400">اتصال مستقیم زنجیره تولید به مشتریان عمده و تجار</p>
-                </div>
-            </div>
-            <a href="/" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 px-3 py-1.5 rounded-lg transition-colors">
-                بازگشت به خانه ←
-            </a>
+<body>
+    <nav class="navbar navbar-dark bg-dark mb-4">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="{{ url_for('index') }}"><i class="fas fa-arrow-right me-2"></i>بازگشت به صفحه اصلی</a>
         </div>
-    </header>
+    </nav>
 
-    <main class="max-w-6xl mx-auto px-4 py-6 w-full flex-grow space-y-6">
-
-        <!-- باکس خوش‌آمد و آمار بازار -->
-        <div class="bg-gradient-to-r from-emerald-950/40 via-slate-900/60 to-cyan-950/40 border border-emerald-500/30 rounded-2xl p-5 shadow-lg">
-            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
-                    <span class="inline-block bg-emerald-500/20 text-emerald-300 text-xs px-2.5 py-1 rounded-full font-medium mb-2 border border-emerald-500/30">
-                        فاز ۳ • هم‌رسانی هوشمند تقاضا و عرضه
-                    </span>
-                    <h2 class="text-lg md:text-xl font-bold text-white">تطبیق ظرفیت‌های تولید با سفارش‌های عمده</h2>
-                    <p class="text-xs md:text-sm text-slate-300 mt-1 leading-relaxed">
-                        خریداران و صادرکنندگان می‌توانند درخواست‌های تأمین کالا را ثبت کنند؛ سامانه سفارش‌ها را مستقیماً به واحدهای توانمند متصل می‌کند.
-                    </p>
-                </div>
-                <div class="flex items-center gap-3 bg-slate-950/50 p-3 rounded-xl border border-slate-800 self-start md:self-auto">
-                    <div class="text-center px-2">
-                        <div class="text-xs text-slate-400">تقاضاهای فعال</div>
-                        <div class="text-lg font-bold text-emerald-400">۴ مورد</div>
+    <div class="container my-4">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="card p-4 p-md-5 mb-5">
+                    <div class="text-center mb-4">
+                        <h2 class="fw-bold text-success"><i class="fas fa-chart-line me-2"></i>ثبت تقاضای بازار و نیازمندی‌های صادراتی</h2>
+                        <p class="text-muted small">خریداران عمده و صادرکنندگان می‌توانند نیازمندی‌های خود را ثبت کنند تا به واحدهای تولیدی متصل شوند.</p>
                     </div>
-                    <div class="h-8 w-px bg-slate-800"></div>
-                    <div class="text-center px-2">
-                        <div class="text-xs text-slate-400">کشورهای مقصد</div>
-                        <div class="text-lg font-bold text-cyan-400">۵ مقصد</div>
-                    </div>
-                </div>
-            </div>
-        </div>
 
-        <!-- پیام اگر کارگاه خاصی انتخاب شده باشد -->
-        {% if selected_unit %}
-        <div class="bg-blue-950/40 border border-blue-500/40 rounded-xl p-4 text-xs md:text-sm text-blue-200 flex items-center justify-between">
-            <div>
-                🔍 نمایش استعلام‌های مناسب برای واحد: <span class="font-bold text-white">{{ selected_unit.title or selected_unit.name }}</span> (استان {{ selected_unit.province }})
-            </div>
-            <a href="/export-market" class="text-xs text-blue-300 underline hover:text-white">نمایش همه سفارش‌ها</a>
-        </div>
-        {% endif %}
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                      {% if messages %}
+                        {% for category, message in messages %}
+                          <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                          </div>
+                        {% endfor %}
+                      {% endif %}
+                    {% endwith %}
 
-        <!-- بخش تقاضاهای خرید عمده و سفارش‌های صادراتی -->
-        <div>
-            <div class="flex items-center justify-between mb-4">
-                <h3 class="text-base font-bold text-slate-200 flex items-center gap-2">
-                    <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
-                    فرصت‌های فعال خرید عمده و صادرات
-                </h3>
-                <span class="text-xs text-slate-400">به‌روزرسانی لحظه‌ای</span>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {% for b in buyers %}
-                <div class="bg-slate-900/70 border border-slate-800 hover:border-emerald-500/50 rounded-xl p-4 transition-all duration-200 flex flex-col justify-between">
-                    <div>
-                        <div class="flex items-start justify-between gap-2">
-                            <h4 class="font-bold text-sm md:text-base text-slate-100">{{ b.title }}</h4>
-                            <span class="text-[11px] bg-slate-800 text-cyan-300 px-2 py-0.5 rounded border border-slate-700 whitespace-nowrap">
-                                📍 {{ b.destination }}
-                            </span>
-                        </div>
-                        <div class="mt-2 space-y-1 text-xs text-slate-300">
-                            <div><span class="text-slate-400">محصول درخواستی:</span> <strong class="text-emerald-300">{{ b.product }}</strong></div>
-                            <div><span class="text-slate-400">حجم سفارش:</span> {{ b.volume }}</div>
-                            <div><span class="text-slate-400">شرایط پرداخت:</span> {{ b.payment_terms }}</div>
-                            {% if b.notes %}
-                            <div class="text-[11px] text-slate-400 mt-2 bg-slate-950/40 p-2 rounded border border-slate-800/80">
-                                ℹ️ {{ b.notes }}
+                    <form method="POST">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">نام خریدار / شرکت <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" name="buyer_name" required placeholder="نام شخص یا شرکت بازرگانی">
                             </div>
-                            {% endif %}
-                        </div>
-                    </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">شماره تماس (تلفن همراه) <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" name="buyer_phone" required placeholder="09123456789">
+                            </div>
 
-                    <div class="mt-4 pt-3 border-t border-slate-800 flex items-center justify-between">
-                        <span class="text-[11px] text-slate-400">ثبت‌شده توسط بازرگان تأییدشده</span>
-                        <a href="tel:09120000000" class="text-xs bg-emerald-600 hover:bg-emerald-500 text-white font-medium px-3 py-1.5 rounded-lg transition-colors shadow">
-                            اتصال و مذاکره ←
-                        </a>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">محصول مورد نیاز <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" name="requested_item" required placeholder="مثال: گلیم پشمی، ظروف مسی...">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">مقدار / تعداد مورد نیاز <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" name="required_quantity" required placeholder="مثال: ۲۰۰ عدد / ۵۰ تخته">
+                            </div>
+
+                            <div class="col-12">
+                                <label class="form-label fw-bold">بازار هدف (صادراتی یا داخلی)</label>
+                                <input type="text" class="form-control" name="target_market" placeholder="مثال: صادرات به حوزه خلیج فارس / بازار تهران">
+                            </div>
+
+                            <div class="col-12 mt-4">
+                                <button type="submit" class="btn btn-success btn-lg w-100 fw-bold"><i class="fas fa-paper-plane me-2"></i>ثبت و انتشار تقاضای بازار</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- لیست تقاضاهای ثبت شده -->
+                <div class="card p-4">
+                    <h4 class="fw-bold mb-3 text-dark"><i class="fas fa-list-alt me-2"></i>آخرین تقاضاهای ثبت‌شده بازار</h4>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>خریدار</th>
+                                    <th>محصول درخواستی</th>
+                                    <th>مقدار</th>
+                                    <th>بازار هدف</th>
+                                    <th>تاریخ</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% if demands %}
+                                    {% for d in demands %}
+                                    <tr>
+                                        <td class="fw-bold">{{ d.buyer_name }}</td>
+                                        <td><span class="badge bg-success">{{ d.requested_item }}</span></td>
+                                        <td>{{ d.required_quantity }}</td>
+                                        <td>{{ d.target_market or 'نامشخص' }}</td>
+                                        <td class="small text-muted">{{ d.created_at.strftime('%Y/%m/%d') if d.created_at else '' }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                {% else %}
+                                    <tr>
+                                        <td colspan="5" class="text-center py-3 text-muted">هنوز تقاضایی ثبت نشده است.</td>
+                                    </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
                     </div>
                 </div>
-                {% endfor %}
+
             </div>
         </div>
-
-        <!-- فرم ثبت تقاضای خرید جدید توسط تجار و خریداران -->
-        <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 mt-8">
-            <h3 class="text-sm md:text-base font-bold text-slate-200 mb-2 flex items-center gap-2">
-                <span>📝</span>
-                شما هم خریدار عمده یا تاجر صادراتی هستید؟
-            </h3>
-            <p class="text-xs text-slate-400 mb-4">
-                محصول مورد نیاز و حجم تناژ یا تیراژ مورد نظرتان را اعلام کنید تا به نزدیک‌ترین و ارزان‌ترین کارگاه‌های تولیدکننده متصل شوید.
-            </p>
-            <form action="/export-market" method="POST" class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
-                <div>
-                    <label class="block text-slate-300 mb-1">نام شرکت / بازرگان *</label>
-                    <input type="text" name="buyer_name" required placeholder="مثال: بازرگانی البرز" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-slate-100 focus:outline-none focus:border-emerald-500">
-                </div>
-                <div>
-                    <label class="block text-slate-300 mb-1">شماره تماس / واتساپ *</label>
-                    <input type="text" name="buyer_phone" required placeholder="0912..." class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-slate-100 focus:outline-none focus:border-emerald-500">
-                </div>
-                <div>
-                    <label class="block text-slate-300 mb-1">محصول و حجم درخواستی *</label>
-                    <input type="text" name="demand_details" required placeholder="مثال: ۵۰۰۰ جفت کفش راحتی" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-slate-100 focus:outline-none focus:border-emerald-500">
-                </div>
-                <div class="md:col-span-3 text-left mt-2">
-                    <button type="submit" class="bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-2 px-5 rounded-lg text-xs transition-colors">
-                        ثبت تقاضای خرید و اعلام به کارگاه‌ها
-                    </button>
-                </div>
-            </form>
-        </div>
-
-    </main>
-
-    <!-- فوتر -->
-    <footer class="border-t border-slate-800 bg-[#080d1a] py-4 text-center text-xs text-slate-500">
-        سامانه ملی توسعه تولید و پایش زنجیره ارزش © ۱۴۰۵
-    </footer>
-
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
