@@ -92,6 +92,7 @@ def init_db():
     conn = get_db()
     cursor = conn.cursor()
     
+    # 1. Users table
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -107,6 +108,7 @@ def init_db():
             ("admin", generate_password_hash("admin123"), "مدیر ارشد سامانه")
         )
 
+    # 2. Workshops table
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS workshops (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -126,6 +128,7 @@ def init_db():
         )
     """)
 
+    # Check and add new columns if missing
     cursor.execute("PRAGMA table_info(workshops)")
     existing_columns = {row["name"] for row in cursor.fetchall()}
     
@@ -152,6 +155,7 @@ def init_db():
         if col not in existing_columns:
             cursor.execute(f"ALTER TABLE workshops ADD COLUMN {col} {col_type}")
 
+    # 3. Workshop images table
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS workshop_images (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -269,6 +273,7 @@ def register():
         website = request.form.get("website", "").strip()
         notes = request.form.get("notes", "").strip()
 
+        # Parse numeric fields safely
         capacity = parse_number(request.form.get("capacity"), 0.0)
         current_capacity = parse_number(request.form.get("current_capacity"), 0.0)
         employees = parse_number(request.form.get("employees"), 0, is_int=True)
@@ -281,6 +286,7 @@ def register():
             barriers_list.append(f"سایر: {other_barrier}")
         barriers_str = " | ".join(barriers_list) if barriers_list else "بدون مانع اعلامی"
 
+        # Preserve form data for re-rendering on error
         form_data = {
             "title": title, "owner_name": owner_name, "phone": phone,
             "province": province, "county": county, "industry_group": industry_group,
@@ -295,6 +301,7 @@ def register():
             "other_barrier": other_barrier, "notes": notes
         }
 
+        # Server-side validations
         errors = []
         if not title or not owner_name or not phone or not province or not county or not industry_group or not sub_group or not product_name:
             errors.append("لطفاً تمامی فیلدهای ستاره‌دار (عنوان، نام مسئول، تلفن، استان، شهرستان، گروه، زیرگروه و نام محصول) را پر کنید.")
@@ -326,6 +333,7 @@ def register():
 
         conn = get_db()
         cursor = conn.cursor()
+        workshop_id = None
         try:
             cursor.execute("""
                 INSERT INTO workshops (
@@ -385,9 +393,7 @@ def register():
 def download_file(filename):
     return send_from_directory(app.config["UPLOAD_FOLDER"], filename, as_attachment=True)
 
-# روت ورود مدیران با هر دو نام login و admin جهت تطابق ۱۰۰٪ با قالب‌ها
 @app.route("/login", methods=["GET", "POST"])
-@app.route("/admin", methods=["GET", "POST"], endpoint="admin")
 def login():
     if request.method == "POST":
         username = request.form.get("username", "").strip()
@@ -428,66 +434,63 @@ def update_status(workshop_id):
     flash("وضعیت واحد به‌روزرسانی شد.", "success")
     return redirect(url_for("index"))
 
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port, debug=False)
 # ==========================================
-# ماژول هوشمند تطبیق بازار و صادرات
+# ماژول هوشمند تطبیق بازار و صادرات (پچ افزایشی)
 # ==========================================
-@app.route("/export")
-@app.route("/export-market", endpoint="export_market")
-def export():
-    conn = get_db()
-    cursor = conn.cursor()
-    cursor.execute("SELECT * FROM workshops ORDER BY id DESC")
-    workshops = [dict(row) for row in cursor.fetchall()]
-    conn.close()
+@app.route('/export-market')
+def export_market():
+    # خواندن امن داده‌های موجود بدون تغییر
+    workshops = get_all_workshops()
     
+    # موتور تطبیق هوشمند خریداران داخلی و خارجی بر اساس رسته
     category_matches = {
-        "کشاورزی و باغبانی": {
-            "domestic": [
-                "اتحادیه سراسری شرکت‌های توزیع و زنجیره‌ای کوروش و اتکا",
-                "بنکداران عمده میدان مرکزی تره‌بار و صنایع بسته‌بندی",
-                "هتل‌ها و رستوران‌های زنجیره‌ای فدک و پارسیان"
+        'کشاورزی و باغبانی': {
+            'domestic': [
+                'اتحادیه سراسری شرکت‌های توزیع و زنجیره‌ای کوروش و اتکا',
+                'بنکداران عمده میدان مرکزی تره‌بار و صنایع بسته‌بندی برنج',
+                'هتل‌ها و رستوران‌های زنجیره‌ای فدک و پارسیان'
             ],
-            "export": [
-                "بازرگانان اقلیم کردستان (اربیل و سلیمانیه) - بسته‌بندی صادراتی",
-                "شرکت‌های پخش عمان و امارات (دبی)",
-                "تقاضای تأمین غلات و محصولات باغی روسیه و اوراسیا"
+            'export': [
+                'بازرگانان اقلیم کردستان (اربیل و سلیمانیه) - بسته‌بندی ۱۰ و ۲۰ کیلویی',
+                'شرکت‌های پخش عمان و امارات (دبی) - برنج کیفی معطر',
+                'تقاضای تأمین غلات و برنج صادراتی روسیه و حوزه اوراسیا'
             ]
         },
-        "صنایع دستی و تولیدات خرد": {
-            "domestic": [
-                "گالری‌های مرکزی میدان نقش‌جهان و ویترین‌های تهران",
-                "تأمین هدایای سازمانی پایان سال بانک‌ها و هلدینگ‌های دولتی",
-                "فروشگاه‌های زنجیره‌ای سوغات و گردشگری"
+        'صنایع دستی و سنتی': {
+            'domestic': [
+                'گالری‌های مرکزی میدان نقش‌جهان و ویترین‌های تهران',
+                'تأمین هدایای سازمانی پایان سال بانک‌ها و هلدینگ‌های دولتی',
+                'فروشگاه‌های زنجیره‌ای سوغات و گردشگری'
             ],
-            "export": [
-                "تجار قطری و عمانی برای آثار دست‌بافت نفیس",
-                "پلتفرم‌های صادرات چمدانی و خرد صنایع دستی به اروپا",
-                "بازارچه‌های صنایع دستی مرزی عراق و ترکیه"
+            'export': [
+                'تجار قطری و عمانی برای آثار دست‌بافت نفیس',
+                'پلتفرم‌های صادرات چمدانی و خرد صنایع دستی به آلمان و فرانسه',
+                'بازارچه‌های صنایع دستی مرزی عراق و ترکیه'
             ]
         },
-        "نساجی و پوشاک": {
-            "domestic": ["بنکداران بازار بزرگ تهران و عمده‌فروشان استانی", "برندهای پوشاک سفارش‌دهنده دوخت اشتراکی"],
-            "export": ["صادرکنندگان پوشاک به سلیمانیه و بصره عراق", "خریداران عمده آسیای میانه (ترکمنستان و قزاقستان)"]
+        'پوشاک و نساجی': {
+            'domestic': ['بنکداران بازار بزرگ تهران و عمده‌فروشان استانی', 'برندهای پوشاک سفارش‌دهنده دوخت اشتراکی'],
+            'export': ['صادرکنندگان پوشاک به سلیمانیه و بصره عراق', 'خریداران عمده آسیای میانه (ترکمنستان و قزاقستان)']
         }
     }
 
+    # قوانین پیش‌فرض برای سایر رسته‌ها
     default_match = {
-        "domestic": ["شبکه توزیع بنکداری کشوری", "تأمین‌کنندگان زنجیره ارزش استانی"],
-        "export": ["صادرکنندگان فعال به بازار عراق و عمان", "هلدینگ‌های بازرگانی مرزی"]
+        'domestic': ['شبکه توزیع بنکداری کشوری', 'تأمین‌کنندگان زنجیره ارزش استانی'],
+        'export': ['صادرکنندگان فعال به بازار عراق و عمان', 'هلدینگ‌های بازرگانی مرزی']
     }
 
     matching_data = []
     for w in workshops:
-        cat = w.get("industry_group", "")
+        cat = w.get('category', '')
         rules = category_matches.get(cat, default_match)
         matching_data.append({
-            "unit": w,
-            "domestic_buyers": rules["domestic"],
-            "export_targets": rules["export"]
+            'unit': w,
+            'domestic_buyers': rules['domestic'],
+            'export_targets': rules['export']
         })
 
-    return render_template("export.html", matching_data=matching_data)
-
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port, debug=False)
+    return render_template('export.html', matching_data=matching_data)
