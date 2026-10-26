@@ -195,6 +195,24 @@ def parse_number(val, default=0.0, is_int=False):
         return None
     return int(num) if is_int else num
 
+def get_all_workshops():
+    """خواندن تمام کارگاه‌ها به همراه تصاویر و تلفن پوشش‌داده‌شده برای جلوگیری از باگ ۵۰۰"""
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM workshops ORDER BY id DESC")
+    raw_workshops = cursor.fetchall()
+    
+    workshops = []
+    for r in raw_workshops:
+        w = dict(r)
+        p = w.get("phone", "")
+        w["masked_phone"] = f"{p[:4]}***{p[-4:]}" if len(p) >= 11 else "۰۹*********"
+        cursor.execute("SELECT filename FROM workshop_images WHERE workshop_id = ?", (w["id"],))
+        w["images"] = [row["filename"] for row in cursor.fetchall()]
+        workshops.append(w)
+    conn.close()
+    return workshops
+
 @app.route("/")
 def index():
     conn = get_db()
@@ -434,18 +452,14 @@ def update_status(workshop_id):
     flash("وضعیت واحد به‌روزرسانی شد.", "success")
     return redirect(url_for("index"))
 
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port, debug=False)
 # ==========================================
-# ماژول هوشمند تطبیق بازار و صادرات (پچ افزایشی)
+# ماژول هوشمند تطبیق بازار و صادرات (پچ استاندارد)
 # ==========================================
 @app.route('/export-market')
 def export_market():
-    # خواندن امن داده‌های موجود بدون تغییر
     workshops = get_all_workshops()
     
-    # موتور تطبیق هوشمند خریداران داخلی و خارجی بر اساس رسته
+    # موتور تطبیق هوشمند خریداران داخلی و خارجی بر اساس رسته سامانه
     category_matches = {
         'کشاورزی و باغبانی': {
             'domestic': [
@@ -459,7 +473,7 @@ def export_market():
                 'تقاضای تأمین غلات و برنج صادراتی روسیه و حوزه اوراسیا'
             ]
         },
-        'صنایع دستی و سنتی': {
+        'صنایع دستی و تولیدات خرد': {
             'domestic': [
                 'گالری‌های مرکزی میدان نقش‌جهان و ویترین‌های تهران',
                 'تأمین هدایای سازمانی پایان سال بانک‌ها و هلدینگ‌های دولتی',
@@ -471,7 +485,7 @@ def export_market():
                 'بازارچه‌های صنایع دستی مرزی عراق و ترکیه'
             ]
         },
-        'پوشاک و نساجی': {
+        'نساجی و پوشاک': {
             'domestic': ['بنکداران بازار بزرگ تهران و عمده‌فروشان استانی', 'برندهای پوشاک سفارش‌دهنده دوخت اشتراکی'],
             'export': ['صادرکنندگان پوشاک به سلیمانیه و بصره عراق', 'خریداران عمده آسیای میانه (ترکمنستان و قزاقستان)']
         }
@@ -485,7 +499,7 @@ def export_market():
 
     matching_data = []
     for w in workshops:
-        cat = w.get('category', '')
+        cat = w.get('industry_group', '')
         rules = category_matches.get(cat, default_match)
         matching_data.append({
             'unit': w,
@@ -494,3 +508,7 @@ def export_market():
         })
 
     return render_template('export.html', matching_data=matching_data)
+
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port, debug=False)
