@@ -35,9 +35,22 @@
         }
         .section-title {
             border-right: 4px solid #0d6efd;
-            padding-right: 10px;
-            margin-bottom: 1.5rem;
+            padding-right: 12px;
+            margin-bottom: 1.2rem;
+            margin-top: 1rem;
             font-weight: 800;
+            color: #0d6efd;
+        }
+        .barrier-badge {
+            background: #fff5f5;
+            border: 1px solid #fed7d7;
+            border-radius: 0.5rem;
+            padding: 0.5rem 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .barrier-badge:hover {
+            background: #feebc8;
         }
     </style>
 </head>
@@ -60,6 +73,9 @@
                 <li class="nav-item">
                     <a class="nav-link active" href="{{ url_for('register') }}"><i class="fa fa-plus-circle ms-1"></i>ثبت واحد جدید</a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('export_market') }}"><i class="fa fa-globe ms-1"></i>میز هوشمند صادرات</a>
+                </li>
             </ul>
         </div>
     </div>
@@ -81,120 +97,185 @@
     {% endwith %}
 
     <div class="card form-card">
-        <h4 class="section-title text-primary">
-            <i class="fa fa-industry ms-2"></i>فرم ثبت اطلاعات واحد تولیدی و رفع موانع
+        <h4 class="section-title">
+            <i class="fa fa-industry ms-2"></i>فرم جامع ثبت واحد تولیدی و رفع موانع
         </h4>
-        <p class="text-muted small mb-4">لطفاً مشخصات واحد تولیدی، موقعیت مکانی و موانع موجود را از منوهای زیر انتخاب فرمایید.</p>
+        <p class="text-muted small mb-4">مشخصات واحد، ظرفیت‌ها و موانع خود را با دقت وارد فرمایید تا در سامانه هم‌رسانی و بازار ثبت شود.</p>
 
         <form method="POST" enctype="multipart/form-data">
+            <!-- ۱. مشخصات عمومی و هویتی -->
             <div class="row g-3">
-                <!-- موقعیت جغرافیایی کشویی -->
-                <div class="col-md-3 col-12">
+                <div class="col-md-6 col-12">
+                    <label class="form-label">عنوان یا نام کارگاه/واحد: <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" name="title" value="{{ form_data.get('title', '') }}" placeholder="مثلاً: کارگاه سفالگری باران" required>
+                </div>
+
+                <div class="col-md-6 col-12">
+                    <label class="form-label">نام و نام خانوادگی مسئول: <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" name="owner_name" value="{{ form_data.get('owner_name', '') }}" placeholder="نام مسئول واحد" required>
+                </div>
+
+                <div class="col-md-4 col-12">
+                    <label class="form-label">شماره همراه مسئول (جهت ارتباط): <span class="text-danger">*</span></label>
+                    <input type="tel" class="form-control" name="phone" value="{{ form_data.get('phone', '') }}" placeholder="09xxxxxxxxx" required dir="ltr">
+                </div>
+
+                <div class="col-md-4 col-12">
+                    <label class="form-label">تلفن ثابت کارگاه (اختیاری):</label>
+                    <input type="text" class="form-control" name="landline" value="{{ form_data.get('landline', '') }}" placeholder="021xxxxxxxx" dir="ltr">
+                </div>
+
+                <div class="col-md-4 col-12">
+                    <label class="form-label">نوع مالکیت / فعالیت:</label>
+                    <select class="form-select" name="ownership_type">
+                        <option value="مشاغل خانگی و انفرادی" {% if form_data.get('ownership_type') == 'مشاغل خانگی و انفرادی' %}selected{% endif %}>مشاغل خانگی و انفرادی</option>
+                        <option value="کارگاه خرد و کوچک (زیر ۵ نفر)" {% if form_data.get('ownership_type') == 'کارگاه خرد و کوچک (زیر ۵ نفر)' %}selected{% endif %}>کارگاه خرد و کوچک (زیر ۵ نفر)</option>
+                        <option value="کارگاه نیمه‌صنعتی و تجمیعی" {% if form_data.get('ownership_type') == 'کارگاه نیمه‌صنعتی و تجمیعی' %}selected{% endif %}>کارگاه نیمه‌صنعتی و تجمیعی</option>
+                        <option value="تعاونی تولیدی" {% if form_data.get('ownership_type') == 'تعاونی تولیدی' %}selected{% endif %}>تعاونی تولیدی و زنجیره ارزش</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- ۲. موقعیت جغرافیایی -->
+            <h5 class="section-title mt-4"><i class="fa fa-map-marker-alt ms-2"></i>موقعیت جغرافیایی و استقرار</h5>
+            <div class="row g-3">
+                <div class="col-md-4 col-12">
                     <label class="form-label">استان: <span class="text-danger">*</span></label>
                     <select class="form-select" id="provinceSelect" name="province" required>
                         <option value="">-- انتخاب استان --</option>
-                        {% for prov in provinces %}
-                        <option value="{{ prov }}">{{ prov }}</option>
+                        {% for prov in provinces_by_county.keys() %}
+                        <option value="{{ prov }}" {% if form_data.get('province') == prov %}selected{% endif %}>{{ prov }}</option>
                         {% endfor %}
                     </select>
                 </div>
 
-                <div class="col-md-3 col-12">
+                <div class="col-md-4 col-12">
                     <label class="form-label">شهرستان: <span class="text-danger">*</span></label>
                     <select class="form-select" id="countySelect" name="county" required>
                         <option value="">-- ابتدا استان را انتخاب کنید --</option>
                     </select>
                 </div>
 
-                <div class="col-md-3 col-12">
-                    <label class="form-label">بخش: <span class="text-danger">*</span></label>
-                    <select class="form-select" name="district" required>
-                        <option value="">-- انتخاب بخش --</option>
-                        <option value="مرکزی">بخش مرکزی</option>
-                        <option value="روستایی / دهستان">بخش روستایی / دهستان</option>
-                        <option value="ناحیه و شهرک صنعتی">شهرک / ناحیه صنعتی</option>
-                        <option value="سایر بخش‌ها">سایر بخش‌ها و توابع</option>
-                    </select>
+                <div class="col-md-4 col-12">
+                    <label class="form-label">کد پستی (اختیاری):</label>
+                    <input type="text" class="form-control" name="postal_code" value="{{ form_data.get('postal_code', '') }}" placeholder="کد پستی ۱۰ رقمی" dir="ltr">
                 </div>
 
-                <div class="col-md-3 col-12">
-                    <label class="form-label">شهر / روستا / محله:</label>
-                    <input type="text" class="form-control" name="city_village" placeholder="نام شهر، روستا یا منطقه">
+                <div class="col-12">
+                    <label class="form-label">نشانی دقیق کارگاه / محل تولید:</label>
+                    <input type="text" class="form-control" name="address" value="{{ form_data.get('address', '') }}" placeholder="شهر، خیابان، کوچه، پلاک یا مشخصات محل کارگاه">
                 </div>
+            </div>
 
-                <!-- مشخصات صنعت و شغل کشویی -->
-                <div class="col-md-6 col-12">
-                    <label class="form-label">گروه اصلی صنایع و تولید: <span class="text-danger">*</span></label>
+            <!-- ۳. رسته و مشخصات فنی محصول -->
+            <h5 class="section-title mt-4"><i class="fa fa-cogs ms-2"></i>رسته صنعتی و مشخصات محصول</h5>
+            <div class="row g-3">
+                <div class="col-md-4 col-12">
+                    <label class="form-label">گروه اصلی صنعت: <span class="text-danger">*</span></label>
                     <select class="form-select" id="industrySelect" name="industry_group" required>
                         <option value="">-- انتخاب گروه صنعت --</option>
-                        {% for group in industries %}
-                        <option value="{{ group }}">{{ group }}</option>
+                        {% for group in industry_groups %}
+                        <option value="{{ group }}" {% if form_data.get('industry_group') == group %}selected{% endif %}>{{ group }}</option>
                         {% endfor %}
                     </select>
                 </div>
 
-                <div class="col-md-6 col-12">
+                <div class="col-md-4 col-12">
                     <label class="form-label">زیرگروه و رسته شغلی: <span class="text-danger">*</span></label>
-                    <select class="form-select" id="subIndustrySelect" name="sub_industry" required>
+                    <select class="form-select" id="subGroupSelect" name="sub_group" required>
                         <option value="">-- ابتدا گروه اصلی را انتخاب کنید --</option>
                     </select>
                 </div>
 
-                <!-- موانع و مشکلات تولید به صورت کشویی -->
-                <div class="col-md-6 col-12">
-                    <label class="form-label text-danger">مهم‌ترین مانع و چالش تولید: <span class="text-danger">*</span></label>
-                    <select class="form-select border-danger" name="obstacle_type" required>
-                        <option value="">-- انتخاب مهم‌ترین مانع --</option>
-                        <option value="کمبود سرمایه در گردش و تسهیلات">کمبود سرمایه در گردش و تسهیلات بانکی</option>
-                        <option value="مشکل بازار فروش و نبود مشتری">مشکل بازار فروش، بازاریابی و صادرات</option>
-                        <option value="تأمین مواد اولیه و گرانی نهاده‌ها">تأمین مواد اولیه، یراق‌آلات و نهاده‌ها</option>
-                        <option value="مجوزها و بوروکراسی اداری">پیچیدگی مجوزها و بوروکراسی دستگاه‌های دولتی</option>
-                        <option value="تجهیزات و ماشین‌آلات فرسوده">کمبود تجهیزات نوین، ابزار و ماشین‌آلات</option>
-                        <option value="بیمه، مالیات و عوارض">مشکلات بیمه تأمین اجتماعی و مالیات</option>
-                        <option value="آموزش و نیروی کار ماهر">کمبود نیروی کار ماهر و آموزش‌های تخصصی</option>
-                        <option value="سایر موانع">سایر موارد و موانع خاص</option>
+                <div class="col-md-4 col-12">
+                    <label class="form-label">نام محصول اصلی: <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" name="product_name" value="{{ form_data.get('product_name', '') }}" placeholder="مثلاً: ظروف سفالی لعاب‌دار" required>
+                </div>
+
+                <div class="col-md-3 col-6">
+                    <label class="form-label">ظرفیت اسمی ماهانه:</label>
+                    <input type="number" step="any" class="form-control" name="capacity" value="{{ form_data.get('capacity', '') }}" placeholder="مثلاً: 1000">
+                </div>
+
+                <div class="col-md-3 col-6">
+                    <label class="form-label">تولید فعلی در ماه:</label>
+                    <input type="number" step="any" class="form-control" name="current_capacity" value="{{ form_data.get('current_capacity', '') }}" placeholder="مثلاً: 400">
+                </div>
+
+                <div class="col-md-3 col-6">
+                    <label class="form-label">واحد سنجش ظرفیت:</label>
+                    <select class="form-select" name="unit">
+                        <option value="عدد در ماه" {% if form_data.get('unit') == 'عدد در ماه' %}selected{% endif %}>عدد در ماه</option>
+                        <option value="کیلوگرم در ماه" {% if form_data.get('unit') == 'کیلوگرم در ماه' %}selected{% endif %}>کیلوگرم در ماه</option>
+                        <option value="تن در ماه" {% if form_data.get('unit') == 'تن در ماه' %}selected{% endif %}>تن در ماه</option>
+                        <option value="متر / مترمربع در ماه" {% if form_data.get('unit') == 'متر / مترمربع در ماه' %}selected{% endif %}>متر / مترمربع در ماه</option>
+                        <option value="دست / بسته در ماه" {% if form_data.get('unit') == 'دست / بسته در ماه' %}selected{% endif %}>دست / بسته در ماه</option>
                     </select>
                 </div>
 
+                <div class="col-md-3 col-6">
+                    <label class="form-label">تعداد شاغلین (نفر):</label>
+                    <input type="number" class="form-control" name="employees" value="{{ form_data.get('employees', '') }}" placeholder="مثلاً: 3">
+                </div>
+
                 <div class="col-md-6 col-12">
-                    <label class="form-label">نوع فعالیت / کارگاه:</label>
-                    <select class="form-select" name="workshop_scale">
-                        <option value="مشاغل خانگی و انفرادی">مشاغل خانگی و انفرادی</option>
-                        <option value="کارگاه خرد و کوچک">کارگاه خرد و کوچک (زیر ۵ نفر)</option>
-                        <option value="کارگاه نیمه‌صنعتی">کارگاه نیمه‌صنعتی و تجمیعی</option>
-                        <option value="تعاونی تولیدی">تعاونی تولیدی و زنجیره ارزش</option>
+                    <label class="form-label">قیمت تقریبی واحد محصول (تومان):</label>
+                    <input type="number" step="any" class="form-control" name="price" value="{{ form_data.get('price', '') }}" placeholder="قیمت فروش عمده یا تک‌فروشی">
+                </div>
+
+                <div class="col-md-6 col-12">
+                    <label class="form-label">وضعیت صادرات و بازارهای هدف:</label>
+                    <select class="form-select" name="export_status">
+                        <option value="فقط بازار محلی و داخلی" {% if form_data.get('export_status') == 'فقط بازار محلی و داخلی' %}selected{% endif %}>فقط بازار محلی و داخلی</option>
+                        <option value="آماده صادرات و نیازمند مشتری خارجی" {% if form_data.get('export_status') == 'آماده صادرات و نیازمند مشتری خارجی' %}selected{% endif %}>آماده صادرات و نیازمند خریدار خارجی</option>
+                        <option value="دارای سابقه صادرات مستقیم/غیرمستقیم" {% if form_data.get('export_status') == 'دارای سابقه صادرات مستقیم/غیرمستقیم' %}selected{% endif %}>دارای سابقه صادرات فعال</option>
                     </select>
                 </div>
+            </div>
 
-                <!-- مشخصات هویتی و تماس -->
-                <div class="col-md-4 col-12">
-                    <label class="form-label">نام و نام خانوادگی مسئول: <span class="text-danger">*</span></label>
-                    <input type="text" class="form-control" name="owner_name" placeholder="نام مسئول واحد" required>
+            <!-- ۴. موانع و چالش‌ها (چک‌باکس چندگزینه‌ای) -->
+            <h5 class="section-title mt-4 text-danger"><i class="fa fa-exclamation-triangle ms-2"></i>موانع، مشکلات و نیازهای فوری تولید</h5>
+            <div class="row g-2 mb-3">
+                {% set barrier_options = [
+                    'کمبود سرمایه در گردش و تسهیلات بانکی',
+                    'مشکل بازار فروش، بازاریابی و مشتری',
+                    'تأمین مواد اولیه، یراق‌آلات و نهاده‌های گران',
+                    'پیچیدگی مجوزها، بوروکراسی و استعلامات اداری',
+                    'کمبود تجهیزات، ابزار و ماشین‌آلات نوین',
+                    'مسائل بیمه تأمین اجتماعی، مالیات و عوارض',
+                    'کمبود نیروی کار متخصص و ماهر',
+                    'هزینه بالای حمل‌ونقل و بسته‌بندی نامناسب'
+                ] %}
+                {% for b in barrier_options %}
+                <div class="col-md-6 col-12">
+                    <label class="barrier-badge d-flex align-items-center w-100">
+                        <input class="form-check-input ms-2" type="checkbox" name="barriers" value="{{ b }}" {% if b in selected_barriers %}checked{% endif %}>
+                        <span class="small fw-bold text-dark">{{ b }}</span>
+                    </label>
                 </div>
-
-                <div class="col-md-4 col-12">
-                    <label class="form-label">شماره همراه (جهت هماهنگی): <span class="text-danger">*</span></label>
-                    <input type="tel" class="form-control" name="phone" placeholder="09xxxxxxxxx" required dir="ltr">
+                {% endfor %}
+                <div class="col-12 mt-2">
+                    <input type="text" class="form-control" name="other_barrier" value="{{ form_data.get('other_barrier', '') }}" placeholder="سایر موانع یا توضیحات مانع خاص...">
                 </div>
+            </div>
 
-                <div class="col-md-4 col-12">
-                    <label class="form-label">ظرفیت تقریبی تولید ماهانه:</label>
-                    <input type="text" class="form-control" name="capacity" placeholder="مثلاً: ۵۰ قطعه، ۱۰۰ کیلو">
+            <!-- ۵. بارگذاری تصاویر و یادداشت -->
+            <h5 class="section-title mt-4"><i class="fa fa-images ms-2"></i>مستندات تصویری و توضیحات</h5>
+            <div class="row g-3">
+                <div class="col-12">
+                    <label class="form-label">تصاویر محصولات یا محیط کارگاه (امکان انتخاب هم‌زمان چند عکس):</label>
+                    <input type="file" class="form-control" name="product_images" multiple accept="image/*">
+                    <div class="form-text text-muted">فرمت‌های مجاز: JPG, PNG, WEBP (حداکثر ۱۶ مگابایت)</div>
                 </div>
 
                 <div class="col-12">
-                    <label class="form-label">تصویر محصول یا کارگاه (اختیاری):</label>
-                    <input type="file" class="form-control" name="file" accept="image/*">
-                </div>
-
-                <div class="col-12">
-                    <label class="form-label">توضیحات تکمیلی و درخواست رفع مانع:</label>
-                    <textarea class="form-control" name="description" rows="3" placeholder="توضیح دهید واحد شما چه نیازی دارد تا تولید رونق بگیرد..."></textarea>
+                    <label class="form-label">توضیحات تکمیلی یا انتظارات از سامانه توسعه تولید:</label>
+                    <textarea class="form-control" name="notes" rows="3" placeholder="توضیح دهید واحد شما چه نیازی دارد یا چه کمکی برای توسعه و صادرات نیاز دارید...">{{ form_data.get('notes', '') }}</textarea>
                 </div>
 
                 <div class="col-12 text-center mt-4">
                     <button type="submit" class="btn btn-primary btn-lg px-5 fw-bold shadow">
-                        <i class="fa fa-save ms-2"></i>ثبت نهایی و ثبت درخواست در سامانه
+                        <i class="fa fa-save ms-2"></i>ثبت نهایی و ورود به زنجیره توسعه
                     </button>
                 </div>
             </div>
@@ -205,50 +286,65 @@
 <!-- Footer -->
 <footer class="bg-dark text-white text-center py-3 mt-auto">
     <div class="container small">
-        شبکه هوشمند توسعه تولید و رفع موانع - پشتیبانی از صنایع دستی و مشاغل خرد
+        شبکه هوشمند توسعه تولید و رفع موانع - پشتیبانی از صنایع دستی و مشاغل خرد ملی
     </div>
 </footer>
 
-<!-- کدهای جاوااسکریپت برای پویا کردن کشویی‌ها -->
+<!-- جاوااسکریپت پویاسازی دراپ‌داون‌های وابسته -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    // اطلاعات شهرستان‌ها و رسته‌ها به صورت امن
-    const provincesData = {{ provinces_by_county | tojson | safe if provinces_by_county is defined else '{}' }};
-    const industryData = {{ industry_catalog | tojson | safe if industry_catalog is defined else '{}' }};
+    const provincesData = {{ provinces_by_county | tojson | safe }};
+    const industryData = {{ industry_catalog | tojson | safe }};
 
-    // بروزرسانی شهرستان‌ها با تغییر استان
     const provSelect = document.getElementById('provinceSelect');
     const countySelect = document.getElementById('countySelect');
+    const indSelect = document.getElementById('industrySelect');
+    const subGroupSelect = document.getElementById('subGroupSelect');
 
-    provSelect.addEventListener('change', function() {
-        const prov = this.value;
+    const initialCounty = "{{ form_data.get('county', '') }}";
+    const initialSubGroup = "{{ form_data.get('sub_group', '') }}";
+
+    function updateCounties(prov, selectedCounty = '') {
         countySelect.innerHTML = '<option value="">-- انتخاب شهرستان --</option>';
         if (provincesData[prov]) {
             provincesData[prov].forEach(function(c) {
                 const opt = document.createElement('option');
                 opt.value = c;
                 opt.textContent = c;
+                if (c === selectedCounty) opt.selected = true;
                 countySelect.appendChild(opt);
             });
         }
-    });
+    }
 
-    // بروزرسانی زیرگروه‌ها با تغییر گروه صنعت
-    const indSelect = document.getElementById('industrySelect');
-    const subIndSelect = document.getElementById('subIndustrySelect');
-
-    indSelect.addEventListener('change', function() {
-        const ind = this.value;
-        subIndSelect.innerHTML = '<option value="">-- انتخاب زیرگروه --</option>';
+    function updateSubGroups(ind, selectedSub = '') {
+        subGroupSelect.innerHTML = '<option value="">-- انتخاب زیرگروه --</option>';
         if (industryData[ind]) {
             industryData[ind].forEach(function(sub) {
                 const opt = document.createElement('option');
                 opt.value = sub;
                 opt.textContent = sub;
-                subIndSelect.appendChild(opt);
+                if (sub === selectedSub) opt.selected = true;
+                subGroupSelect.appendChild(opt);
             });
         }
+    }
+
+    provSelect.addEventListener('change', function() {
+        updateCounties(this.value);
     });
+
+    indSelect.addEventListener('change', function() {
+        updateSubGroups(this.value);
+    });
+
+    // بارگذاری اولیه مقادیر قبلی در صورت بروز خطا در اعتبارسنجی
+    if (provSelect.value) {
+        updateCounties(provSelect.value, initialCounty);
+    }
+    if (indSelect.value) {
+        updateSubGroups(indSelect.value, initialSubGroup);
+    }
 </script>
 </body>
 </html>
