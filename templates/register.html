@@ -9,153 +9,246 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body {
-            font-family: Tahoma, sans-serif;
-            background-color: #f8f9fa;
+            font-family: Tahoma, 'Segoe UI', sans-serif;
+            background-color: #f4f6f9;
         }
         .form-card {
             background: white;
-            border-radius: 1rem;
+            border-radius: 1.2rem;
             padding: 2rem;
-            box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.05);
+            box-shadow: 0 0.5rem 1.5rem rgba(0,0,0,0.06);
             margin-bottom: 2rem;
+        }
+        .form-label {
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 0.4rem;
+        }
+        .form-select, .form-control {
+            border-radius: 0.6rem;
+            padding: 0.65rem 0.9rem;
+            border: 1px solid #ced4da;
+        }
+        .form-select:focus, .form-control:focus {
+            border-color: #0d6efd;
+            box-shadow: 0 0 0 0.25rem rgba(13,110,253,0.15);
+        }
+        .section-title {
+            border-right: 4px solid #0d6efd;
+            padding-right: 10px;
+            margin-bottom: 1.5rem;
+            font-weight: 800;
         }
     </style>
 </head>
-<body>
+<body class="d-flex flex-column min-vh-100">
 
-    <!-- Navigation Bar -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
-        <div class="container">
-            <a class="navbar-brand fw-bold" href="{{ url_for('index') }}">
-                <i class="fa fa-network-wired text-info ms-2"></i>سامانه هوشمند توسعه تولید
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav me-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('index') }}">صفحه اصلی</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link active" href="{{ url_for('register') }}">ثبت واحد تولیدی</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('export') }}">بازار و صادرات</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('admin') }}">ورود مدیران</a>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </nav>
-
-    <!-- Main Content -->
-    <div class="container my-4">
-        
-        <!-- Flash Messages -->
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-                        {{ message }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
-
-        <div class="form-card">
-            <h3 class="fw-bold mb-4 text-primary border-bottom pb-2">
-                <i class="fa fa-user-plus ms-2"></i>فرم ثبت‌نام واحد تولیدی خرد و خانگی
-            </h3>
-            
-            <form method="POST">
-                <div class="row g-3">
-                    <div class="col-md-4">
-                        <label class="form-label fw-bold">استان:</label>
-                        <input type="text" class="form-control" name="province" placeholder="مثلا: تهران، اصفهان، خراسان رضوی" required>
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label fw-bold">شهرستان:</label>
-                        <input type="text" class="form-control" name="county" placeholder="نام شهرستان" required>
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label fw-bold">بخش / منطقه:</label>
-                        <input type="text" class="form-control" name="district" placeholder="نام بخش یا منطقه" required>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label fw-bold">نوع صنعت دستی / فعالیت:</label>
-                        <input type="text" class="form-control" name="craft_type" placeholder="مثلا: قالی‌بافی، معرق‌کاری، سفالگری" required>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label fw-bold">نام و نام خانوادگی مسئول واحد:</label>
-                        <input type="text" class="form-control" name="owner_name" placeholder="نام مسئول تولیدی" required>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label fw-bold">شماره تماس (تلفن همراه):</label>
-                        <input type="text" class="form-control" name="phone" placeholder="مثلا: 09123456789" required>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label fw-bold">ظرفیت تولید ماهانه / توضیحات:</label>
-                        <input type="text" class="form-control" name="capacity" placeholder="مثلا: 20 تخته در ماه">
-                    </div>
-                    <div class="col-12 text-end mt-4">
-                        <button type="submit" class="btn btn-primary px-5 py-2 fw-bold rounded-pill shadow-sm">
-                            <i class="fa fa-check-circle ms-1"></i>ثبت نهایی واحد در شبکه
-                        </button>
-                    </div>
-                </div>
-            </form>
-        </div>
-
-        <!-- Registered Units List Table -->
-        <div class="form-card">
-            <h4 class="fw-bold mb-3 text-secondary border-bottom pb-2">
-                <i class="fa fa-list ms-2 text-primary"></i>لیست واحدهای ثبت‌شده اخیر
-            </h4>
-            {% if units|length == 0 %}
-                <div class="alert alert-light text-center py-4 text-muted border mb-0">
-                    هنوز واحدی ثبت نشده است. از فرم بالا برای ثبت اولین واحد استفاده کنید.
-                </div>
-            {% else %}
-                <div class="table-responsive">
-                    <table class="table table-striped table-hover align-middle">
-                        <thead class="table-dark">
-                            <tr>
-                                <th>#</th>
-                                <th>استان / شهرستان</th>
-                                <th>نوع صنعت</th>
-                                <th>مسئول واحد</th>
-                                <th>تلفن تماس</th>
-                                <th>ظرفیت</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for unit in units %}
-                            <tr>
-                                <td>{{ loop.index }}</td>
-                                <td>{{ unit.province }} / {{ unit.county }}</td>
-                                <td><span class="badge bg-info text-dark">{{ unit.craft_type }}</span></td>
-                                <td>{{ unit.owner_name }}</td>
-                                <td>{{ unit.phone }}</td>
-                                <td>{{ unit.capacity or '-' }}</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            {% endif %}
+<!-- Navigation Bar -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
+    <div class="container">
+        <a class="navbar-brand fw-bold" href="{{ url_for('index') }}">
+            <i class="fa fa-network-wired text-info ms-2"></i>سامانه هوشمند توسعه تولید
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('index') }}"><i class="fa fa-home ms-1"></i>صفحه اصلی</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" href="{{ url_for('register') }}"><i class="fa fa-plus-circle ms-1"></i>ثبت واحد جدید</a>
+                </li>
+            </ul>
         </div>
     </div>
+</nav>
 
-    <!-- Footer -->
-    <footer class="bg-dark text-white text-center py-3 mt-auto">
-        <p class="mb-0 small">سامانه هوشمند توسعه تولید و رفع موانع | طراحی شده برای توسعه اقتصاد خرد و خانگی</p>
-    </footer>
+<!-- Main Container -->
+<div class="container my-4 flex-grow-1">
 
-    <!-- Bootstrap JS Bundle -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category if category != 'message' else 'info' }} alert-dismissible fade show shadow-sm" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <div class="card form-card">
+        <h4 class="section-title text-primary">
+            <i class="fa fa-industry ms-2"></i>فرم ثبت اطلاعات واحد تولیدی و رفع موانع
+        </h4>
+        <p class="text-muted small mb-4">لطفاً مشخصات واحد تولیدی، موقعیت مکانی و موانع موجود را از منوهای زیر انتخاب فرمایید.</p>
+
+        <form method="POST" enctype="multipart/form-data">
+            <div class="row g-3">
+                <!-- موقعیت جغرافیایی کشویی -->
+                <div class="col-md-3 col-12">
+                    <label class="form-label">استان: <span class="text-danger">*</span></label>
+                    <select class="form-select" id="provinceSelect" name="province" required>
+                        <option value="">-- انتخاب استان --</option>
+                        {% for prov in provinces %}
+                        <option value="{{ prov }}">{{ prov }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="col-md-3 col-12">
+                    <label class="form-label">شهرستان: <span class="text-danger">*</span></label>
+                    <select class="form-select" id="countySelect" name="county" required>
+                        <option value="">-- ابتدا استان را انتخاب کنید --</option>
+                    </select>
+                </div>
+
+                <div class="col-md-3 col-12">
+                    <label class="form-label">بخش: <span class="text-danger">*</span></label>
+                    <select class="form-select" name="district" required>
+                        <option value="">-- انتخاب بخش --</option>
+                        <option value="مرکزی">بخش مرکزی</option>
+                        <option value="روستایی / دهستان">بخش روستایی / دهستان</option>
+                        <option value="ناحیه و شهرک صنعتی">شهرک / ناحیه صنعتی</option>
+                        <option value="سایر بخش‌ها">سایر بخش‌ها و توابع</option>
+                    </select>
+                </div>
+
+                <div class="col-md-3 col-12">
+                    <label class="form-label">شهر / روستا / محله:</label>
+                    <input type="text" class="form-control" name="city_village" placeholder="نام شهر، روستا یا منطقه">
+                </div>
+
+                <!-- مشخصات صنعت و شغل کشویی -->
+                <div class="col-md-6 col-12">
+                    <label class="form-label">گروه اصلی صنایع و تولید: <span class="text-danger">*</span></label>
+                    <select class="form-select" id="industrySelect" name="industry_group" required>
+                        <option value="">-- انتخاب گروه صنعت --</option>
+                        {% for group in industries %}
+                        <option value="{{ group }}">{{ group }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="col-md-6 col-12">
+                    <label class="form-label">زیرگروه و رسته شغلی: <span class="text-danger">*</span></label>
+                    <select class="form-select" id="subIndustrySelect" name="sub_industry" required>
+                        <option value="">-- ابتدا گروه اصلی را انتخاب کنید --</option>
+                    </select>
+                </div>
+
+                <!-- موانع و مشکلات تولید به صورت کشویی -->
+                <div class="col-md-6 col-12">
+                    <label class="form-label text-danger">مهم‌ترین مانع و چالش تولید: <span class="text-danger">*</span></label>
+                    <select class="form-select border-danger" name="obstacle_type" required>
+                        <option value="">-- انتخاب مهم‌ترین مانع --</option>
+                        <option value="کمبود سرمایه در گردش و تسهیلات">کمبود سرمایه در گردش و تسهیلات بانکی</option>
+                        <option value="مشکل بازار فروش و نبود مشتری">مشکل بازار فروش، بازاریابی و صادرات</option>
+                        <option value="تأمین مواد اولیه و گرانی نهاده‌ها">تأمین مواد اولیه، یراق‌آلات و نهاده‌ها</option>
+                        <option value="مجوزها و بوروکراسی اداری">پیچیدگی مجوزها و بوروکراسی دستگاه‌های دولتی</option>
+                        <option value="تجهیزات و ماشین‌آلات فرسوده">کمبود تجهیزات نوین، ابزار و ماشین‌آلات</option>
+                        <option value="بیمه، مالیات و عوارض">مشکلات بیمه تأمین اجتماعی و مالیات</option>
+                        <option value="آموزش و نیروی کار ماهر">کمبود نیروی کار ماهر و آموزش‌های تخصصی</option>
+                        <option value="سایر موانع">سایر موارد و موانع خاص</option>
+                    </select>
+                </div>
+
+                <div class="col-md-6 col-12">
+                    <label class="form-label">نوع فعالیت / کارگاه:</label>
+                    <select class="form-select" name="workshop_scale">
+                        <option value="مشاغل خانگی و انفرادی">مشاغل خانگی و انفرادی</option>
+                        <option value="کارگاه خرد و کوچک">کارگاه خرد و کوچک (زیر ۵ نفر)</option>
+                        <option value="کارگاه نیمه‌صنعتی">کارگاه نیمه‌صنعتی و تجمیعی</option>
+                        <option value="تعاونی تولیدی">تعاونی تولیدی و زنجیره ارزش</option>
+                    </select>
+                </div>
+
+                <!-- مشخصات هویتی و تماس -->
+                <div class="col-md-4 col-12">
+                    <label class="form-label">نام و نام خانوادگی مسئول: <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" name="owner_name" placeholder="نام مسئول واحد" required>
+                </div>
+
+                <div class="col-md-4 col-12">
+                    <label class="form-label">شماره همراه (جهت هماهنگی): <span class="text-danger">*</span></label>
+                    <input type="tel" class="form-control" name="phone" placeholder="09xxxxxxxxx" required dir="ltr">
+                </div>
+
+                <div class="col-md-4 col-12">
+                    <label class="form-label">ظرفیت تقریبی تولید ماهانه:</label>
+                    <input type="text" class="form-control" name="capacity" placeholder="مثلاً: ۵۰ قطعه، ۱۰۰ کیلو">
+                </div>
+
+                <div class="col-12">
+                    <label class="form-label">تصویر محصول یا کارگاه (اختیاری):</label>
+                    <input type="file" class="form-control" name="file" accept="image/*">
+                </div>
+
+                <div class="col-12">
+                    <label class="form-label">توضیحات تکمیلی و درخواست رفع مانع:</label>
+                    <textarea class="form-control" name="description" rows="3" placeholder="توضیح دهید واحد شما چه نیازی دارد تا تولید رونق بگیرد..."></textarea>
+                </div>
+
+                <div class="col-12 text-center mt-4">
+                    <button type="submit" class="btn btn-primary btn-lg px-5 fw-bold shadow">
+                        <i class="fa fa-save ms-2"></i>ثبت نهایی و ثبت درخواست در سامانه
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Footer -->
+<footer class="bg-dark text-white text-center py-3 mt-auto">
+    <div class="container small">
+        شبکه هوشمند توسعه تولید و رفع موانع - پشتیبانی از صنایع دستی و مشاغل خرد
+    </div>
+</footer>
+
+<!-- کدهای جاوااسکریپت برای پویا کردن کشویی‌ها -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // اطلاعات شهرستان‌ها و رسته‌ها به صورت امن
+    const provincesData = {{ provinces_by_county | tojson | safe if provinces_by_county is defined else '{}' }};
+    const industryData = {{ industry_catalog | tojson | safe if industry_catalog is defined else '{}' }};
+
+    // بروزرسانی شهرستان‌ها با تغییر استان
+    const provSelect = document.getElementById('provinceSelect');
+    const countySelect = document.getElementById('countySelect');
+
+    provSelect.addEventListener('change', function() {
+        const prov = this.value;
+        countySelect.innerHTML = '<option value="">-- انتخاب شهرستان --</option>';
+        if (provincesData[prov]) {
+            provincesData[prov].forEach(function(c) {
+                const opt = document.createElement('option');
+                opt.value = c;
+                opt.textContent = c;
+                countySelect.appendChild(opt);
+            });
+        }
+    });
+
+    // بروزرسانی زیرگروه‌ها با تغییر گروه صنعت
+    const indSelect = document.getElementById('industrySelect');
+    const subIndSelect = document.getElementById('subIndustrySelect');
+
+    indSelect.addEventListener('change', function() {
+        const ind = this.value;
+        subIndSelect.innerHTML = '<option value="">-- انتخاب زیرگروه --</option>';
+        if (industryData[ind]) {
+            industryData[ind].forEach(function(sub) {
+                const opt = document.createElement('option');
+                opt.value = sub;
+                opt.textContent = sub;
+                subIndSelect.appendChild(opt);
+            });
+        }
+    });
+</script>
 </body>
 </html>
