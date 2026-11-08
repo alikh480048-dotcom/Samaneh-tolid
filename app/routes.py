@@ -308,3 +308,33 @@ def home():
         is_authenticated=current_user.is_authenticated,
         role=user_role(),
     )
+
+
+@main.route("/login", methods=["GET", "POST"])
+def login():
+    if current_user.is_authenticated:
+        return redirect(url_for("main.home"))
+    
+    if request.method == "POST":
+        username = request.form.get("username", "").strip()
+        password = request.form.get("password", "")
+        user = find_user(username)
+        
+        if user and user_is_active(user) and verify_user_password(user, password):
+            login_user(user)
+            flash("با موفقیت وارد شدید.", "success")
+            next_page = request.args.get("next")
+            if next_page and next_page.startswith("/"):
+                return redirect(next_page)
+            return redirect(url_for("main.home"))
+        flash("نام کاربری یا رمز عبور اشتباه است.", "danger")
+        
+    return render_template("login.html", system_name=SYSTEM_NAME)
+
+
+@main.route("/logout")
+@login_required
+def logout():
+    logout_user()
+    flash("با موفقیت خارج شدید.", "info")
+    return redirect(url_for("main.home"))
