@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ system_name }} - {{ system_subtitle }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin: 2rem 0; }
+        .stat { background: #ffffff; padding: 1.25rem; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        .stat-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; }
+        .stat-label { font-size: 0.85rem; color: #64748b; margin-bottom: 0.5rem; }
+        .stat-number { font-size: 1.75rem; font-weight: 700; color: #0f172a; }
+        .stat-note { font-size: 0.75rem; color: #94a3b8; margin-top: 0.25rem; }
+        .pill { font-size: 0.7rem; padding: 0.2rem 0.5rem; border-radius: 20px; background: #f1f5f9; color: #475569; }
+        .teal-bg { background: #e4f8f5; color: #119c90; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 8px; }
+        .blue-bg { background: #e8efff; color: #3b82f6; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 8px; }
+        .gold-bg { background: #fbf2df; color: #f59e0b; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 8px; }
+        .purple-bg { background: #f1eaff; color: #8b5cf6; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 8px; }
+    </style>
+</head>
+<body>
+<div class="app">
+    <aside class="sidebar">
+        <div class="sidebar-brand">
+            <h2>{{ system_name }}</h2>
+            <span>{{ system_subtitle }}</span>
+        </div>
+        <nav class="nav">
+            <a href="{{ url_for('main.home') }}" class="active">🏠 صفحه اصلی</a>
+            <a href="{{ url_for('customer_form.register') }}" class="customer-entry">🛒 مشتری و بازار</a>
+            <a href="{{ url_for('main.cases') }}">📁 پرونده‌ها و پیگیری</a>
+            <a href="{{ url_for('main.modules') }}">📊 ماژول‌های تخصصی</a>
+            <a href="{{ url_for('main.dashboard_bi') }}">📈 تحلیل و هوشمندی</a>
+            {% if is_authenticated %}
+                <a href="{{ url_for('main.logout') }}">🚪 خروج ({{ role }})</a>
+            {% else %}
+                <a href="{{ url_for('main.login') }}">🔐 ورود به سامانه</a>
+            {% endif %}
+        </nav>
+    </aside>
+
+    <main class="main-content">
+        <header class="topbar">
+            <h1>{{ system_name }}</h1>
+            <div class="user-info">
+                {% if is_authenticated %}
+                    <span>کاربر گرامی (نقش: {{ role }})</span>
+                {% else %}
+                    <a href="{{ url_for('main.login') }}" class="btn-login">ورود</a>
+                {% endif %}
+            </div>
+        </header>
+
+        <div class="content-wrapper" style="padding: 2rem;">
+            <div class="hero" style="background: linear-gradient(135deg, #0f172a, #1e293b); color: white; padding: 2.5rem; border-radius: 16px; margin-bottom: 2rem;">
+                <h2 style="font-size: 2rem; margin-bottom: 1rem;">به مرکز راهبردی شبکه تولید خوش آمدید</h2>
+                <p style="color: #94a3b8; font-size: 1.1rem; line-height: 1.6;">سامانه هوشمند توسعه تولید، اتصال به بازار، رفع موانع و هماهنگی زنجیره ارزش ملی و بین‌المللی.</p>
+                <div style="margin-top: 1.5rem;">
+                    <a href="{{ url_for('production_form.new') }}" style="background: #10b981; color: white; padding: 0.75rem 1.5rem; border-radius: 8px; text-decoration: none; font-weight: 600;">+ ثبت واحد تولیدی جدید</a>
+                    <a href="{{ url_for('customer_form.register') }}" style="background: #3b82f6; color: white; padding: 0.75rem 1.5rem; border-radius: 8px; text-decoration: none; font-weight: 600; margin-right: 1rem;">ثبت تقاضای بازار / مشتری</a>
+                </div>
+            </div>
+
+            <div class="section-head">
+                <h3>نمای کلی شبکه</h3>
+                <span class="pill">آمار زنده دیتابیس</span>
+            </div>
+
+            <!-- ۶ کارت آمار زنده -->
+            <section class="stats">
+                <article class="stat" style="border-right: 4px solid #10b981;">
+                    <div class="stat-top">
+                        <span class="stat-icon teal-bg">▦</span>
+                        <span class="pill">تولید</span>
+                    </div>
+                    <div class="stat-label">واحدهای تولیدی ثبت‌شده</div>
+                    <div class="stat-number">{{ units_count|default(0) }}</div>
+                    <div class="stat-note">سوابق فعال شبکه تولید</div>
+                </article>
+
+                <article class="stat" style="border-right: 4px solid #3b82f6;">
+                    <div class="stat-top">
+                        <span class="stat-icon blue-bg">👥</span>
+                        <span class="pill">شبکه تجاری</span>
+                    </div>
+                    <div class="stat-label">مشتریان و خریداران</div>
+                    <div class="stat-number">{{ customers_count|default(0) }}</div>
+                    <div class="stat-note">پروفایل‌های ثبت‌شده مشتریان</div>
+                </article>
+
+                <article class="stat" style="border-right: 4px solid #f59e0b;">
+                    <div class="stat-top">
+                        <span class="stat-icon gold-bg">🛒</span>
+                        <span class="pill">بازار و تقاضا</span>
+                    </div>
+                    <div class="stat-label">درخواست‌های خرید</div>
+                    <div class="stat-number">{{ requests_count|default(purchase_requests_count|default(0)) }}</div>
+                    <div class="stat-note">تقاضاهای ثبت‌شده بازار</div>
+                </article>
+
+                <article class="stat" style="border-right: 4px solid #6366f1;">
+                    <div class="stat-top">
+                        <span class="stat-icon purple-bg">📁</span>
+                        <span class="pill">پرونده‌ها</span>
+                    </div>
+                    <div class="stat-label">کل پرونده‌های ثبت‌شده</div>
+                    <div class="stat-number">{{ cases_count|default(0) }}</div>
+                    <div class="stat-note">مجموع پرونده‌های سامانه</div>
+                </article>
+
+                <article class="stat" style="border-right: 4px solid #06b6d4;">
+                    <div class="stat-top">
+                        <span class="stat-icon teal-bg">⚡</span>
+                        <span class="pill">جریان کار</span>
+                    </div>
+                    <div class="stat-label">پرونده‌های باز</div>
+                    <div class="stat-number">{{ open_cases_count|default(0) }}</div>
+                    <div class="stat-note">نیازمند پیگیری و اقدام</div>
+                </article>
+
+                <article class="stat" style="border-right: 4px solid #8b5cf6;">
+                    <div class="stat-top">
+                        <span class="stat-icon purple-bg">📋</span>
+                        <span class="pill">اقدامات</span>
+                    </div>
+                    <div class="stat-label">وظایف اجرایی شبکه</div>
+                    <div class="stat-number">{{ tasks_count|default(0) }}</div>
+                    <div class="stat-note">وظایف و تسک‌های فعال</div>
+                </article>
+            </section>
+        </div>
+
+        <footer class="footer" style="text-align: center; padding: 1.5rem; color: #94a3b8; font-size: 0.85rem; border-top: 1px solid #e2e8f0; margin-top: 3rem;">
+            {{ system_name }} &copy; {{ current_year|default(1405) }} - تمامی حقوق محفوظ است.
+        </footer>
+    </main>
+</div>
+</body>
+</html>
